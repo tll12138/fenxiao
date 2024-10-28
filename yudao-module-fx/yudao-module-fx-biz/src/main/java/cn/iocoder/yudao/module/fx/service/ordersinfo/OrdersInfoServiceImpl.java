@@ -2,10 +2,14 @@ package cn.iocoder.yudao.module.fx.service.ordersinfo;
 
 import cn.iocoder.yudao.module.fx.dal.dataobject.ordersdetail.OrdersDetailDO;
 import cn.iocoder.yudao.module.fx.dal.mysql.ordersdetail.OrdersDetailMapper;
+import cn.iocoder.yudao.module.fx.enums.OrderStatusType;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.*;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ordersinfo.OrdersInfoDO;
@@ -18,6 +22,7 @@ import cn.iocoder.yudao.module.fx.dal.mysql.ordersinfo.OrdersInfoMapper;
 import javax.annotation.Resource;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static cn.iocoder.yudao.module.fx.enums.Constants.SALE;
 import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.*;
 
 /**
@@ -39,6 +44,14 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
     public Long createOrdersInfo(OrdersInfoSaveReqVO createReqVO) {
         // 插入
         OrdersInfoDO ordersInfo = BeanUtils.toBean(createReqVO, OrdersInfoDO.class);
+        // 获取当前日期，转换格式为yyyyMMddHHmm
+
+        LocalDateTime now = LocalDateTime.now();
+        String dateStr = now.format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+
+        ordersInfo.setOrderId(String.format("%s%s", SALE, dateStr));
+        ordersInfo.setOrderDate(LocalDate.now());
+        ordersInfo.setOrderStatus(OrderStatusType.AUDITING.getType()); // 默认审核中
         ordersInfoMapper.insert(ordersInfo);
 
         // 插入子表

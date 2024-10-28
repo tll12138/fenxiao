@@ -21,6 +21,12 @@ public class SendRepositoryPageReqVO extends PageParam {
     @Schema(description = "仓库类型", example = "1")
     private Integer type;
 
+    @Schema(description = "仓库编码", example = "123")
+    private String code;
+
+    @Schema(description = "备注", example = "备注")
+    private String remark;
+
     @Schema(description = "仓库全称", example = "李四")
     private String allName;
 

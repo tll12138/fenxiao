@@ -26,6 +26,14 @@ public class SendRepositoryRespVO {
     @DictFormat("fx_repository_type") // TODO 代码优化：建议设置到对应的 DictTypeConstants 枚举类中
     private Integer type;
 
+    @Schema(description = "仓库编码", requiredMode = Schema.RequiredMode.REQUIRED, example = "123")
+    @ExcelProperty("仓库编码")
+    private String code;
+
+    @Schema(description = "备注")
+    @ExcelProperty("备注")
+    private String remark;
+
     @Schema(description = "仓库全称", requiredMode = Schema.RequiredMode.REQUIRED, example = "李四")
     @ExcelProperty("仓库全称")
     private String allName;

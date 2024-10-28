@@ -38,6 +38,16 @@ public class SendRepositoryDO extends BaseDO {
      * 枚举 {@link TODO fx_repository_type 对应的类}
      */
     private Integer type;
+
+    /**
+     * 仓库编码
+     */
+    private String code;
+
+    /**
+     * 备注
+     */
+    private String remark;
     /**
      * 仓库全称
      */
