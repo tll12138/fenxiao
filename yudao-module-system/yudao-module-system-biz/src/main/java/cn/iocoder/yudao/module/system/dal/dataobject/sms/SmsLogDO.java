@@ -158,4 +158,10 @@ public class SmsLogDO extends BaseDO {
      */
     private String apiReceiveMsg;
 
+
+    /**
+     * 流程实例编号
+     */
+    private String processInstanceId;
+
 }

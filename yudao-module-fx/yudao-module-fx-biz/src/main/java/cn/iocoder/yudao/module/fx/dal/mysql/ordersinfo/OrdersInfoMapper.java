@@ -1,13 +1,11 @@
 package cn.iocoder.yudao.module.fx.dal.mysql.ordersinfo;
 
-import java.util.*;
-
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
+import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
+import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoPageReqVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ordersinfo.OrdersInfoDO;
 import org.apache.ibatis.annotations.Mapper;
-import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.*;
 
 /**
  * 销售单 Mapper

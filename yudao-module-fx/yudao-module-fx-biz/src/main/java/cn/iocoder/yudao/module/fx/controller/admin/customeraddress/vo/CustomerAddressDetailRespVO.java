@@ -14,6 +14,9 @@ public class CustomerAddressDetailRespVO {
     @Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "14382")
     private Long id;
 
+    @Schema(description = "流程实例编号")
+    private String processInstanceId;
+
     @Schema(description = "分销商编号", example = "12931")
     private Long distributorId;
 

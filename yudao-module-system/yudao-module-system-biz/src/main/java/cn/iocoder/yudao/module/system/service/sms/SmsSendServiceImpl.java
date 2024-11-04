@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.exceptions.ExceptionUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
 import cn.iocoder.yudao.framework.common.core.KeyValue;
 import cn.iocoder.yudao.framework.common.enums.CommonStatusEnum;
 import cn.iocoder.yudao.framework.common.enums.UserTypeEnum;
@@ -16,13 +17,11 @@ import cn.iocoder.yudao.module.system.dal.mysql.sms.SmsTemplateMapper;
 import cn.iocoder.yudao.module.system.framework.sms.core.client.SmsClient;
 import cn.iocoder.yudao.module.system.framework.sms.core.client.dto.SmsReceiveRespDTO;
 import cn.iocoder.yudao.module.system.framework.sms.core.client.dto.SmsSendRespDTO;
-import cn.iocoder.yudao.module.system.framework.sms.core.client.impl.DebugDingTalkSmsClient;
+import cn.iocoder.yudao.module.system.framework.sms.core.client.impl.DingTalkSmsClient;
 import cn.iocoder.yudao.module.system.mq.message.sms.SmsSendMessage;
 import cn.iocoder.yudao.module.system.mq.producer.sms.SmsProducer;
 import cn.iocoder.yudao.module.system.service.member.MemberService;
 import cn.iocoder.yudao.module.system.service.user.AdminUserService;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.toolkit.Db;
 import com.google.common.annotations.VisibleForTesting;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -71,6 +70,18 @@ public class SmsSendServiceImpl implements SmsSendService {
                 mobile = user.getMobile();
             }
         }
+        if (templateParams.containsKey("creatorId")){
+            AdminUserDO user = adminUserService.getUser(Long.valueOf(templateParams.get("creatorId").toString()));
+            if (user != null){
+                templateParams.put("creator", user.getUsername());
+            }
+        }
+        if (templateParams.containsKey("executorId")){
+            AdminUserDO user = adminUserService.getUser(Long.valueOf(templateParams.get("executorId").toString()));
+            if (user != null){
+                templateParams.put("executor",user.getUsername());
+            }
+        }
         // 执行发送
         return sendSingleSms(mobile, userId, UserTypeEnum.ADMIN.getValue(), templateCode, templateParams);
     }
@@ -102,12 +113,15 @@ public class SmsSendServiceImpl implements SmsSendService {
         Boolean isSend = CommonStatusEnum.ENABLE.getStatus().equals(template.getStatus())
                 && CommonStatusEnum.ENABLE.getStatus().equals(smsChannel.getStatus());
         String content = smsTemplateService.formatSmsTemplateContent(template.getContent(), templateParams);
-        Long sendLogId = smsLogService.createSmsLog(mobile, userId, userType, isSend, template, content, templateParams);
+        // 流程实例ID
+        String processInstanceId = null;
+        if (templateParams.containsKey("processInstanceId")){
+            processInstanceId = templateParams.get("processInstanceId").toString();
+        }
+        Long sendLogId = smsLogService.createSmsLog(mobile, userId, userType, isSend, processInstanceId, template, content, templateParams);
 
         // 发送 MQ 消息，异步执行发送短信
         if (isSend) {
-//            smsProducer.sendSmsSendMessage(sendLogId, mobile, template.getChannelId(),
-//                    template.getApiTemplateId(), newTemplateParams);
             smsProducer.sendSmsSendMessage(sendLogId, mobile, template.getChannelId(),
                     template.getCode(), newTemplateParams);
         }
@@ -172,20 +186,27 @@ public class SmsSendServiceImpl implements SmsSendService {
         // 发送短信
         SmsSendRespDTO sendResponse = null;
         try {
-            if (smsClient instanceof DebugDingTalkSmsClient) {
-//                SmsTemplateDO smsTemplate = smsTemplateService.
-//                smsTemplateMapper.se
+            if (smsClient instanceof DingTalkSmsClient) {
+                //获取短信模板内容
                 String apiTemplateId = message.getApiTemplateId();
-                log.info("apiTemplateId:{}", apiTemplateId);
                 SmsTemplateDO smsTemplate = smsTemplateService.getSmsTemplateByCodeFromCache(apiTemplateId);
-                log.info("smsTemplate:{}", smsTemplate);
                 String content = smsTemplate.getContent();
+
+                // 获取短信模板参数， 构建参数
+                // 通过换行符进行分割
+
+                String[] split = content.split("\\n");
+                String titleTemplate = split[0];
+                // 获取短信模板描述
+                String descriptionTemplate = split[1];
                 List<KeyValue<String, Object>> templateParams = message.getTemplateParams();
-                Map<String, Object> stringObjectMap = MapUtils.convertMap(templateParams);
-                String s = smsTemplateService.formatSmsTemplateContent(content, stringObjectMap);
-                log.info("短信模板：{}", s);
-//                sendResponse = smsClient.sendSms(message.getLogId(), message.getMobile(), message.getApiTemplateId(), message.getTemplateParams());
-                sendResponse = ((DebugDingTalkSmsClient) smsClient).sendSms(s);
+                Map<String, Object> params = MapUtils.convertMap(templateParams);
+                String title = smsTemplateService.formatSmsTemplateContent(titleTemplate, params);
+                String description = smsTemplateService.formatSmsTemplateContent(descriptionTemplate, params);
+                log.info("标题：{}", title);
+                log.info("描述内容：{}", description);
+                log.info("短信参数：{}", JSONUtil.toJsonStr(params));
+                sendResponse = ((DingTalkSmsClient) smsClient).sendSms(smsTemplate.getType(),title, description, params);
             } else {
                 sendResponse = smsClient.sendSms(message.getLogId(), message.getMobile(),
                         message.getApiTemplateId(), message.getTemplateParams());

@@ -1,13 +1,9 @@
 package cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo;
 
 import cn.iocoder.yudao.framework.excel.core.annotations.DictFormat;
-import cn.iocoder.yudao.framework.excel.core.convert.DictConvert;
 import cn.iocoder.yudao.module.fx.controller.admin.customeraccount.vo.CustomerAccountRespVO;
 import cn.iocoder.yudao.module.fx.controller.admin.customeraddress.vo.CustomerAddressDetailRespVO;
-import cn.iocoder.yudao.module.fx.dal.dataobject.customeraccount.CustomerAccountDO;
-import cn.iocoder.yudao.module.fx.dal.dataobject.customeraddress.CustomerAddressDO;
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
-import com.alibaba.excel.annotation.ExcelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -26,7 +22,7 @@ public class CustomerInfoDetailRespVO {
     private Long supplierId;
 
     @Schema(description = "分销商编号", example = "2509")
-    private Long distributorId;
+    private Long distributorNum;
 
     @Schema(description = "分销商名称", example = "李四")
     private String distributorName;

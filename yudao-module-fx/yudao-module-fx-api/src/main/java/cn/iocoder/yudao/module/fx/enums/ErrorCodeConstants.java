@@ -27,8 +27,13 @@ public interface ErrorCodeConstants {
 
     // ========== 销售单
     ErrorCode ORDERS_INFO_NOT_EXISTS = new ErrorCode(1_020_000_001, "销售单不存在");
-    ErrorCode ORDERS_DETAIL_NOT_EXISTS = new ErrorCode(1_020_100_001, "分销-销售订单明细不存在");
+    ErrorCode ORDERS_DETAIL_NOT_EXISTS = new ErrorCode(1_020_100_002, "分销-销售订单明细不存在");
+    ErrorCode ORDERS_DETAIL_BRAND_NOT_SAME = new ErrorCode(1_020_100_003, "商品必须为同一品牌的商品！");
+
 
     // ========== 发货仓库
     ErrorCode SEND_REPOSITORY_NOT_EXISTS = new ErrorCode(1_020_200_001, "分销-发货仓库不存在");
+
+
+
 }

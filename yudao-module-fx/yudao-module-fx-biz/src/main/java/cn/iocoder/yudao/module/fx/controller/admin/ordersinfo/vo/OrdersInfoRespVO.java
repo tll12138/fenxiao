@@ -1,22 +1,25 @@
 package cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-
-import java.time.LocalDate;
-import java.util.*;
-import java.util.*;
-import java.math.BigDecimal;
-import org.springframework.format.annotation.DateTimeFormat;
-import java.time.LocalDateTime;
-import com.alibaba.excel.annotation.*;
 import cn.iocoder.yudao.framework.excel.core.annotations.DictFormat;
 import cn.iocoder.yudao.framework.excel.core.convert.DictConvert;
+import cn.iocoder.yudao.module.fx.dal.dataobject.customerinfo.CustomerInfoDO;
+import cn.iocoder.yudao.module.fx.dal.dataobject.subcompanyinfo.SubCompanyInfoDO;
+import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
+import com.alibaba.excel.annotation.ExcelProperty;
+import com.fhs.core.trans.anno.Trans;
+import com.fhs.core.trans.constant.TransType;
+import com.fhs.core.trans.vo.VO;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Schema(description = "管理后台 - 销售单 Response VO")
 @Data
 @ExcelIgnoreUnannotated
-public class OrdersInfoRespVO {
+public class OrdersInfoRespVO implements VO {
 
     @Schema(description = "id", requiredMode = Schema.RequiredMode.REQUIRED, example = "1632")
     @ExcelProperty("id")
@@ -79,12 +82,43 @@ public class OrdersInfoRespVO {
     private LocalDateTime createTime;
 
     @Schema(description = "收货方", example = "15594")
-    @ExcelProperty("收货方")
+//    @ExcelProperty("收货方")
+    @Trans(type = TransType.SIMPLE, target = CustomerInfoDO.class, fields = "displayName", ref = "distributorName")
     private Long distributorId;
+
+    @Schema(description = "收货方名称")
+    private String distributorName;
 
     @Schema(description = "业务归属", requiredMode = Schema.RequiredMode.REQUIRED)
     @ExcelProperty(value = "业务归属", converter = DictConvert.class)
     @DictFormat("fx_belong") // TODO 代码优化：建议设置到对应的 DictTypeConstants 枚举类中
     private Integer businessBelong;
 
+    @Schema(description = "创建者")
+    private String creator;
+
+    private String province;
+
+    private String city;
+
+    private String district;
+
+    @Trans(type = TransType.SIMPLE, target = SubCompanyInfoDO.class, fields = "companyName", ref = "supplierName")
+    private Long supplierId;
+    private String supplierName;
+
+
+    @Trans(type = TransType.SIMPLE, target = SubCompanyInfoDO.class, fields = "companyName", ref = "receiveSupplierName")
+    private Long receiveSupplierId;
+    private String receiveSupplierName;
+
+    private Integer channel;
+
+    private Integer customerLevel;
+
+    private String address;
+
+    private String phone;
+
+    private String manager;
 }

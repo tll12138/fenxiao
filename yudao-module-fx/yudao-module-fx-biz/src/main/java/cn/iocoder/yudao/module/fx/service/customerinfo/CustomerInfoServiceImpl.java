@@ -1,36 +1,32 @@
 package cn.iocoder.yudao.module.fx.service.customerinfo;
 
-import cn.iocoder.yudao.framework.common.pojo.CommonResult;
+import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.fx.controller.admin.customeraccount.vo.CustomerAccountRespVO;
-import cn.iocoder.yudao.module.fx.controller.admin.customeraddress.vo.CustomerAddressDetailRespVO;
+import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoDetailPageRespVO;
+import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoDetailRespVO;
+import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoPageReqVO;
+import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoSaveReqVO;
 import cn.iocoder.yudao.module.fx.convert.CustomerCovert;
+import cn.iocoder.yudao.module.fx.dal.dataobject.customeraccount.CustomerAccountDO;
+import cn.iocoder.yudao.module.fx.dal.dataobject.customeraddress.CustomerAddressDO;
+import cn.iocoder.yudao.module.fx.dal.dataobject.customerinfo.CustomerInfoDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.subcompanyinfo.SubCompanyInfoDO;
+import cn.iocoder.yudao.module.fx.dal.mysql.customeraccount.CustomerAccountMapper;
+import cn.iocoder.yudao.module.fx.dal.mysql.customeraddress.CustomerAddressMapper;
+import cn.iocoder.yudao.module.fx.dal.mysql.customerinfo.CustomerInfoMapper;
 import cn.iocoder.yudao.module.fx.dal.mysql.subcompanyinfo.SubCompanyInfoMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
-import com.diboot.core.binding.Binder;
-import org.checkerframework.checker.units.qual.C;
+import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.*;
-import cn.iocoder.yudao.module.fx.dal.dataobject.customerinfo.CustomerInfoDO;
-import cn.iocoder.yudao.module.fx.dal.dataobject.customeraccount.CustomerAccountDO;
-import cn.iocoder.yudao.module.fx.dal.dataobject.customeraddress.CustomerAddressDO;
-import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
-import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
-
-import cn.iocoder.yudao.module.fx.dal.mysql.customerinfo.CustomerInfoMapper;
-import cn.iocoder.yudao.module.fx.dal.mysql.customeraccount.CustomerAccountMapper;
-import cn.iocoder.yudao.module.fx.dal.mysql.customeraddress.CustomerAddressMapper;
+import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.*;
@@ -129,7 +125,6 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         List<CustomerAccountDO> accountDOList = customerAccountMapper.selectList(accountQueryWrapper);
         List<CustomerAccountRespVO> customerAccountRespVOS = CustomerCovert.INSTANCE.convertAccount(accountDOList);
         customerInfoDetailRespVO.setCustomerAccounts(customerAccountRespVOS);
-        Binder.bindRelations(customerAccountRespVOS);
 
         return customerInfoDetailRespVO;
     }
@@ -141,9 +136,17 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     @Override
     public PageResult<CustomerInfoDetailPageRespVO> getCustomerInfoDetailPage(CustomerInfoPageReqVO pageReqVO) {
         PageResult<CustomerInfoDO> customerInfoDOPageResult = customerInfoMapper.selectPage(pageReqVO);
-        List<CustomerInfoDetailPageRespVO> customerInfoDetailRespVOS =
-                Binder.convertAndBindRelations(customerInfoDOPageResult.getList(), CustomerInfoDetailPageRespVO.class);
-        return new PageResult<>(customerInfoDetailRespVOS, customerInfoDOPageResult.getTotal());
+        List<Long> idList = customerInfoDOPageResult.getList().stream().map(CustomerInfoDO::getId).collect(Collectors.toList());
+        if (idList.isEmpty()){
+            return new PageResult<>();
+        }
+        MPJLambdaWrapper<CustomerInfoDO> in = new MPJLambdaWrapper<CustomerInfoDO>()
+                .selectAll(CustomerInfoDO.class)
+                .selectCollection(CustomerAccountDO.class, CustomerInfoDetailPageRespVO::getCustomerAddressList)
+                .leftJoin(CustomerAccountDO.class, CustomerAccountDO::getDistributorId, CustomerInfoDO::getId)
+                .in(CustomerAccountDO::getDistributorId, idList);
+        List<CustomerInfoDetailPageRespVO> customerInfoDetailPageRespVOS = customerInfoMapper.selectJoinList(CustomerInfoDetailPageRespVO.class, in);
+        return new PageResult<>(customerInfoDetailPageRespVOS, customerInfoDOPageResult.getTotal());
     }
 
 
@@ -164,7 +167,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             customerAccountDO.setCompany(item.getId());
             customerAccountDO.setBalance(new BigDecimal(0));
             int index = subCompanyInfoDOS.indexOf(item);
-            customerAccountDO.setAccountId(customerInfoDO.getDistributorId() + "-" + index);
+            customerAccountDO.setAccountId(customerInfoDO.getDistributorNum() + "-" + index);
             return customerAccountDO;
         }).collect(Collectors.toList());
 

@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.fx.service.subcompanyinfo;
 
 import cn.iocoder.yudao.module.fx.convert.CustomerCovert;
 import com.diboot.core.service.impl.BaseServiceImpl;
+import com.github.yulichang.base.MPJBaseServiceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -25,7 +26,7 @@ import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.*;
  */
 @Service
 @Validated
-public class SubCompanyInfoServiceImpl extends BaseServiceImpl<SubCompanyInfoMapper, SubCompanyInfoDO> implements SubCompanyInfoService {
+public class SubCompanyInfoServiceImpl extends MPJBaseServiceImpl<SubCompanyInfoMapper, SubCompanyInfoDO> implements SubCompanyInfoService {
 
     @Resource
     private SubCompanyInfoMapper subCompanyInfoMapper;

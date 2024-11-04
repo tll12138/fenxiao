@@ -1,17 +1,20 @@
 package cn.iocoder.yudao.module.fx.controller.admin.sendrepository.vo;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import java.util.*;
-import java.util.*;
-import com.alibaba.excel.annotation.*;
 import cn.iocoder.yudao.framework.excel.core.annotations.DictFormat;
 import cn.iocoder.yudao.framework.excel.core.convert.DictConvert;
+import cn.iocoder.yudao.module.system.dal.dataobject.user.AdminUserDO;
+import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
+import com.alibaba.excel.annotation.ExcelProperty;
+import com.fhs.core.trans.anno.Trans;
+import com.fhs.core.trans.constant.TransType;
+import com.fhs.core.trans.vo.VO;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
 
 @Schema(description = "管理后台 - FX 发货仓库 Response VO")
 @Data
 @ExcelIgnoreUnannotated
-public class SendRepositoryRespVO {
+public class SendRepositoryRespVO implements VO {
 
     @Schema(description = "主键ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "12347")
     @ExcelProperty("主键ID")
@@ -41,5 +44,11 @@ public class SendRepositoryRespVO {
     @Schema(description = "是否传erp")
     @ExcelProperty("是否传erp")
     private Integer isToErp;
+
+    @Trans(type = TransType.SIMPLE, target = AdminUserDO.class,fields = "nickname", ref = "creator")
+    private String creator;
+
+    @Trans(type = TransType.SIMPLE, target = AdminUserDO.class,fields = "nickname", ref = "updater")
+    private String updater;
 
 }

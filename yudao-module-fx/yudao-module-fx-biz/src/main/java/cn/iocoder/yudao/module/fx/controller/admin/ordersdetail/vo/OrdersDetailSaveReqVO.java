@@ -1,11 +1,10 @@
 package cn.iocoder.yudao.module.fx.controller.admin.ordersdetail.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
+import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import java.util.*;
 import java.math.BigDecimal;
 
 @Schema(description = "管理后台 - 分销-销售订单明细新增/修改 Request VO")
@@ -25,6 +24,9 @@ public class OrdersDetailSaveReqVO {
     @Schema(description = "商品编码", requiredMode = Schema.RequiredMode.REQUIRED, example = "26052")
     @NotEmpty(message = "商品编码不能为空")
     private String skuId;
+
+    @Schema(description = "品牌")
+    private String brand;
 
     @Schema(description = "商品名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "芋艿")
     @NotEmpty(message = "商品名称不能为空")
@@ -48,7 +50,7 @@ public class OrdersDetailSaveReqVO {
     private BigDecimal priceAmount;
 
     @Schema(description = "商品净重(kg)")
-    private BigDecimal goodsWeight;
+    private BigDecimal weight;
 
     @Schema(description = "其他仓库可用库存", example = "27131")
     private Integer otherAvailCount;

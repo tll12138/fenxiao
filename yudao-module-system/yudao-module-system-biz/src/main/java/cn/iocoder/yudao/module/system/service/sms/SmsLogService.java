@@ -28,7 +28,7 @@ public interface SmsLogService {
      * @param templateParams 短信参数
      * @return 发送日志编号
      */
-    Long createSmsLog(String mobile, Long userId, Integer userType, Boolean isSend,
+    Long createSmsLog(String mobile, Long userId, Integer userType, Boolean isSend,String processInstanceId,
                       SmsTemplateDO template, String templateContent, Map<String, Object> templateParams);
 
     /**

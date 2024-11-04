@@ -4,7 +4,7 @@ import java.util.*;
 import cn.iocoder.yudao.module.fx.controller.admin.subcompanyinfo.vo.*;
 import cn.iocoder.yudao.module.fx.dal.dataobject.subcompanyinfo.SubCompanyInfoDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import com.diboot.core.service.BaseService;
+import com.github.yulichang.base.MPJBaseService;
 
 import javax.validation.Valid;
 
@@ -13,7 +13,7 @@ import javax.validation.Valid;
  *
  * @author 管理员
  */
-public interface SubCompanyInfoService extends BaseService<SubCompanyInfoDO> {
+public interface SubCompanyInfoService extends MPJBaseService<SubCompanyInfoDO> {
 
     /**
      * 创建子公司信息

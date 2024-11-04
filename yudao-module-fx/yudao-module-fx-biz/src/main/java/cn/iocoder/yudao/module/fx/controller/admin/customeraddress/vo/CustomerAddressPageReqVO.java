@@ -1,7 +1,6 @@
 package cn.iocoder.yudao.module.fx.controller.admin.customeraddress.vo;
 
 import lombok.*;
-import java.util.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -14,6 +13,9 @@ import static cn.iocoder.yudao.framework.common.util.date.DateUtils.FORMAT_YEAR_
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 public class CustomerAddressPageReqVO extends PageParam {
+
+    @Schema(description = "流程实例编号")
+    private String processInstanceId;
 
     @Schema(description = "分销商编号", example = "12931")
     private Long distributorId;

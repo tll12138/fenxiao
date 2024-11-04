@@ -181,6 +181,7 @@ justauth:
     DINGTALK: # 钉钉
       client-id: dingvrnreaje3yqvzhxg
       client-secret: i8E6iZyDvZj51JIb0tYsYfVQYOks9Cq1lgryEjFRqC79P3iJcrxEwT6Qk2QvLrLI
+      agent-id: 1000004
       ignore-check-redirect-uri: true
     WECHAT_ENTERPRISE: # 企业微信
       client-id: wwd411c69a39ad2e54
@@ -205,3 +206,9 @@ justauth:
 --- #################### 分销模块相关配置 ####################
 fx:
   analyze_address_url: https://oa.puqi.group/baidu/address
+
+
+dingtalk:
+  client-id: dingjlatgycryncjpnox
+  client-secret: wPCPo5UzEZU_qxynmfw1tHNWaNLiwSOe6u-9gePM68CJohQPZ47GkfuAZnKltlvo
+  agent-id: 3288970097

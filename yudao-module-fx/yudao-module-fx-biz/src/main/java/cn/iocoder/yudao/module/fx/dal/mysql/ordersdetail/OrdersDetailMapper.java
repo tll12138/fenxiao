@@ -1,13 +1,13 @@
 package cn.iocoder.yudao.module.fx.dal.mysql.ordersdetail;
 
-import java.util.*;
-
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
+import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
+import cn.iocoder.yudao.module.fx.controller.admin.ordersdetail.vo.OrdersDetailPageReqVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ordersdetail.OrdersDetailDO;
 import org.apache.ibatis.annotations.Mapper;
-import cn.iocoder.yudao.module.fx.controller.admin.ordersdetail.vo.*;
+
+import java.util.List;
 
 /**
  * 分销-销售订单明细 Mapper
@@ -28,7 +28,7 @@ public interface OrdersDetailMapper extends BaseMapperX<OrdersDetailDO> {
                 .eqIfPresent(OrdersDetailDO::getSalePrice, reqVO.getSalePrice())
                 .eqIfPresent(OrdersDetailDO::getCount, reqVO.getCount())
                 .eqIfPresent(OrdersDetailDO::getPriceAmount, reqVO.getPriceAmount())
-                .eqIfPresent(OrdersDetailDO::getGoodsWeight, reqVO.getGoodsWeight())
+                .eqIfPresent(OrdersDetailDO::getWeight, reqVO.getWeight())
                 .eqIfPresent(OrdersDetailDO::getOtherAvailCount, reqVO.getOtherAvailCount())
                 .orderByDesc(OrdersDetailDO::getId));
     }

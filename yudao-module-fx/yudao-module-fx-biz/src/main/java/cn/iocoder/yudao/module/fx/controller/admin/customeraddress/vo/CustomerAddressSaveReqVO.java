@@ -13,6 +13,8 @@ public class CustomerAddressSaveReqVO {
     @Schema(description = "分销商编号", example = "12931")
     private Long distributorId;
 
+
+
     @Schema(description = "联系人")
     private String manager;
 

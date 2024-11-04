@@ -1,7 +1,7 @@
 package cn.iocoder.yudao.module.fx.service.utils;
 
 import cn.iocoder.yudao.module.fx.controller.admin.utils.vo.AnalyzeAddressVo;
-import cn.iocoder.yudao.module.fx.utils.config.FxProperties;
+import cn.iocoder.yudao.module.fx.utils.FxProperties;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;

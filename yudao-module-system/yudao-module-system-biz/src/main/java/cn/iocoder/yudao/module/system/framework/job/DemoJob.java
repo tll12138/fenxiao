@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.module.system.job;
+package cn.iocoder.yudao.module.system.framework.job;
 
 import cn.iocoder.yudao.framework.quartz.core.handler.JobHandler;
 import cn.iocoder.yudao.framework.tenant.core.context.TenantContextHolder;

@@ -1,13 +1,13 @@
 package cn.iocoder.yudao.module.fx.dal.mysql.customeraddress;
 
-import java.util.*;
-
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
+import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
+import cn.iocoder.yudao.module.fx.controller.admin.customeraddress.vo.CustomerAddressPageReqVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customeraddress.CustomerAddressDO;
 import org.apache.ibatis.annotations.Mapper;
-import cn.iocoder.yudao.module.fx.controller.admin.customeraddress.vo.*;
+
+import java.util.List;
 
 /**
  * 分销商地址 Mapper

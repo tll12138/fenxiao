@@ -40,7 +40,6 @@ public class SmsChannelServiceImpl implements SmsChannelService {
     @Getter
     private final LoadingCache<Long, SmsClient> idClientCache = buildAsyncReloadingCache(Duration.ofSeconds(10L),
             new CacheLoader<Long, SmsClient>() {
-
                 @Override
                 public SmsClient load(Long id) {
                     // 查询，然后尝试刷新

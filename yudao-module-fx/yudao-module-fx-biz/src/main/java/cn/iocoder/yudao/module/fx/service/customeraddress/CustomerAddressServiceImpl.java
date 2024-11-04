@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.fx.service.customeraddress;
 
 import com.diboot.core.service.impl.BaseServiceImpl;
+import com.github.yulichang.base.MPJBaseServiceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +27,7 @@ import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.*;
  */
 @Service
 @Validated
-public class CustomerAddressServiceImpl extends BaseServiceImpl<CustomerAddressMapper, CustomerAddressDO> implements CustomerAddressService {
+public class CustomerAddressServiceImpl extends MPJBaseServiceImpl<CustomerAddressMapper, CustomerAddressDO> implements CustomerAddressService {
 
     @Resource
     private CustomerAddressMapper customerAddressMapper;

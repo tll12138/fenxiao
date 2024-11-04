@@ -10,39 +10,38 @@ import cn.hutool.http.HttpUtil;
 import cn.iocoder.yudao.framework.common.core.KeyValue;
 import cn.iocoder.yudao.framework.common.util.collection.MapUtils;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
-import cn.iocoder.yudao.module.system.dal.dataobject.sms.SmsTemplateDO;
-import cn.iocoder.yudao.module.system.framework.sms.core.client.SmsClient;
+import cn.iocoder.yudao.module.system.enums.common.DingTalkPriorityEnum;
+import cn.iocoder.yudao.module.system.enums.sms.SmsTemplateTypeEnum;
 import cn.iocoder.yudao.module.system.framework.sms.core.client.dto.SmsReceiveRespDTO;
 import cn.iocoder.yudao.module.system.framework.sms.core.client.dto.SmsSendRespDTO;
 import cn.iocoder.yudao.module.system.framework.sms.core.client.dto.SmsTemplateRespDTO;
 import cn.iocoder.yudao.module.system.framework.sms.core.enums.SmsTemplateAuditStatusEnum;
 import cn.iocoder.yudao.module.system.framework.sms.core.property.SmsChannelProperties;
-import cn.iocoder.yudao.module.system.service.sms.SmsSendServiceImpl;
-import cn.iocoder.yudao.module.system.service.sms.SmsTemplateService;
+import cn.iocoder.yudao.module.system.util.dd.DingTalkUtils;
+import cn.iocoder.yudao.module.system.util.dd.vo.CreateDingTodoReqVO;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+
+import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.*;
 
 /**
  * 基于钉钉 WebHook 实现的调试的短信客户端实现类
- *
+ * <p>
  * 考虑到省钱，我们使用钉钉 WebHook 模拟发送短信，方便调试。
  *
  * @author 芋道源码
  */
 @Slf4j
-public class DebugDingTalkSmsClient extends AbstractSmsClient {
+public class DingTalkSmsClient extends AbstractSmsClient {
+
+    private final DingTalkUtils dingTalkUtils;
 
 
-
-
-    public DebugDingTalkSmsClient(SmsChannelProperties properties) {
+    public DingTalkSmsClient(SmsChannelProperties properties, DingTalkUtils dingTalkUtils) {
         super(properties);
+        this.dingTalkUtils = dingTalkUtils;
         Assert.notEmpty(properties.getApiKey(), "apiKey 不能为空");
         Assert.notEmpty(properties.getApiSecret(), "apiSecret 不能为空");
     }
@@ -65,13 +64,14 @@ public class DebugDingTalkSmsClient extends AbstractSmsClient {
 //        log.info("短信模板：{}",smsTemplate.getContent());
 //        String content = smsTemplate.getContent();
         String content = "";
-        log.info("模板内容：{}",content);
+        log.info("模板内容：{}", content);
         for (String s : stringObjectMap.keySet()) {
             if (content.contains("{" + s + "}")) {
                 content = content.replace("{" + s + "}", stringObjectMap.get(s).toString());
             }
-        };
-        log.info("拼接后的参数：{}",content);
+        }
+        ;
+        log.info("拼接后的参数：{}", content);
         //获取短信模板
         params.put("text", MapUtil.builder().put("content", content).build());
         // 执行请求
@@ -101,7 +101,7 @@ public class DebugDingTalkSmsClient extends AbstractSmsClient {
 
     /**
      * 构建请求地址
-     *
+     * <p>
      * 参见 <a href="https://developers.dingtalk.com/document/app/custom-robot-access/title-nfv-794-g71">文档</a>
      *
      * @param path 请求路径
@@ -132,4 +132,55 @@ public class DebugDingTalkSmsClient extends AbstractSmsClient {
                 .setAuditStatus(SmsTemplateAuditStatusEnum.SUCCESS.getStatus()).setAuditReason("");
     }
 
+    public SmsSendRespDTO sendSms(Integer type, String title, String description,
+                                  Map<String, Object> params) throws Exception {
+
+        //获取用户的userId
+        if (!params.containsKey("creator")) {
+            throw exception(SMS_TEMPLATE_CREATOR_ID_NOT_EXISTS);
+        }
+        if (!params.containsKey("detailUrl")) {
+            throw exception(SMS_TEMPLATE_URL_NOT_EXISTS);
+        }
+
+        String creatorId = params.get("creator").toString();
+        String detailUrl = params.get("detailUrl").toString();
+
+        //判断通知的类型
+        if (type.equals(SmsTemplateTypeEnum.NOTICE.getType())) {  //发送审批结果
+            String actionTitle = "CRM系统-流程审批结果通知";
+            String buttonText = "点击查看审批详情";
+            return dingTalkUtils.sendNotifyMessage(creatorId, title, description, detailUrl,actionTitle,buttonText);
+        } else if (type.equals(SmsTemplateTypeEnum.TODO.getType())) {  //发送待办
+            if (!params.containsKey("executor")) {
+                throw exception(SMS_TEMPLATE_EXECUTOR_ID_NOT_EXISTS);
+            }
+            if (!params.containsKey("startUserNickname")) {
+                throw exception(SMS_TEMPLATE_CREATOR_ID_NOT_EXISTS);
+            }
+            String startUserNickname = params.get("startUserNickname").toString();
+
+            String executorId = params.get("executor").toString();
+            // 获取用户的unionId
+            String creatorUnionId = dingTalkUtils.getUnionId(creatorId);
+            String executorUnionId = dingTalkUtils.getUnionId(executorId);
+            log.info("创建待办，创建人unionId：{}, 执行人unionId：{}", creatorUnionId, executorUnionId);
+            CreateDingTodoReqVO todoReqVO = CreateDingTodoReqVO.builder()
+                    .title(title)
+                    .description(description)
+                    .priority(DingTalkPriorityEnum.URGENT.getType()) // 紧急
+                    .executor(Collections.singletonList(executorUnionId))
+                    .participantIds(Arrays.asList(creatorUnionId, executorUnionId))
+                    .sourceId(StrUtil.uuid())
+                    .pcUrl(detailUrl)
+                    .appUrl(detailUrl)
+                    .creator(creatorUnionId)
+                    .isOnlyShowExecutor(true)
+                    .dueTime(null)
+                    .createUserName(startUserNickname)
+                    .build();
+            return dingTalkUtils.createTodoTask(todoReqVO);
+        }
+        throw exception(SMS_TEMPLATE_TYPE_UN_SUPPORT);
+    }
 }

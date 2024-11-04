@@ -1,7 +1,5 @@
 package cn.iocoder.yudao.module.fx.dal.mysql.customerinfo;
 
-import java.util.*;
-
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
@@ -20,7 +18,7 @@ public interface CustomerInfoMapper extends BaseMapperX<CustomerInfoDO> {
     default PageResult<CustomerInfoDO> selectPage(CustomerInfoPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<CustomerInfoDO>()
                 .eqIfPresent(CustomerInfoDO::getSupplierId, reqVO.getSupplierId())
-                .eqIfPresent(CustomerInfoDO::getDistributorId, reqVO.getDistributorId())
+                .eqIfPresent(CustomerInfoDO::getDistributorNum, reqVO.getDistributorNum())
                 .likeIfPresent(CustomerInfoDO::getDistributorName, reqVO.getDistributorName())
                 .eqIfPresent(CustomerInfoDO::getSubCompany, reqVO.getSubCompany())
                 .likeIfPresent(CustomerInfoDO::getDisplayName, reqVO.getDisplayName())

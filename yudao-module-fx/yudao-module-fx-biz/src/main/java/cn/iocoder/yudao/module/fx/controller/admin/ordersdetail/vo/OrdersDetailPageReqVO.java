@@ -1,14 +1,12 @@
 package cn.iocoder.yudao.module.fx.controller.admin.ordersdetail.vo;
 
-import lombok.*;
-import java.util.*;
-import io.swagger.v3.oas.annotations.media.Schema;
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
-import java.math.BigDecimal;
-import org.springframework.format.annotation.DateTimeFormat;
-import java.time.LocalDateTime;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
-import static cn.iocoder.yudao.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND;
+import java.math.BigDecimal;
 
 @Schema(description = "管理后台 - 分销-销售订单明细分页 Request VO")
 @Data
@@ -18,6 +16,9 @@ public class OrdersDetailPageReqVO extends PageParam {
 
     @Schema(description = "主表订单id", example = "30752")
     private Long orderId;
+
+    @Schema(description = "品牌")
+    private String brand;
 
     @Schema(description = "销售类型", example = "2")
     private Integer saleType;
@@ -44,7 +45,7 @@ public class OrdersDetailPageReqVO extends PageParam {
     private BigDecimal priceAmount;
 
     @Schema(description = "商品净重(kg)")
-    private BigDecimal goodsWeight;
+    private BigDecimal weight;
 
     @Schema(description = "其他仓库可用库存", example = "27131")
     private Integer otherAvailCount;

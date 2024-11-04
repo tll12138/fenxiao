@@ -1,13 +1,11 @@
 package cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo;
 
-import com.alibaba.excel.annotation.ExcelProperty;
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import java.util.*;
-import org.springframework.format.annotation.DateTimeFormat;
-import java.time.LocalDateTime;
-import cn.iocoder.yudao.module.fx.dal.dataobject.customeraccount.CustomerAccountDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customeraddress.CustomerAddressDO;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Schema(description = "管理后台 - 分销商基础信息新增/修改 Request VO")
 @Data
@@ -20,7 +18,7 @@ public class CustomerInfoSaveReqVO {
     private Long supplierId;
 
     @Schema(description = "分销商编号", example = "2509")
-    private Long distributorId;
+    private Long distributorNum;
 
     @Schema(description = "分销商名称", example = "李四")
     private String distributorName;

@@ -1,13 +1,12 @@
 package cn.iocoder.yudao.module.fx.dal.dataobject.customeraccount;
 
+import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
+import com.baomidou.mybatisplus.annotation.KeySequence;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.util.*;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.*;
-import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
 
 /**
  * 分销商账号 DO
@@ -23,6 +22,7 @@ import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CustomerAccountDO extends BaseDO {
+    private static final long serialVersionUID = 1L;
 
     /**
      * ID

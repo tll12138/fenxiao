@@ -28,7 +28,7 @@ public class SmsLogServiceImpl implements SmsLogService {
     private SmsLogMapper smsLogMapper;
 
     @Override
-    public Long createSmsLog(String mobile, Long userId, Integer userType, Boolean isSend,
+    public Long createSmsLog(String mobile, Long userId, Integer userType, Boolean isSend, String processInstanceId,
                              SmsTemplateDO template, String templateContent, Map<String, Object> templateParams) {
         SmsLogDO.SmsLogDOBuilder logBuilder = SmsLogDO.builder();
         // 根据是否要发送，设置状态
@@ -44,7 +44,8 @@ public class SmsLogServiceImpl implements SmsLogService {
         logBuilder.channelId(template.getChannelId()).channelCode(template.getChannelCode());
         // 设置接收相关字段
         logBuilder.receiveStatus(SmsReceiveStatusEnum.INIT.getStatus());
-
+        // 流程相关字段
+        logBuilder.processInstanceId(processInstanceId);
         // 插入数据库
         SmsLogDO logDO = logBuilder.build();
         smsLogMapper.insert(logDO);

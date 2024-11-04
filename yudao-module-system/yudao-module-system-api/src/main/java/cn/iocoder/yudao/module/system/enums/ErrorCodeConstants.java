@@ -86,9 +86,13 @@ public interface ErrorCodeConstants {
     ErrorCode SMS_TEMPLATE_API_AUDIT_CHECKING = new ErrorCode(1_002_012_003, "短信 API 模版无法使用，原因：审批中");
     ErrorCode SMS_TEMPLATE_API_AUDIT_FAIL = new ErrorCode(1_002_012_004, "短信 API 模版无法使用，原因：审批不通过，{}");
     ErrorCode SMS_TEMPLATE_API_NOT_FOUND = new ErrorCode(1_002_012_005, "短信 API 模版无法使用，原因：模版不存在");
+    ErrorCode SMS_TEMPLATE_TYPE_UN_SUPPORT = new ErrorCode(1_002_012_006, "无法发送短信，原因：不支持当前短信模板的通知类型");
+    ErrorCode SMS_TEMPLATE_CREATOR_ID_NOT_EXISTS = new ErrorCode(1_002_012_007, "无法发送短信，原因：没有创建人");
+    ErrorCode SMS_TEMPLATE_EXECUTOR_ID_NOT_EXISTS = new ErrorCode(1_002_012_008, "无法发送短信，原因：没有执行人");
+    ErrorCode SMS_TEMPLATE_URL_NOT_EXISTS = new ErrorCode(1_002_012_009, "无法发送短信，原因：缺少审批详情页面链接");
 
     // ========== 短信发送 1-002-013-000 ==========
-    ErrorCode SMS_SEND_MOBILE_NOT_EXISTS = new ErrorCode(1_002_013_000, "手机号不存在");
+    ErrorCode SMS_SEND_MOBILE_NOT_EXISTS = new ErrorCode(1_002_013_000, "用户手机号不存在");
     ErrorCode SMS_SEND_MOBILE_TEMPLATE_PARAM_MISS = new ErrorCode(1_002_013_001, "模板参数({})缺失");
     ErrorCode SMS_SEND_TEMPLATE_NOT_EXISTS = new ErrorCode(1_002_013_002, "短信模板不存在");
 
@@ -162,5 +166,10 @@ public interface ErrorCodeConstants {
 
     // ========== 站内信发送 1-002-028-000 ==========
     ErrorCode NOTIFY_SEND_TEMPLATE_PARAM_MISS = new ErrorCode(1_002_028_000, "模板参数({})缺失");
+
+
+    // ========= DingDing
+    ErrorCode DING_TALK_GET_TOKEN_ERROR = new ErrorCode(1_030_100_001, "获取钉钉Token异常");
+    ErrorCode DING_TALK_GET_USERID_ERROR = new ErrorCode(1_030_100_001, "获取钉钉用户信息异常");
 
 }

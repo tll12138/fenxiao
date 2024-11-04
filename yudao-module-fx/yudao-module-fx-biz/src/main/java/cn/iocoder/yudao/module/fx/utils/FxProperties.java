@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.module.fx.utils.config;
+package cn.iocoder.yudao.module.fx.utils;
 
 import lombok.Data;
 import org.hibernate.validator.constraints.URL;

@@ -2,13 +2,12 @@ package cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo;
 
 import cn.iocoder.yudao.framework.excel.core.annotations.DictFormat;
 import cn.iocoder.yudao.framework.excel.core.convert.DictConvert;
+import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
+import com.alibaba.excel.annotation.ExcelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import java.util.*;
-import java.util.*;
-import org.springframework.format.annotation.DateTimeFormat;
+import lombok.Data;
+
 import java.time.LocalDateTime;
-import com.alibaba.excel.annotation.*;
 
 @Schema(description = "管理后台 - 分销商基础信息 Response VO")
 @Data
@@ -25,7 +24,7 @@ public class CustomerInfoRespVO {
 
     @Schema(description = "分销商编号", example = "2509")
     @ExcelProperty("分销商编号")
-    private Long distributorId;
+    private Long distributorNum;
 
     @Schema(description = "分销商名称", example = "李四")
     @ExcelProperty("分销商名称")

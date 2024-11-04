@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.system.framework.sms.config;
 
 import cn.iocoder.yudao.module.system.framework.sms.core.client.SmsClientFactory;
 import cn.iocoder.yudao.module.system.framework.sms.core.client.impl.SmsClientFactoryImpl;
+import cn.iocoder.yudao.module.system.util.dd.DingTalkUtils;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,8 +17,8 @@ import org.springframework.context.annotation.Configuration;
 public class SmsConfiguration {
 
     @Bean
-    public SmsClientFactory smsClientFactory() {
-        return new SmsClientFactoryImpl();
+    public SmsClientFactory smsClientFactory(DingTalkUtils dingTalkUtils) {
+        return new SmsClientFactoryImpl(dingTalkUtils);
     }
 
 }

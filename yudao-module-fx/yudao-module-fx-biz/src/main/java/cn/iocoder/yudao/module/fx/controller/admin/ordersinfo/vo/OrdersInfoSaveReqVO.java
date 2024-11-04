@@ -2,14 +2,13 @@ package cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo;
 
 import cn.iocoder.yudao.module.fx.dal.dataobject.ordersdetail.OrdersDetailDO;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-
-import java.time.LocalDate;
-import java.util.*;
-import java.math.BigDecimal;
+import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
 
 @Schema(description = "管理后台 - 销售单新增/修改 Request VO")
 @Data

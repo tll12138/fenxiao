@@ -1,13 +1,13 @@
 package cn.iocoder.yudao.module.fx.controller.admin.ordersdetail.vo;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import java.util.*;
-import java.util.*;
-import java.math.BigDecimal;
-import com.alibaba.excel.annotation.*;
 import cn.iocoder.yudao.framework.excel.core.annotations.DictFormat;
 import cn.iocoder.yudao.framework.excel.core.convert.DictConvert;
+import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
+import com.alibaba.excel.annotation.ExcelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+
+import java.math.BigDecimal;
 
 @Schema(description = "管理后台 - 分销-销售订单明细 Response VO")
 @Data
@@ -17,6 +17,9 @@ public class OrdersDetailRespVO {
     @Schema(description = "id", requiredMode = Schema.RequiredMode.REQUIRED, example = "8010")
     @ExcelProperty("id")
     private Long id;
+
+    @Schema(description = "品牌")
+    private String brand;
 
     @Schema(description = "主表订单id", requiredMode = Schema.RequiredMode.REQUIRED, example = "30752")
     @ExcelProperty("主表订单id")
@@ -57,7 +60,7 @@ public class OrdersDetailRespVO {
 
     @Schema(description = "商品净重(kg)")
     @ExcelProperty("商品净重(kg)")
-    private BigDecimal goodsWeight;
+    private BigDecimal weight;
 
     @Schema(description = "其他仓库可用库存", example = "27131")
     @ExcelProperty("其他仓库可用库存")

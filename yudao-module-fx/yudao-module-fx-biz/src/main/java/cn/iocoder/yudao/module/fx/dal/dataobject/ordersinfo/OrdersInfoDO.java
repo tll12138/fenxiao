@@ -1,17 +1,15 @@
 package cn.iocoder.yudao.module.fx.dal.dataobject.ordersinfo;
 
+import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.KeySequence;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.sun.xml.bind.v2.TODO;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.*;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.*;
-import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
 
 /**
  * 销售单 DO
@@ -28,11 +26,19 @@ import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
 @AllArgsConstructor
 public class OrdersInfoDO extends BaseDO {
 
+    private static final long serialVersionUID = 1L;
+
     /**
      * id
      */
-    @TableId
+    @TableId(type = IdType.ASSIGN_ID)
     private Long id;
+
+    /**
+     * 流程实例id
+     */
+    private String processInstanceId;
+    
     /**
      * 发货仓库
      */

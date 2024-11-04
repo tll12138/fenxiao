@@ -98,4 +98,10 @@ public interface RedisKeyConstants {
      * VALUE 数据格式：String 模版信息
      */
     String SMS_TEMPLATE = "sms_template";
+
+
+    String DINGTALK_ACCESS_TOKEN = "dingtalk:access_token";
+
+    String DINGTALK_USER_UNION_ID = "dingtalk:user_union_id:%s";
+
 }

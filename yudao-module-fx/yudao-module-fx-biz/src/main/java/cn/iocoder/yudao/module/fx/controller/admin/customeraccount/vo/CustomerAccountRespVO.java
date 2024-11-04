@@ -1,20 +1,12 @@
 package cn.iocoder.yudao.module.fx.controller.admin.customeraccount.vo;
 
-import cn.iocoder.yudao.module.fx.dal.dataobject.customeraccount.CustomerAccountDO;
-import cn.iocoder.yudao.module.fx.dal.dataobject.customerinfo.CustomerInfoDO;
-import cn.iocoder.yudao.module.fx.dal.dataobject.subcompanyinfo.SubCompanyInfoDO;
-import com.diboot.core.binding.annotation.BindField;
+import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
+import com.alibaba.excel.annotation.ExcelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
+import lombok.Data;
 
 import java.math.BigDecimal;
-import java.util.*;
-import java.util.*;
-import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDateTime;
-import com.alibaba.excel.annotation.*;
-
-import static cn.iocoder.yudao.module.fx.enums.EntityConditionConstants.USER_ID_REF;
 
 @Schema(description = "管理后台 - 分销商账号 Response VO")
 @Data
@@ -31,7 +23,6 @@ public class CustomerAccountRespVO {
 
     @Schema(description = "业务主体")
     @ExcelProperty("业务主体")
-    @BindField(entity = SubCompanyInfoDO.class, field = SubCompanyInfoDO.Fields.companyName, condition = USER_ID_REF)
     private String company;
 
     @Schema(description = "余额")

@@ -34,6 +34,7 @@ public class BpmMessageServiceImpl implements BpmMessageService {
     @Override
     public void sendMessageWhenProcessInstanceApprove(BpmMessageSendWhenProcessInstanceApproveReqDTO reqDTO) {
         Map<String, Object> templateParams = new HashMap<>();
+        templateParams.put("creatorId", reqDTO.getStartUserId());
         templateParams.put("processInstanceName", reqDTO.getProcessInstanceName());
         templateParams.put("detailUrl", getProcessInstanceDetailUrl(reqDTO.getProcessInstanceId()));
         smsSendApi.sendSingleSmsToAdmin(BpmMessageConvert.INSTANCE.convert(reqDTO.getStartUserId(),
@@ -43,6 +44,7 @@ public class BpmMessageServiceImpl implements BpmMessageService {
     @Override
     public void sendMessageWhenProcessInstanceReject(BpmMessageSendWhenProcessInstanceRejectReqDTO reqDTO) {
         Map<String, Object> templateParams = new HashMap<>();
+        templateParams.put("creatorId", reqDTO.getStartUserId());
         templateParams.put("processInstanceName", reqDTO.getProcessInstanceName());
         templateParams.put("reason", reqDTO.getReason());
         templateParams.put("detailUrl", getProcessInstanceDetailUrl(reqDTO.getProcessInstanceId()));
@@ -53,7 +55,10 @@ public class BpmMessageServiceImpl implements BpmMessageService {
     @Override
     public void sendMessageWhenTaskAssigned(BpmMessageSendWhenTaskCreatedReqDTO reqDTO) {
         Map<String, Object> templateParams = new HashMap<>();
+        templateParams.put("creatorId", reqDTO.getStartUserId());
+        templateParams.put("executorId", reqDTO.getAssigneeUserId());
         templateParams.put("processInstanceName", reqDTO.getProcessInstanceName());
+        templateParams.put("processInstanceId", reqDTO.getProcessInstanceId());
         templateParams.put("taskName", reqDTO.getTaskName());
         templateParams.put("startUserNickname", reqDTO.getStartUserNickname());
         templateParams.put("detailUrl", getProcessInstanceDetailUrl(reqDTO.getProcessInstanceId()));

@@ -4,6 +4,8 @@ import cn.iocoder.yudao.module.system.framework.sms.core.client.SmsClient;
 import cn.iocoder.yudao.module.system.framework.sms.core.client.SmsClientFactory;
 import cn.iocoder.yudao.module.system.framework.sms.core.enums.SmsChannelEnum;
 import cn.iocoder.yudao.module.system.framework.sms.core.property.SmsChannelProperties;
+import cn.iocoder.yudao.module.system.util.dd.DingTalkUtils;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
 import org.springframework.validation.annotation.Validated;
@@ -21,11 +23,16 @@ import java.util.concurrent.ConcurrentMap;
 @Slf4j
 public class SmsClientFactoryImpl implements SmsClientFactory {
 
+
     /**
      * 短信客户端 Map
      * key：渠道编号，使用 {@link SmsChannelProperties#getId()}
      */
     private final ConcurrentMap<Long, AbstractSmsClient> channelIdClients = new ConcurrentHashMap<>();
+
+
+    @Setter
+    private DingTalkUtils dingTalkUtils;
 
     /**
      * 短信客户端 Map
@@ -36,7 +43,10 @@ public class SmsClientFactoryImpl implements SmsClientFactory {
      */
     private final ConcurrentMap<String, AbstractSmsClient> channelCodeClients = new ConcurrentHashMap<>();
 
-    public SmsClientFactoryImpl() {
+    public SmsClientFactoryImpl(DingTalkUtils dingTalkUtils) {
+        if (this.dingTalkUtils == null){
+            this.dingTalkUtils = dingTalkUtils;
+        }
         // 初始化 channelCodeClients 集合
         Arrays.stream(SmsChannelEnum.values()).forEach(channel -> {
             // 创建一个空的 SmsChannelProperties 对象
@@ -76,7 +86,7 @@ public class SmsClientFactoryImpl implements SmsClientFactory {
         // 创建客户端
         switch (channelEnum) {
             case ALIYUN: return new AliyunSmsClient(properties);
-            case DEBUG_DING_TALK: return new DebugDingTalkSmsClient(properties);
+            case DING_TALK: return new DingTalkSmsClient(properties, dingTalkUtils);
             case TENCENT: return new TencentSmsClient(properties);
         }
         // 创建失败，错误日志 + 抛出异常

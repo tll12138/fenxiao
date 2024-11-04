@@ -1,7 +1,6 @@
 package cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo;
 
 import lombok.*;
-import java.util.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -19,7 +18,7 @@ public class CustomerInfoPageReqVO extends PageParam {
     private Long supplierId;
 
     @Schema(description = "分销商编号", example = "2509")
-    private Long distributorId;
+    private Long distributorNum;
 
     @Schema(description = "分销商名称", example = "李四")
     private String distributorName;

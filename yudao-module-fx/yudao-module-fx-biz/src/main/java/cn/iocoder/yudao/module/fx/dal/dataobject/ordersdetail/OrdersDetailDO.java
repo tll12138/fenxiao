@@ -1,20 +1,13 @@
 package cn.iocoder.yudao.module.fx.dal.dataobject.ordersdetail;
 
+import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
+import com.baomidou.mybatisplus.annotation.KeySequence;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.sun.xml.bind.v2.TODO;
 import lombok.*;
-import java.util.*;
+
 import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.*;
-import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
 
 /**
  * 分销-销售订单明细 DO
@@ -31,6 +24,8 @@ import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
 @AllArgsConstructor
 public class OrdersDetailDO extends BaseDO {
 
+    private static final long serialVersionUID = 1L;
+
     /**
      * id
      */
@@ -40,6 +35,11 @@ public class OrdersDetailDO extends BaseDO {
      * 主表订单id
      */
     private Long orderId;
+
+    /**
+     * 商品id
+     */
+    private Long goodsId;
     /**
      * 销售类型
      *
@@ -50,6 +50,12 @@ public class OrdersDetailDO extends BaseDO {
      * 商品编码
      */
     private String skuId;
+
+    /**
+     * 品牌
+     */
+    private String brand;
+
     /**
      * 商品名称
      */
@@ -101,7 +107,7 @@ public class OrdersDetailDO extends BaseDO {
     /**
      * 商品净重(kg)
      */
-    private BigDecimal goodsWeight;
+    private BigDecimal weight;
     /**
      * 其他仓库可用库存
      */

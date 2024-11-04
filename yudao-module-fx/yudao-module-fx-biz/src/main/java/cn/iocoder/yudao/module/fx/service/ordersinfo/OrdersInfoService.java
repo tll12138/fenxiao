@@ -1,13 +1,14 @@
 package cn.iocoder.yudao.module.fx.service.ordersinfo;
 
-import java.util.*;
-import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.*;
+import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoDetailRespVO;
+import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoPageReqVO;
+import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoSaveReqVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ordersdetail.OrdersDetailDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ordersinfo.OrdersInfoDO;
-import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
 
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * 销售单 Service 接口
@@ -31,6 +32,9 @@ public interface OrdersInfoService {
      */
     void updateOrdersInfo(@Valid OrdersInfoSaveReqVO updateReqVO);
 
+    void updateOrdersInfoStatusSuccess(Long id);
+    void updateOrdersInfoStatusFail(Long id);
+
     /**
      * 删除销售单
      *
@@ -44,7 +48,7 @@ public interface OrdersInfoService {
      * @param id 编号
      * @return 销售单
      */
-    OrdersInfoDO getOrdersInfo(Long id);
+    OrdersInfoDetailRespVO getOrdersInfo(Long id);
 
     /**
      * 获得销售单分页

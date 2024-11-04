@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.module.fx.enums;
+package cn.iocoder.yudao.module.fx.constant;
 
 /**
  * @author zrl

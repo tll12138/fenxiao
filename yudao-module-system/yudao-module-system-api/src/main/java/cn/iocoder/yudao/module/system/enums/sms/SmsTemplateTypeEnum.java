@@ -15,6 +15,7 @@ public enum SmsTemplateTypeEnum {
     VERIFICATION_CODE(1), // 验证码
     NOTICE(2), // 通知
     PROMOTION(3), // 营销
+    TODO(4), // 代办
     ;
 
     /**

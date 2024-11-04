@@ -6,7 +6,7 @@ import cn.iocoder.yudao.module.fx.dal.dataobject.customeraddress.CustomerAddress
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import cn.iocoder.yudao.module.fx.dal.dataobject.subcompanyinfo.SubCompanyInfoDO;
-import com.diboot.core.service.BaseService;
+import com.github.yulichang.base.MPJBaseService;
 
 import javax.validation.Valid;
 
@@ -15,7 +15,7 @@ import javax.validation.Valid;
  *
  * @author 管理员
  */
-public interface CustomerAddressService extends BaseService<CustomerAddressDO> {
+public interface CustomerAddressService extends MPJBaseService<CustomerAddressDO> {
 
     /**
      * 创建分销商地址
