@@ -4,6 +4,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoDetailRespVO;
 import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoPageReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoSaveReqVO;
+import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.ProcessInstanceCancelReqVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ordersdetail.OrdersDetailDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ordersinfo.OrdersInfoDO;
 
@@ -17,13 +18,21 @@ import java.util.List;
  */
 public interface OrdersInfoService {
 
+
+    /**
+     * 保存销售单
+     * @param createReqVO
+     * @return
+     */
+    Long saveOrdersInfo(OrdersInfoSaveReqVO createReqVO) throws Exception;
+
     /**
      * 创建销售单
      *
      * @param createReqVO 创建信息
      * @return 编号
      */
-    Long createOrdersInfo(@Valid OrdersInfoSaveReqVO createReqVO);
+    Long createOrdersInfo(@Valid OrdersInfoSaveReqVO createReqVO) throws Exception;
 
     /**
      * 更新销售单
@@ -68,4 +77,6 @@ public interface OrdersInfoService {
      */
     List<OrdersDetailDO> getOrdersDetailListByOrderId(Long orderId);
 
+
+    void cancelProcessInstance(Long loginUserId, ProcessInstanceCancelReqVO cancelReqVO);
 }

@@ -3,34 +3,33 @@ package cn.iocoder.yudao.module.fx.service.ordersinfo;
 import cn.hutool.core.bean.BeanUtil;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
-import cn.iocoder.yudao.framework.security.core.util.SecurityFrameworkUtils;
 import cn.iocoder.yudao.module.bpm.api.task.BpmProcessInstanceApi;
 import cn.iocoder.yudao.module.bpm.api.task.dto.BpmProcessInstanceCreateReqDTO;
 import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoDetailRespVO;
 import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoPageReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoSaveReqVO;
+import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.ProcessInstanceCancelReqVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ordersdetail.OrdersDetailDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ordersinfo.OrdersInfoDO;
 import cn.iocoder.yudao.module.fx.dal.mysql.ordersdetail.OrdersDetailMapper;
 import cn.iocoder.yudao.module.fx.dal.mysql.ordersinfo.OrdersInfoMapper;
 import cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants;
 import cn.iocoder.yudao.module.fx.enums.OrderStatusType;
+import cn.iocoder.yudao.module.fx.utils.orderinfo.OrderProcessingContext;
+import cn.iocoder.yudao.module.fx.utils.orderinfo.template.SaveOrderProcessing;
+import cn.iocoder.yudao.module.fx.utils.orderinfo.template.SubmitOrderProcessing;
+import cn.iocoder.yudao.module.fx.utils.template.TemplateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
-import static cn.iocoder.yudao.module.fx.constant.Constants.SALE;
 import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.ORDERS_INFO_NOT_EXISTS;
 
 /**
@@ -51,37 +50,39 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
     @Resource
     private BpmProcessInstanceApi processInstanceApi;
 
+
     /**
      * 销售单对应的流程定义 KEY
      */
     public static final String PROCESS_KEY = "sale-order";
-    @Override
-    @Transactional
-    public Long createOrdersInfo(OrdersInfoSaveReqVO createReqVO) {
-        // 转换对象
-        OrdersInfoDO ordersInfo = BeanUtils.toBean(createReqVO, OrdersInfoDO.class);
-        //计算合计
-        List<OrdersDetailDO> ordersDetails = createReqVO.getOrdersDetails();
-        //根据商品id分组，计算数量之和
-        Map<String, Integer> collect = ordersDetails.stream().collect(
-                Collectors.groupingBy(OrdersDetailDO::getSkuId, Collectors.summingInt(OrdersDetailDO::getCount)));
-        StringBuilder count = new StringBuilder();
-        collect.forEach((k, v) -> {
-            count.append(k).append("  *  ").append(v).append("\n");
-        });
-        // 获取当前日期，转换格式为yyyyMMddHHmm
-        LocalDateTime now = LocalDateTime.now();
-        String dateStr = now.format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
-        ordersInfo.setOrderId(String.format("%s%s", SALE, dateStr));
-        ordersInfo.setOrderDate(LocalDate.now());
-        ordersInfo.setOrderStatus(OrderStatusType.AUDITING.getType()); // 默认审核中
-        ordersInfo.setCreator(SecurityFrameworkUtils.getLoginUserNickname());
-        ordersInfo.setTotalGoods(count.toString());
-        ordersInfoMapper.insert(ordersInfo);
-        Long orderId = ordersInfo.getId();
-        // 插入子表
-        createOrdersDetailList(ordersInfo.getId(), createReqVO.getOrdersDetails());
 
+    @Override
+    public Long saveOrdersInfo(OrdersInfoSaveReqVO saveReqVO) {
+        if (saveReqVO == null){
+            throw exception(ErrorCodeConstants.ORDERS_INFO_PARAMS_ERROR);
+        }
+        // 构建上下文对象
+        OrderProcessingContext context = OrderProcessingContext.builder().ordersInfoSaveReqVO(saveReqVO).build();
+
+        // 构建 保存订单的 模板对象
+        return TemplateUtils.invokeTemplateMethod(new SaveOrderProcessing(context));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Long createOrdersInfo(OrdersInfoSaveReqVO createReqVO){
+        if (createReqVO == null){
+            throw exception(ErrorCodeConstants.ORDERS_INFO_PARAMS_ERROR);
+        }
+        // 构建上下文对象
+        OrderProcessingContext context = OrderProcessingContext.builder().ordersInfoSaveReqVO(createReqVO).build();
+
+        //  构建 提交订单的 模板对象
+        Long id = TemplateUtils.invokeTemplateMethod(new SubmitOrderProcessing(context));
+
+        if (id == null){
+            throw exception(ErrorCodeConstants.SYSTEM_ERROR);
+        }
         //获取当前用户的ID
         Long userId = getLoginUserId();
         log.info("用户ID:{}", userId);
@@ -89,13 +90,16 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
         Map<String, Object> processInstanceVariables = BeanUtil.beanToMap(createReqVO);
         String processInstanceId = processInstanceApi.createProcessInstance(userId,
                 new BpmProcessInstanceCreateReqDTO().setProcessDefinitionKey(PROCESS_KEY)
-                        .setVariables(processInstanceVariables).setBusinessKey(String.valueOf(orderId)));
+                        .setVariables(processInstanceVariables).setBusinessKey(String.valueOf(id)));
 
 //        // 将工作流的编号，更新到 OA 请假单中
-        ordersInfoMapper.updateById(new OrdersInfoDO().setId(orderId).setProcessInstanceId(processInstanceId));
-
+        ordersInfoMapper.updateById(
+                new OrdersInfoDO()
+                        .setId(id)
+                        .setProcessInstanceId(processInstanceId)
+                        .setOrderStatus(OrderStatusType.AUDITING.getType()));
         // 返回
-        return ordersInfo.getId();
+        return id;
     }
 
     @Override
@@ -180,7 +184,7 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
 
     private void updateOrdersDetailList(Long orderId, List<OrdersDetailDO> list) {
         deleteOrdersDetailByOrderId(orderId);
-		list.forEach(o -> o.setId(null).setUpdater(null).setUpdateTime(null)); // 解决更新情况下：1）id 冲突；2）updateTime 不更新
+        list.forEach(o -> o.setId(null).setUpdater(null).setUpdateTime(null)); // 解决更新情况下：1）id 冲突；2）updateTime 不更新
         createOrdersDetailList(orderId, list);
     }
 
@@ -188,4 +192,11 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
         ordersDetailMapper.deleteByOrderId(orderId);
     }
 
+    @Override
+    public void cancelProcessInstance(Long loginUserId, ProcessInstanceCancelReqVO cancelReqVO) {
+        processInstanceApi.cancelProcessInstance(getLoginUserId(),cancelReqVO.getId(),cancelReqVO.getReason());
+        ordersInfoMapper.updateById(new OrdersInfoDO().setId(cancelReqVO.getOrderId()).setOrderStatus(OrderStatusType.CANCELLED.getType()));
+        log.info("用户:{} 取消流程实例:{}",loginUserId,cancelReqVO.getId());
+        // 更新此流程中所有代办的状态 TODO
+    }
 }

@@ -97,28 +97,43 @@ public class OrdersInfoRespVO implements VO {
     @Schema(description = "创建者")
     private String creator;
 
+    @Schema(description = "省")
     private String province;
 
+    @Schema(description = "市")
     private String city;
 
+    @Schema(description = "县")
     private String district;
 
+    @Schema(description = "供应商", example = "15594")
     @Trans(type = TransType.SIMPLE, target = SubCompanyInfoDO.class, fields = "companyName", ref = "supplierName")
     private Long supplierId;
     private String supplierName;
 
-
+    @Schema(description = "收货方供应商", example = "15594")
     @Trans(type = TransType.SIMPLE, target = SubCompanyInfoDO.class, fields = "companyName", ref = "receiveSupplierName")
     private Long receiveSupplierId;
     private String receiveSupplierName;
 
+    @Schema(description = "渠道")
     private Integer channel;
 
+    @Schema(description = "分销商等级")
     private Integer customerLevel;
 
+    @Schema(description = "收货地址")
     private String address;
 
+    @Schema(description = "手机号")
     private String phone;
 
+    @Schema(description = "收货人")
     private String manager;
+
+    @Schema(description = "地址id")
+    private Long addressId;
+
+    @Schema(description = "流程实例编号")
+    private String processInstanceId;
 }

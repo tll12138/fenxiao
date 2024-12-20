@@ -71,6 +71,12 @@ public class OrdersInfoDO extends BaseDO {
      * 枚举 {@link TODO yes_no 对应的类}
      */
     private Integer isInvoice;
+
+    /**
+     * 收货地址ID
+     */
+    private Long addressId;
+
     /**
      * 省份
      */

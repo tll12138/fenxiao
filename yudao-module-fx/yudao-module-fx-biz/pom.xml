@@ -98,6 +98,12 @@
             <version>2.1.0-jdk8-snapshot</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.flowable</groupId>
+            <artifactId>flowable-engine</artifactId>
+            <version>6.8.0</version>
+            <scope>compile</scope>
+        </dependency>
 
     </dependencies>
 </project>

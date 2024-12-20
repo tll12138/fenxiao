@@ -41,6 +41,9 @@ public class OrdersInfoDetailRespVO implements VO {
     @Schema(description = "是否传erp，默认否 0")
     private Integer isToErp;
 
+    @Schema(description = "地址ID")
+    private Long addressId;
+
     @Schema(description = "省份")
     private String province;
 

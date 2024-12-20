@@ -16,6 +16,9 @@ public interface ErrorCodeConstants {
     ErrorCode AUTH_THIRD_LOGIN_NOT_BIND = new ErrorCode(1_002_000_005, "未绑定账号，需要进行绑定");
     ErrorCode AUTH_TOKEN_EXPIRED = new ErrorCode(1_002_000_006, "Token 已经过期");
     ErrorCode AUTH_MOBILE_NOT_EXISTS = new ErrorCode(1_002_000_007, "手机号不存在");
+    ErrorCode AUTH_TOKEN_ERROR = new ErrorCode(1_002_000_008, "错误的登录凭证");
+    ErrorCode AUTH_TOKEN_UN_EXIST = new ErrorCode(1_002_000_008, "登录凭证不存在");
+    ErrorCode AUTH_LOGIN_ACCOUNT_UN_EXIST = new ErrorCode(1_002_000_009, "登录失败，账号不存在");
 
     // ========== 菜单模块 1-002-001-000 ==========
     ErrorCode MENU_NAME_DUPLICATE = new ErrorCode(1_002_001_000, "已经存在该名字的菜单");
@@ -38,6 +41,7 @@ public interface ErrorCodeConstants {
     ErrorCode USER_MOBILE_EXISTS = new ErrorCode(1_002_003_001, "手机号已经存在");
     ErrorCode USER_EMAIL_EXISTS = new ErrorCode(1_002_003_002, "邮箱已经存在");
     ErrorCode USER_NOT_EXISTS = new ErrorCode(1_002_003_003, "用户不存在");
+
     ErrorCode USER_IMPORT_LIST_IS_EMPTY = new ErrorCode(1_002_003_004, "导入用户数据不能为空！");
     ErrorCode USER_PASSWORD_FAILED = new ErrorCode(1_002_003_005, "用户密码校验失败");
     ErrorCode USER_IS_DISABLE = new ErrorCode(1_002_003_006, "名字为【{}】的用户已被禁用");

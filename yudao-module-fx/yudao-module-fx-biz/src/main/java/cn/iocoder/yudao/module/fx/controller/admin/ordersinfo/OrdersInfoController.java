@@ -6,10 +6,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
-import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoDetailRespVO;
-import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoPageReqVO;
-import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoRespVO;
-import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoSaveReqVO;
+import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.*;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ordersdetail.OrdersDetailDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ordersinfo.OrdersInfoDO;
 import cn.iocoder.yudao.module.fx.service.ordersinfo.OrdersInfoService;
@@ -28,6 +25,8 @@ import java.util.List;
 
 import static cn.iocoder.yudao.framework.apilog.core.enums.OperateTypeEnum.EXPORT;
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
+import static cn.iocoder.yudao.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
+
 @Tag(name = "管理后台 - 销售单")
 @RestController
 @RequestMapping("/fx/orders-info")
@@ -37,10 +36,16 @@ public class OrdersInfoController {
     @Resource
     private OrdersInfoService ordersInfoService;
 
+    @PostMapping("/save")
+    @Operation(summary = "保存销售单")
+    @PreAuthorize("@ss.hasPermission('fx:orders-info:create')")
+    public CommonResult<Long> saveOrdersInfo(@Valid @RequestBody OrdersInfoSaveReqVO createReqVO) throws Exception {
+        return success(ordersInfoService.saveOrdersInfo(createReqVO));
+    }
     @PostMapping("/create")
     @Operation(summary = "创建销售单")
     @PreAuthorize("@ss.hasPermission('fx:orders-info:create')")
-    public CommonResult<Long> createOrdersInfo(@Valid @RequestBody OrdersInfoSaveReqVO createReqVO) {
+    public CommonResult<Long> createOrdersInfo(@Valid @RequestBody OrdersInfoSaveReqVO createReqVO) throws Exception {
         return success(ordersInfoService.createOrdersInfo(createReqVO));
     }
 
@@ -99,6 +104,15 @@ public class OrdersInfoController {
     @PreAuthorize("@ss.hasPermission('fx:orders-info:query')")
     public CommonResult<List<OrdersDetailDO>> getOrdersDetailListByOrderId(@RequestParam("orderId") Long orderId) {
         return success(ordersInfoService.getOrdersDetailListByOrderId(orderId));
+    }
+
+    // ==================== 流程相关 ====================
+    @PostMapping("/cancel-by-start-user")
+    @Operation(summary = "用户取消流程实例", description = "取消发起的流程")
+    @PreAuthorize("@ss.hasPermission('fx:orders-info:update')")
+    public CommonResult<Boolean> cancelProcessInstance(@Valid @RequestBody ProcessInstanceCancelReqVO cancelReqVO) {
+        ordersInfoService.cancelProcessInstance(getLoginUserId(), cancelReqVO);
+        return success(true);
     }
 
 }

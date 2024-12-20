@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.system.api.user.dto.AdminUserRespDTO;
+import cn.iocoder.yudao.module.system.api.user.dto.AdminUserWithNameRespDTO;
 import cn.iocoder.yudao.module.system.dal.dataobject.dept.DeptDO;
 import cn.iocoder.yudao.module.system.dal.dataobject.user.AdminUserDO;
 import cn.iocoder.yudao.module.system.service.dept.DeptService;
@@ -35,6 +36,12 @@ public class AdminUserApiImpl implements AdminUserApi {
     public AdminUserRespDTO getUser(Long id) {
         AdminUserDO user = userService.getUser(id);
         return BeanUtils.toBean(user, AdminUserRespDTO.class);
+    }
+
+    @Override
+    public AdminUserWithNameRespDTO getUserWithUserName(Long id) {
+        AdminUserDO user = userService.getUser(id);
+        return BeanUtils.toBean(user, AdminUserWithNameRespDTO.class);
     }
 
     @Override

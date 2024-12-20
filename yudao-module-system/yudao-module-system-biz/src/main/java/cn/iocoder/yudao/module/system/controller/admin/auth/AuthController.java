@@ -69,6 +69,13 @@ public class AuthController {
         return success(authService.login(reqVO));
     }
 
+    @PostMapping("/ssoLogin")
+    @PermitAll
+    @Operation(summary = "SSO单点登录")
+    public CommonResult<AuthLoginRespVO> ssoLogin(@RequestParam("token") String token) {
+        return success(authService.ssoLogin(token));
+    }
+
     @PostMapping("/logout")
     @PermitAll
     @Operation(summary = "登出系统")

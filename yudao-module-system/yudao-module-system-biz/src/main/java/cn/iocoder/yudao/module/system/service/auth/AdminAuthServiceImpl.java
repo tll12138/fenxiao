@@ -23,6 +23,7 @@ import cn.iocoder.yudao.module.system.service.member.MemberService;
 import cn.iocoder.yudao.module.system.service.oauth2.OAuth2TokenService;
 import cn.iocoder.yudao.module.system.service.social.SocialUserService;
 import cn.iocoder.yudao.module.system.service.user.AdminUserService;
+import cn.iocoder.yudao.framework.common.util.sso.EncodeAndDecodeUtils;
 import com.google.common.annotations.VisibleForTesting;
 import com.xingyuv.captcha.model.common.ResponseModel;
 import com.xingyuv.captcha.model.vo.CaptchaVO;
@@ -93,6 +94,34 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     }
 
     @Override
+    public AdminUserDO ssoAuthenticate(String token) {
+        String decode = EncodeAndDecodeUtils.decode(token);
+        if (decode == null){
+            throw exception(AUTH_TOKEN_ERROR);
+        }
+        String[] split = decode.split("\\|");
+        String username = split[0];
+        String secret = split[2];
+        if (!secret.equals(OAuth2ClientConstants.CLIENT_SECRET)){
+            throw exception(AUTH_TOKEN_ERROR);
+        }
+
+        final LoginLogTypeEnum logTypeEnum = LoginLogTypeEnum.SSO_LOGIN;
+        // 校验账号是否存在
+        AdminUserDO user = userService.getUserByUsername(username);
+        if (user == null) {
+            createLoginLog(null, username, logTypeEnum, LoginResultEnum.BAD_CREDENTIALS);
+            throw exception(AUTH_LOGIN_ACCOUNT_UN_EXIST);
+        }
+        // 校验是否禁用
+        if (CommonStatusEnum.isDisable(user.getStatus())) {
+            createLoginLog(user.getId(), username, logTypeEnum, LoginResultEnum.USER_DISABLED);
+            throw exception(AUTH_LOGIN_USER_DISABLED);
+        }
+        return user;
+    }
+
+    @Override
     public AuthLoginRespVO login(AuthLoginReqVO reqVO) {
         // 校验验证码
         validateCaptcha(reqVO);
@@ -107,6 +136,19 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         }
         // 创建 Token 令牌，记录登录日志
         return createTokenAfterLoginSuccess(user.getId(), reqVO.getUsername(), LoginLogTypeEnum.LOGIN_USERNAME);
+    }
+
+    @Override
+    public AuthLoginRespVO ssoLogin(String token) {
+        // 校验token
+        if (token == null){
+            throw exception(AUTH_TOKEN_UN_EXIST);
+        }
+        // 使用token，进行验证登录
+        AdminUserDO user = ssoAuthenticate(token);
+
+        // 创建 Token 令牌，记录登录日志
+        return createTokenAfterLoginSuccess(user.getId(), user.getUsername(), LoginLogTypeEnum.LOGIN_USERNAME);
     }
 
     @Override

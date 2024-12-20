@@ -62,6 +62,11 @@ public class WebProperties {
          */
         private String url;
 
+        /**
+         * SSO 登录地址
+         */
+        private String ssoLogin;
+
     }
 
 }

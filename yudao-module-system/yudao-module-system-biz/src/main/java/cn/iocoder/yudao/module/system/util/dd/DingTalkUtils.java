@@ -38,7 +38,7 @@ import static cn.iocoder.yudao.module.system.enums.UrlConstant.DINGTALK_SEND_NOT
  */
 @Service
 @Slf4j
-public class DingTalkUtils {
+public class    DingTalkUtils {
 
     @Resource
     private DingTalkProperties dingTalkProperties;
@@ -280,19 +280,19 @@ public class DingTalkUtils {
 
     /**
      * 更新钉钉代办
-     * @param creator 操作者unionId
+     * @param unionId 操作者unionId
      * @param taskId 代办ID
      * @throws Exception 异常信息
      */
-    public void updateTodoTask(String creator, String taskId) throws Exception {
+    public void updateTodoTask(String unionId, String taskId) throws Exception {
         Client client = createTaskClient();
         UpdateTodoTaskHeaders updateTodoTaskHeaders = new UpdateTodoTaskHeaders();
         updateTodoTaskHeaders.xAcsDingtalkAccessToken = getAccessToken();
         UpdateTodoTaskRequest updateTodoTaskRequest = new UpdateTodoTaskRequest()
-                .setOperatorId(creator)
+                .setOperatorId(unionId)
                 .setDone(true);
         try {
-            client.updateTodoTaskWithOptions(creator, taskId, updateTodoTaskRequest, updateTodoTaskHeaders, new RuntimeOptions());
+            client.updateTodoTaskWithOptions(unionId, taskId, updateTodoTaskRequest, updateTodoTaskHeaders, new RuntimeOptions());
         } catch (TeaException err) {
             if (!com.aliyun.teautil.Common.empty(err.code) && !com.aliyun.teautil.Common.empty(err.message)) {
                 // err 中含有 code 和 message 属性，可帮助开发定位问题

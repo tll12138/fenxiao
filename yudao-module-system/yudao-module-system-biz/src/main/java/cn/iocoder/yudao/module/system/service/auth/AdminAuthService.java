@@ -24,6 +24,14 @@ public interface AdminAuthService {
     AdminUserDO authenticate(String username, String password);
 
     /**
+     * 单点登录
+     *
+     * @param token 账号信息
+     * @return 登录结果
+     */
+    AdminUserDO ssoAuthenticate(String token);
+
+    /**
      * 账号登录
      *
      * @param reqVO 登录信息
@@ -70,4 +78,10 @@ public interface AdminAuthService {
      */
     AuthLoginRespVO refreshToken(String refreshToken);
 
+    /**
+     * 单点登录，使用 token
+     * @param token token
+     * @return 登录结果
+     */
+    AuthLoginRespVO ssoLogin(String token);
 }
