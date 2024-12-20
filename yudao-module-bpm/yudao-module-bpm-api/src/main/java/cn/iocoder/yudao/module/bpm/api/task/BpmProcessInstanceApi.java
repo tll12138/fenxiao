@@ -20,4 +20,5 @@ public interface BpmProcessInstanceApi {
      */
     String createProcessInstance(Long userId, @Valid BpmProcessInstanceCreateReqDTO reqDTO);
 
+    void cancelProcessInstance(Long userId, String processInstanceId, String reason);
 }

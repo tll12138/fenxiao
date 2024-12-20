@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.bpm.api.task;
 
 import cn.iocoder.yudao.module.bpm.api.task.dto.BpmProcessInstanceCreateReqDTO;
+import cn.iocoder.yudao.module.bpm.controller.admin.task.vo.instance.BpmProcessInstanceCancelReqVO;
 import cn.iocoder.yudao.module.bpm.service.task.BpmProcessInstanceService;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -24,5 +25,13 @@ public class BpmProcessInstanceApiImpl implements BpmProcessInstanceApi {
     @Override
     public String createProcessInstance(Long userId, @Valid BpmProcessInstanceCreateReqDTO reqDTO) {
         return processInstanceService.createProcessInstance(userId, reqDTO);
+    }
+
+    @Override
+    public void cancelProcessInstance(Long userId, String processInstanceId, String reason) {
+        BpmProcessInstanceCancelReqVO bpmProcessInstanceCancelReqVO = new BpmProcessInstanceCancelReqVO();
+        bpmProcessInstanceCancelReqVO.setId(processInstanceId);
+        bpmProcessInstanceCancelReqVO.setReason(reason);
+        processInstanceService.cancelProcessInstanceByStartUser(userId, bpmProcessInstanceCancelReqVO);
     }
 }

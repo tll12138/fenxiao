@@ -96,6 +96,16 @@ public class OrdersDetailDO extends BaseDO {
      * 退货数量
      */
     private Integer returnCount;
+
+    /**
+     * 退货单价
+     */
+    private BigDecimal returnPrice;
+
+    /**
+     * 退货金额
+     */
+    private BigDecimal returnAmount;
     /**
      * 退货标志
      */
