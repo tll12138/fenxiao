@@ -96,6 +96,14 @@ public class CustomerInfoController {
                 BeanUtils.toBean(list, CustomerInfoRespVO.class));
     }
 
+    @PostMapping("/sync")
+    @Operation(summary = "同步客商信息")
+    @PreAuthorize("@ss.hasPermission('fx:customer:update')")
+    public CommonResult<Boolean> createCustomerAccount() {
+        customerInfoService.syncCustomers();
+        return success(Boolean.TRUE);
+    }
+
     // ==================== 子表（分销商账号） ====================
 
     @GetMapping("/customer-account/list-by-id")

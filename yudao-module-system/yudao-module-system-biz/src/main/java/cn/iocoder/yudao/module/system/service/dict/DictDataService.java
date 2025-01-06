@@ -8,6 +8,7 @@ import org.springframework.lang.Nullable;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 字典数据 Service 接口
@@ -106,5 +107,12 @@ public interface DictDataService {
      * @return 字典数据列表
      */
     List<DictDataDO> getDictDataListByDictType(String dictType);
+
+    /**
+     * 火的指定数据类型的键值对
+     * @param dictType 字典类型
+     * @return
+     */
+    Map<String,String> getDictDataMapByDictType(String dictType);
 
 }

@@ -2,13 +2,11 @@ package cn.iocoder.yudao.module.fx.service.customerinfo;
 
 import java.util.*;
 
-import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.*;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customerinfo.CustomerInfoDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customeraccount.CustomerAccountDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customeraddress.CustomerAddressDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import javax.validation.Valid;
 
 /**
@@ -71,6 +69,11 @@ public interface CustomerInfoService {
      * @return 分销商基础信息分页
      */
     PageResult<CustomerInfoDetailPageRespVO> getCustomerInfoDetailPage(CustomerInfoPageReqVO pageReqVO);
+
+    /**
+     * 同步分销客商信息
+     */
+    void syncCustomers();
 
     // ==================== 子表（分销商账号） ====================
 

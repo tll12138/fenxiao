@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.system.service.dict;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.map.MapUtil;
 import cn.iocoder.yudao.framework.common.enums.CommonStatusEnum;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.collection.CollectionUtils;
@@ -15,10 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.*;
@@ -174,6 +173,13 @@ public class DictDataServiceImpl implements DictDataService {
         List<DictDataDO> list = dictDataMapper.selectList(DictDataDO::getDictType, dictType);
         list.sort(Comparator.comparing(DictDataDO::getSort));
         return list;
+    }
+
+    @Override
+    public Map<String, String> getDictDataMapByDictType(String dictType) {
+        List<DictDataDO> list = dictDataMapper.selectList(DictDataDO::getDictType, dictType);
+        return CollUtil.isEmpty(list)? MapUtil.newHashMap() :list.stream()
+                .collect(Collectors.toMap(DictDataDO::getLabel, DictDataDO::getValue));
     }
 
 }

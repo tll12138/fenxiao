@@ -30,7 +30,7 @@ public interface CustomerInfoMapper extends BaseMapperX<CustomerInfoDO> {
                 .eqIfPresent(CustomerInfoDO::getBrand, reqVO.getBrand())
                 .eqIfPresent(CustomerInfoDO::getCustomerType, reqVO.getCustomerType())
                 .betweenIfPresent(CustomerInfoDO::getLatestOrderDate, reqVO.getLatestOrderDate())
-                .betweenIfPresent(CustomerInfoDO::getCreateTime, reqVO.getCreateTime())
+                .betweenIfPresent(CustomerInfoDO::getApplyTime, reqVO.getCreateTime())
                 .orderByDesc(CustomerInfoDO::getId));
     }
 

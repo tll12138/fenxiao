@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.fx.service.customerinfo;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.fx.controller.admin.customeraccount.vo.CustomerAccountRespVO;
@@ -8,6 +10,8 @@ import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoD
 import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoPageReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoSaveReqVO;
 import cn.iocoder.yudao.module.fx.convert.CustomerCovert;
+import cn.iocoder.yudao.module.fx.dal.dataobject.customerinfo.ChannelVo;
+import cn.iocoder.yudao.module.fx.dal.dataobject.customerinfo.ResponseBodyMO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customeraccount.CustomerAccountDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customeraddress.CustomerAddressDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customerinfo.CustomerInfoDO;
@@ -16,20 +20,30 @@ import cn.iocoder.yudao.module.fx.dal.mysql.customeraccount.CustomerAccountMappe
 import cn.iocoder.yudao.module.fx.dal.mysql.customeraddress.CustomerAddressMapper;
 import cn.iocoder.yudao.module.fx.dal.mysql.customerinfo.CustomerInfoMapper;
 import cn.iocoder.yudao.module.fx.dal.mysql.subcompanyinfo.SubCompanyInfoMapper;
+import cn.iocoder.yudao.module.fx.utils.CollectionUtil;
+import cn.iocoder.yudao.module.fx.utils.MapUtils;
+import cn.iocoder.yudao.module.system.service.dict.DictDataService;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
+import com.jushuitan.api.ApiClient;
+import com.jushuitan.api.ApiRequest;
+import com.jushuitan.api.ApiResponse;
+import com.jushuitan.api.DefaultApiClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.*;
+import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.DICT_TYPE_NOT_EXISTS;
 
 /**
  * 分销商基础信息 Service 实现类
@@ -49,6 +63,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     @Resource
     private SubCompanyInfoMapper companyInfoMapper;
+    @Resource
+    private DictDataService dictDataService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -149,6 +165,22 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         return new PageResult<>(customerInfoDetailPageRespVOS, customerInfoDOPageResult.getTotal());
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void syncCustomers() {
+        //从数据字典获取接口数据
+        Map<String, String> apiInfo = dictDataService.getDictDataMapByDictType("fx_jushuitan_API_info");
+        if (MapUtils.isEmpty(apiInfo)) {
+            throw exception(DICT_TYPE_NOT_EXISTS);
+        }
+        String url = apiInfo.get("customerSyncUrl");
+        String appKey = apiInfo.get("appKey");
+        String appSecret = apiInfo.get("appSecret");
+        String accessToken = apiInfo.get("accessToken");
+        //递归获取所有分销商信息
+        executeCustomers(1,url,appKey,appSecret,accessToken);
+    }
+
 
     // ==================== 子表（分销商账号） ====================
 
@@ -208,4 +240,52 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
     }
 
+    private void executeCustomers(int pageNum,String url,String appKey,String appSecret,String accessToken){
+        // 实例化client
+        ApiClient client = new DefaultApiClient();
+        String biz = String.format("{\"page_num\":\"%s\",\"page_size\":\"100\"}", pageNum);
+        // 构建请求对象
+        ApiRequest request = new ApiRequest.Builder(url, appKey, appSecret)
+                .biz(biz).build();
+        // 执行接口调用
+        try {
+            ApiResponse response = client.execute(request, accessToken);
+            System.out.println("is success: " + response.isSuccess()+"第"+pageNum+"次");
+            String body = response.getBody();
+            System.out.println("body: " + body);
+            ResponseBodyMO bodyMO = JSONObject.parseObject(body, ResponseBodyMO.class);
+            System.out.println("bodyMO: " + bodyMO);
+            List<ChannelVo> channelVos = bodyMO.getData().getChannelVos();
+            if (CollectionUtil.isNotEmpty(channelVos)) {
+                // 把分销商信息存库
+                List<CustomerInfoDO> list = new ArrayList<>(channelVos.size());
+                Set<String> distributorNums = new HashSet<>(channelVos.size());
+                for (ChannelVo channel : channelVos) {
+                    distributorNums.add(channel.getDistributorNum());
+                }
+                List<CustomerInfoDO> existingInfos = customerInfoMapper.selectList(new LambdaQueryWrapper<CustomerInfoDO>().in(CustomerInfoDO::getDistributorNum, distributorNums));
+                Map<String, CustomerInfoDO> existingInfoMap = existingInfos.stream().collect(Collectors.toMap(CustomerInfoDO::getDistributorNum, Function.identity()));
+                for (ChannelVo channel : channelVos) {
+                    CustomerInfoDO one = existingInfoMap.get(channel.getDistributorNum());
+                    if (one == null) {
+                        one = new CustomerInfoDO();
+                        existingInfoMap.put(channel.getDistributorNum(), one);
+                    }
+                    one.setUpdateTime(DateUtil.parseLocalDateTime(DateUtil.now()));
+                    one.setUpdateTime(DateUtil.parseLocalDateTime(DateUtil.now()));
+                    BeanUtil.copyProperties(channel, one);
+                    list.add(one);
+                }
+                customerInfoMapper.insertOrUpdateBatch(list);
+            }
+            Integer total = bodyMO.getData().getTotal();
+            int totalPage = (total/100)+1;
+            if (total > 0 && (totalPage > pageNum)) {
+                executeCustomers(pageNum+1,url,appKey,appSecret,accessToken);
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
 }
