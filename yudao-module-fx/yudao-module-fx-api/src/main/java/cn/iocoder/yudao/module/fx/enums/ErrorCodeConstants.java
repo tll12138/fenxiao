@@ -54,4 +54,7 @@ public interface ErrorCodeConstants {
     ErrorCode RETURN_ORDER_DETAIL_QUANTITY_ILLEGAL_1 = new ErrorCode(1_020_400_002, "退货数量不能大于原单数量");
 
     ErrorCode RETURN_ORDER_DETAIL_QUANTITY_ILLEGAL_2 = new ErrorCode(1_020_400_002, "退货数量不能小于0");
+
+    // =====================================  商品信息  =================================
+    ErrorCode GOODS_ARCHIVES_NOT_EXISTS = new ErrorCode(1_110_000_100, "商品信息不存在");
 }

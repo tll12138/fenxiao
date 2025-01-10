@@ -4,10 +4,10 @@ import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
 
 @Data
-public class ResponseBodyMO {
+public class CustomerResponseBodyMO {
     private String msg;
     private String code;
-    private ResponseBodyDataMO data;
+    private CustomerResponseBodyDataMO data;
     @JSONField(name = "request_id")
     private String requestId;
 }

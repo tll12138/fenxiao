@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class ResponseBodyDataMO {
+public class CustomerResponseBodyDataMO {
     private Integer total;
     @JSONField(name = "channel_vos")
     private List<ChannelVo> channelVos;

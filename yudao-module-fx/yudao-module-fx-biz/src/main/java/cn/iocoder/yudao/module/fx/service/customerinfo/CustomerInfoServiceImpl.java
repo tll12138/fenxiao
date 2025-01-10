@@ -10,11 +10,11 @@ import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoD
 import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoPageReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoSaveReqVO;
 import cn.iocoder.yudao.module.fx.convert.CustomerCovert;
-import cn.iocoder.yudao.module.fx.dal.dataobject.customerinfo.ChannelVo;
-import cn.iocoder.yudao.module.fx.dal.dataobject.customerinfo.ResponseBodyMO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customeraccount.CustomerAccountDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customeraddress.CustomerAddressDO;
+import cn.iocoder.yudao.module.fx.dal.dataobject.customerinfo.ChannelVo;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customerinfo.CustomerInfoDO;
+import cn.iocoder.yudao.module.fx.dal.dataobject.customerinfo.CustomerResponseBodyMO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.subcompanyinfo.SubCompanyInfoDO;
 import cn.iocoder.yudao.module.fx.dal.mysql.customeraccount.CustomerAccountMapper;
 import cn.iocoder.yudao.module.fx.dal.mysql.customeraddress.CustomerAddressMapper;
@@ -131,13 +131,13 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
         //获取分销商地址信息
         LambdaQueryWrapper<CustomerAddressDO> addressQueryWrapper = new LambdaQueryWrapper<>();
-        addressQueryWrapper.eq(CustomerAddressDO::getDistributorId,id);
+        addressQueryWrapper.eq(CustomerAddressDO::getDistributorId, id);
         List<CustomerAddressDO> customerAddressDOS = customerAddressMapper.selectList(addressQueryWrapper);
         customerInfoDetailRespVO.setCustomerAddressList(CustomerCovert.INSTANCE.convert2AddressDetailList(customerAddressDOS));
 
         //获取分销商账号信息
         LambdaQueryWrapper<CustomerAccountDO> accountQueryWrapper = new LambdaQueryWrapper<>();
-        accountQueryWrapper.eq(CustomerAccountDO::getDistributorId,id);
+        accountQueryWrapper.eq(CustomerAccountDO::getDistributorId, id);
         List<CustomerAccountDO> accountDOList = customerAccountMapper.selectList(accountQueryWrapper);
         List<CustomerAccountRespVO> customerAccountRespVOS = CustomerCovert.INSTANCE.convertAccount(accountDOList);
         customerInfoDetailRespVO.setCustomerAccounts(customerAccountRespVOS);
@@ -149,11 +149,12 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     public PageResult<CustomerInfoDO> getCustomerInfoPage(CustomerInfoPageReqVO pageReqVO) {
         return customerInfoMapper.selectPage(pageReqVO);
     }
+
     @Override
     public PageResult<CustomerInfoDetailPageRespVO> getCustomerInfoDetailPage(CustomerInfoPageReqVO pageReqVO) {
         PageResult<CustomerInfoDO> customerInfoDOPageResult = customerInfoMapper.selectPage(pageReqVO);
         List<Long> idList = customerInfoDOPageResult.getList().stream().map(CustomerInfoDO::getId).collect(Collectors.toList());
-        if (idList.isEmpty()){
+        if (idList.isEmpty()) {
             return new PageResult<>();
         }
         MPJLambdaWrapper<CustomerInfoDO> in = new MPJLambdaWrapper<CustomerInfoDO>()
@@ -178,7 +179,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         String appSecret = apiInfo.get("appSecret");
         String accessToken = apiInfo.get("accessToken");
         //递归获取所有分销商信息
-        executeCustomers(1,url,appKey,appSecret,accessToken);
+        executeCustomers(1, url, appKey, appSecret, accessToken);
     }
 
 
@@ -191,7 +192,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
     private void createCustomerAccountList(CustomerInfoDO customerInfoDO) {
         LambdaQueryWrapper<SubCompanyInfoDO> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(SubCompanyInfoDO::getIsInitCompany,1);
+        queryWrapper.eq(SubCompanyInfoDO::getIsInitCompany, 1);
         List<SubCompanyInfoDO> subCompanyInfoDOS = companyInfoMapper.selectList(queryWrapper);
         List<CustomerAccountDO> accountDOList = subCompanyInfoDOS.stream().map((item) -> {
             CustomerAccountDO customerAccountDO = new CustomerAccountDO();
@@ -204,7 +205,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }).collect(Collectors.toList());
 
         Boolean b = customerAccountMapper.insertBatch(accountDOList);
-        if (!b){
+        if (!b) {
             throw exception(CUSTOMER_ACCOUNT_CREATE_FAIL);
         }
     }
@@ -230,17 +231,17 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     }
 
     private void updateCustomerAddressList(Long id, List<CustomerAddressDO> list) {
-        if (CollectionUtils.isEmpty(list)){
+        if (CollectionUtils.isEmpty(list)) {
             return;
         }
         list.forEach(o -> o.setDistributorId(id));
         Boolean b = customerAddressMapper.insertOrUpdateBatch(list);
-        if (!b){
+        if (!b) {
             throw exception(CUSTOMER_ADDRESS_UPDATE_FAIL);
         }
     }
 
-    private void executeCustomers(int pageNum,String url,String appKey,String appSecret,String accessToken){
+    private void executeCustomers(int pageNum, String url, String appKey, String appSecret, String accessToken) {
         // 实例化client
         ApiClient client = new DefaultApiClient();
         String biz = String.format("{\"page_num\":\"%s\",\"page_size\":\"100\"}", pageNum);
@@ -250,11 +251,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         // 执行接口调用
         try {
             ApiResponse response = client.execute(request, accessToken);
-            System.out.println("is success: " + response.isSuccess()+"第"+pageNum+"次");
             String body = response.getBody();
-            System.out.println("body: " + body);
-            ResponseBodyMO bodyMO = JSONObject.parseObject(body, ResponseBodyMO.class);
-            System.out.println("bodyMO: " + bodyMO);
+            CustomerResponseBodyMO bodyMO = JSONObject.parseObject(body, CustomerResponseBodyMO.class);
             List<ChannelVo> channelVos = bodyMO.getData().getChannelVos();
             if (CollectionUtil.isNotEmpty(channelVos)) {
                 // 把分销商信息存库
@@ -272,19 +270,19 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
                         existingInfoMap.put(channel.getDistributorNum(), one);
                     }
                     one.setUpdateTime(DateUtil.parseLocalDateTime(DateUtil.now()));
-                    one.setUpdateTime(DateUtil.parseLocalDateTime(DateUtil.now()));
+                    one.setCreateTime(DateUtil.parseLocalDateTime(DateUtil.now()));
                     BeanUtil.copyProperties(channel, one);
                     list.add(one);
                 }
                 customerInfoMapper.insertOrUpdateBatch(list);
             }
             Integer total = bodyMO.getData().getTotal();
-            int totalPage = (total/100)+1;
+            int totalPage = (total / 100) + 1;
             if (total > 0 && (totalPage > pageNum)) {
-                executeCustomers(pageNum+1,url,appKey,appSecret,accessToken);
+                executeCustomers(pageNum + 1, url, appKey, appSecret, accessToken);
             }
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

@@ -99,7 +99,7 @@ public class CustomerInfoController {
     @PostMapping("/sync")
     @Operation(summary = "同步客商信息")
     @PreAuthorize("@ss.hasPermission('fx:customer:update')")
-    public CommonResult<Boolean> createCustomerAccount() {
+    public CommonResult<Boolean> syncCustomerAccount() {
         customerInfoService.syncCustomers();
         return success(Boolean.TRUE);
     }

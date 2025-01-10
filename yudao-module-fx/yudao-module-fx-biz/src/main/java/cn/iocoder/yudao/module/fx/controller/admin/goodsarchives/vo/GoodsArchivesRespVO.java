@@ -1,0 +1,139 @@
+package cn.iocoder.yudao.module.fx.controller.admin.goodsarchives.vo;
+
+import cn.iocoder.yudao.framework.excel.core.annotations.DictFormat;
+import cn.iocoder.yudao.framework.excel.core.convert.DictConvert;
+import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
+import com.alibaba.excel.annotation.ExcelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Schema(description = "管理后台 - 分销商品资料 Response VO")
+@Data
+@ExcelIgnoreUnannotated
+public class GoodsArchivesRespVO {
+
+    @Schema(description = "序号", requiredMode = Schema.RequiredMode.REQUIRED, example = "32436")
+    @ExcelProperty("序号")
+    private Integer id;
+
+    @Schema(description = "商品编码", example = "23688")
+    @ExcelProperty("商品编码")
+    private String skuId;
+
+    @Schema(description = "商品名称")
+    @ExcelProperty("商品名称")
+    private String name;
+
+    @Schema(description = "商品简称")
+    @ExcelProperty("商品简称")
+    private String shortName;
+
+    @Schema(description = "标准价")
+    @ExcelProperty("标准价")
+    private BigDecimal salePrice;
+
+    @Schema(description = "成本价")
+    @ExcelProperty("成本价")
+    private BigDecimal costPrice;
+
+    @Schema(description = "规格")
+    @ExcelProperty("规格")
+    private String propertiesValue;
+
+    @Schema(description = "分类")
+    @ExcelProperty("分类")
+    private String category;
+
+    @Schema(description = "虚拟分类", example = "芋艿")
+    @ExcelProperty("虚拟分类")
+    private String vcName;
+
+    @Schema(description = "商品属性", example = "2")
+    @ExcelProperty("商品属性")
+    private String itemType;
+
+    @Schema(description = "单位")
+    @ExcelProperty("单位")
+    private String unit;
+
+    @Schema(description = "商品类型")
+    @ExcelProperty("商品类型")
+    private String skuType;
+
+    @Schema(description = "修改时间")
+    @ExcelProperty("修改时间")
+    private LocalDateTime modified;
+
+    @Schema(description = "开票名称")
+    @ExcelProperty("开票名称")
+    private String billingName;
+
+    @Schema(description = "品牌")
+    @ExcelProperty("品牌")
+    private String brand;
+
+    @Schema(description = "商品图片")
+    @ExcelProperty("商品图片")
+    private String picBig;
+
+    @Schema(description = "款式编码")
+    @ExcelProperty("款式编码")
+    private String iId;
+
+    @Schema(description = "市场价")
+    @ExcelProperty("市场价")
+    private BigDecimal marketPrice;
+
+    @Schema(description = "是否启用")
+    @ExcelProperty(value = "是否启用", converter = DictConvert.class)
+    @DictFormat("yes_no") // TODO 代码优化：建议设置到对应的 DictTypeConstants 枚举类中
+    private String enabled;
+
+    @Schema(description = "是否分销商品")
+    @ExcelProperty(value = "是否分销商品", converter = DictConvert.class)
+    @DictFormat("yes_no") // TODO 代码优化：建议设置到对应的 DictTypeConstants 枚举类中
+    private String isFx;
+
+    @Schema(description = "实际成本价")
+    @ExcelProperty("实际成本价")
+    private BigDecimal actualCostPrice;
+
+    @Schema(description = "销售成本价")
+    @ExcelProperty("销售成本价")
+    private BigDecimal saleCostPrice;
+
+    @Schema(description = "一级分类")
+    @ExcelProperty("一级分类")
+    private String level1Category;
+
+    @Schema(description = "二级分类")
+    @ExcelProperty("二级分类")
+    private String level2Category;
+
+    @Schema(description = "是否参与计算")
+    @ExcelProperty(value = "是否参与计算", converter = DictConvert.class)
+    @DictFormat("yes_no") // TODO 代码优化：建议设置到对应的 DictTypeConstants 枚举类中
+    private String isCount;
+
+    @Schema(description = "是否正装")
+    @ExcelProperty(value = "是否正装", converter = DictConvert.class)
+    @DictFormat("yes_no") // TODO 代码优化：建议设置到对应的 DictTypeConstants 枚举类中
+    private String isFormal;
+
+    @Schema(description = "净重(kg)")
+    @ExcelProperty("净重(kg)")
+    private BigDecimal weight;
+
+    @Schema(description = "国标码")
+    @ExcelProperty("国标码")
+    private String scancode;
+
+    @Schema(description = "是否组合商品")
+    @ExcelProperty(value = "是否组合商品", converter = DictConvert.class)
+    @DictFormat("yes_no") // TODO 代码优化：建议设置到对应的 DictTypeConstants 枚举类中
+    private String isGroup;
+
+}
