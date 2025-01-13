@@ -1,11 +1,11 @@
 package cn.iocoder.yudao.module.fx.service.sendrepository;
 
-import java.util.*;
-import javax.validation.*;
-import cn.iocoder.yudao.module.fx.controller.admin.sendrepository.vo.*;
-import cn.iocoder.yudao.module.fx.dal.dataobject.sendrepository.SendRepositoryDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
+import cn.iocoder.yudao.module.fx.controller.admin.sendrepository.vo.SendRepositoryPageReqVO;
+import cn.iocoder.yudao.module.fx.controller.admin.sendrepository.vo.SendRepositorySaveReqVO;
+import cn.iocoder.yudao.module.fx.dal.dataobject.sendrepository.SendRepositoryDO;
+
+import javax.validation.Valid;
 
 /**
  * FX 发货仓库 Service 接口
@@ -52,4 +52,8 @@ public interface SendRepositoryService {
      */
     PageResult<SendRepositoryDO> getSendRepositoryPage(SendRepositoryPageReqVO pageReqVO);
 
+    /**
+     * 同步发货仓库信息
+     */
+    void syncSendRepository();
 }

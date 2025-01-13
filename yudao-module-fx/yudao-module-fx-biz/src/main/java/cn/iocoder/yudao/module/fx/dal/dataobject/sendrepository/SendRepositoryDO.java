@@ -34,7 +34,7 @@ public class SendRepositoryDO extends BaseDO {
     private String name;
     /**
      * 仓库类型
-     *
+     * <p>
      * 枚举 {@link TODO fx_repository_type 对应的类}
      */
     private Integer type;
@@ -56,5 +56,23 @@ public class SendRepositoryDO extends BaseDO {
      * 是否传erp
      */
     private Integer isToErp;
+    /**
+     * 主仓公司编号
+     */
+    private String coId;
+    /**
+     * 是否可用
+     */
+    private Integer isUsed;
+    /**
+     * 是否内部仓
+     */
+    private Integer isInside;
+    /**
+     * 渠道
+     * <p>
+     * 枚举 {@link TODO fx_respository_channel 对应的类}
+     */
+    private Integer channel;
 
 }

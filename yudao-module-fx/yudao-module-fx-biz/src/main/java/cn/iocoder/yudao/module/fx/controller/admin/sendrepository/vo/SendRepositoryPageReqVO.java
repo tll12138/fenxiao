@@ -1,13 +1,10 @@
 package cn.iocoder.yudao.module.fx.controller.admin.sendrepository.vo;
 
-import lombok.*;
-import java.util.*;
-import io.swagger.v3.oas.annotations.media.Schema;
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
-import org.springframework.format.annotation.DateTimeFormat;
-import java.time.LocalDateTime;
-
-import static cn.iocoder.yudao.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Schema(description = "管理后台 - FX 发货仓库分页 Request VO")
 @Data
@@ -32,5 +29,17 @@ public class SendRepositoryPageReqVO extends PageParam {
 
     @Schema(description = "是否传erp")
     private Integer isToErp;
+
+    @Schema(description = "主仓公司编号")
+    private String coId;
+
+    @Schema(description = "是否可用")
+    private Integer isUsed;
+
+    @Schema(description = "是否内部仓")
+    private Integer isInside;
+
+    @Schema(description = "渠道")
+    private Integer channel;
 
 }

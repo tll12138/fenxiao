@@ -43,12 +43,32 @@ public class SendRepositoryRespVO implements VO {
 
     @Schema(description = "是否传erp")
     @ExcelProperty("是否传erp")
+    @DictFormat("yes_no") // TODO 代码优化：建议设置到对应的 DictTypeConstants 枚举类中
     private Integer isToErp;
 
-    @Trans(type = TransType.SIMPLE, target = AdminUserDO.class,fields = "nickname", ref = "creator")
+    @Schema(description = "主仓公司编号")
+    @ExcelProperty("主仓公司编号")
+    private String coId;
+
+    @Schema(description = "是否可用")
+    @ExcelProperty("是否可用")
+    @DictFormat("yes_no") // TODO 代码优化：建议设置到对应的 DictTypeConstants 枚举类中
+    private Integer isUsed;
+
+    @Schema(description = "是否内部仓")
+    @ExcelProperty("是否内部仓")
+    @DictFormat("yes_no") // TODO 代码优化：建议设置到对应的 DictTypeConstants 枚举类中
+    private Integer isInside;
+
+    @Schema(description = "渠道")
+    @ExcelProperty("渠道")
+    @DictFormat("fx_respository_channel") // TODO 代码优化：建议设置到对应的 DictTypeConstants 枚举类中
+    private Integer channel;
+
+    @Trans(type = TransType.SIMPLE, target = AdminUserDO.class, fields = "nickname", ref = "creator")
     private String creator;
 
-    @Trans(type = TransType.SIMPLE, target = AdminUserDO.class,fields = "nickname", ref = "updater")
+    @Trans(type = TransType.SIMPLE, target = AdminUserDO.class, fields = "nickname", ref = "updater")
     private String updater;
 
 }

@@ -1,33 +1,31 @@
 package cn.iocoder.yudao.module.fx.controller.admin.sendrepository;
 
+import cn.iocoder.yudao.framework.apilog.core.annotation.ApiAccessLog;
+import cn.iocoder.yudao.framework.common.pojo.CommonResult;
+import cn.iocoder.yudao.framework.common.pojo.PageParam;
+import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
+import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
+import cn.iocoder.yudao.module.fx.controller.admin.sendrepository.vo.SendRepositoryPageReqVO;
+import cn.iocoder.yudao.module.fx.controller.admin.sendrepository.vo.SendRepositoryRespVO;
+import cn.iocoder.yudao.module.fx.controller.admin.sendrepository.vo.SendRepositorySaveReqVO;
+import cn.iocoder.yudao.module.fx.dal.dataobject.sendrepository.SendRepositoryDO;
+import cn.iocoder.yudao.module.fx.service.sendrepository.SendRepositoryService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-
-import org.springframework.validation.annotation.Validated;
-import org.springframework.security.access.prepost.PreAuthorize;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Operation;
-
-import java.util.*;
 import java.io.IOException;
+import java.util.List;
 
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
-import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.pojo.CommonResult;
-import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
+import static cn.iocoder.yudao.framework.apilog.core.enums.OperateTypeEnum.EXPORT;
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
-
-import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
-
-import cn.iocoder.yudao.framework.apilog.core.annotation.ApiAccessLog;
-import static cn.iocoder.yudao.framework.apilog.core.enums.OperateTypeEnum.*;
-
-import cn.iocoder.yudao.module.fx.controller.admin.sendrepository.vo.*;
-import cn.iocoder.yudao.module.fx.dal.dataobject.sendrepository.SendRepositoryDO;
-import cn.iocoder.yudao.module.fx.service.sendrepository.SendRepositoryService;
 
 @Tag(name = "管理后台 - FX 发货仓库")
 @RestController
@@ -84,12 +82,20 @@ public class SendRepositoryController {
     @PreAuthorize("@ss.hasPermission('fx:send-repository:export')")
     @ApiAccessLog(operateType = EXPORT)
     public void exportSendRepositoryExcel(@Valid SendRepositoryPageReqVO pageReqVO,
-              HttpServletResponse response) throws IOException {
+                                          HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(PageParam.PAGE_SIZE_NONE);
         List<SendRepositoryDO> list = sendRepositoryService.getSendRepositoryPage(pageReqVO).getList();
         // 导出 Excel
         ExcelUtils.write(response, "FX 发货仓库.xls", "数据", SendRepositoryRespVO.class,
-                        BeanUtils.toBean(list, SendRepositoryRespVO.class));
+                BeanUtils.toBean(list, SendRepositoryRespVO.class));
+    }
+
+    @PostMapping("/sync")
+    @Operation(summary = "同步发货仓库信息")
+    @PreAuthorize("@ss.hasPermission('fx:send-repository:update')")
+    public CommonResult<Boolean> syncSendRepository() {
+        sendRepositoryService.syncSendRepository();
+        return success(Boolean.TRUE);
     }
 
 }
