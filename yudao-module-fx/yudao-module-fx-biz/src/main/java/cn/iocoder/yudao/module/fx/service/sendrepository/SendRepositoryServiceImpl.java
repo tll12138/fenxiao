@@ -19,6 +19,7 @@ import com.jushuitan.api.ApiClient;
 import com.jushuitan.api.ApiRequest;
 import com.jushuitan.api.ApiResponse;
 import com.jushuitan.api.DefaultApiClient;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -37,6 +38,7 @@ import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.DICT_TYPE_
  *
  * @author 管理员
  */
+@Slf4j
 @Service
 @Validated
 public class SendRepositoryServiceImpl implements SendRepositoryService {
@@ -100,8 +102,13 @@ public class SendRepositoryServiceImpl implements SendRepositoryService {
         String appKey = apiInfo.get("appKey");
         String appSecret = apiInfo.get("appSecret");
         String accessToken = apiInfo.get("accessToken");
-        //递归获取所有分销商信息
+        //递归获取所有发货仓库信息
         executeSendRepository(1, url, appKey, appSecret, accessToken);
+    }
+
+    @Override
+    public List<SendRepositoryDO> getSendRepositoryList() {
+        return sendRepositoryMapper.selectList(SendRepositoryDO::getIsUsed, 1, SendRepositoryDO::getIsInside, 0);
     }
 
     private void executeSendRepository(int pageNum, String url, String appKey, String appSecret, String accessToken) {
@@ -135,6 +142,7 @@ public class SendRepositoryServiceImpl implements SendRepositoryService {
                     one.setUpdateTime(DateUtil.parseLocalDateTime(DateUtil.now()));
                     one.setCreateTime(DateUtil.parseLocalDateTime(DateUtil.now()));
                     BeanUtil.copyProperties(data, one);
+                    one.setIsUsed("生效".equals(data.getStatus()) ? 1 : 0);
                     list.add(one);
                 }
                 sendRepositoryMapper.insertOrUpdateBatch(list);

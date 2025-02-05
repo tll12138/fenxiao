@@ -14,7 +14,7 @@ import javax.annotation.Resource;
  * @author tll
  */
 @Slf4j
-@Component
+@Component("CustomerSyncJob")
 public class CustomerSyncJob implements JobHandler {
 
     @Resource

@@ -105,9 +105,10 @@ public class GoodsArchivesServiceImpl implements GoodsArchivesService {
         String appKey = apiInfo.get("appKey");
         String appSecret = apiInfo.get("appSecret");
         String accessToken = apiInfo.get("accessToken");
+        LocalDateTime now = LocalDateTime.now();
 
-        executeSync(1, LocalDateTime.now().minusDays(ifAll ? 7 : 2), LocalDateTime.now(), goodUrl, appKey, appSecret, accessToken, ifAll, "goods");
-        executeSync(1, LocalDateTime.now().minusDays(ifAll ? 7 : 2), LocalDateTime.now(), groupUrl, appKey, appSecret, accessToken, ifAll, "groupGoods");
+        executeSync(1, now.minusDays(ifAll ? 7 : 2), now, goodUrl, appKey, appSecret, accessToken, ifAll, "goods");
+        executeSync(1, now.minusDays(ifAll ? 7 : 2), now, groupUrl, appKey, appSecret, accessToken, ifAll, "groupGoods");
     }
 
     private void executeSync(int pageNum, LocalDateTime modifiedBegin, LocalDateTime modifiedEnd, String url, String appKey, String appSecret, String accessToken, boolean ifAll, String type) {

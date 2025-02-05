@@ -6,6 +6,7 @@ import cn.iocoder.yudao.module.fx.controller.admin.sendrepository.vo.SendReposit
 import cn.iocoder.yudao.module.fx.dal.dataobject.sendrepository.SendRepositoryDO;
 
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * FX 发货仓库 Service 接口
@@ -56,4 +57,11 @@ public interface SendRepositoryService {
      * 同步发货仓库信息
      */
     void syncSendRepository();
+
+    /**
+     * 获得全量可用非内部发货仓库
+     *
+     * @return 发货仓库
+     */
+    List<SendRepositoryDO> getSendRepositoryList();
 }

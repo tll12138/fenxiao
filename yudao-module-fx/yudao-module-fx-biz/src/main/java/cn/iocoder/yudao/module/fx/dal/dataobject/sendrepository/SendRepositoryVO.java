@@ -42,6 +42,7 @@ public class SendRepositoryVO extends BaseDO {
     /**
      * 我方备注
      */
-    private String remark2;
+    @JSONField(name = "remark2")
+    private String remark;
 
 }

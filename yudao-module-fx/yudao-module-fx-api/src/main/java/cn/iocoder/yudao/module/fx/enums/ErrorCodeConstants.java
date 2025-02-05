@@ -57,4 +57,7 @@ public interface ErrorCodeConstants {
 
     // =====================================  商品信息  =================================
     ErrorCode GOODS_ARCHIVES_NOT_EXISTS = new ErrorCode(1_110_000_100, "商品信息不存在");
+
+    // =====================================  商品库存信息  =================================
+    ErrorCode INVENTORY_DATA_NOT_EXISTS = new ErrorCode(1_120_000_100, "商品库存信息不存在");
 }
