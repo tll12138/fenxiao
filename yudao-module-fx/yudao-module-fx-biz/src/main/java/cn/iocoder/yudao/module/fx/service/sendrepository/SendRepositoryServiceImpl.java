@@ -153,7 +153,7 @@ public class SendRepositoryServiceImpl implements SendRepositoryService {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 

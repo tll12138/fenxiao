@@ -169,7 +169,7 @@ public class InventoryDataServiceImpl implements InventoryDataService {
                 throw new RuntimeException(bodyMO.getMsg());
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 

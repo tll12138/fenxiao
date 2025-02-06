@@ -159,7 +159,7 @@ public class GoodsArchivesServiceImpl implements GoodsArchivesService {
                 executeSync(1, modifiedBegin.minusDays(7), modifiedEnd.minusDays(7), url, appKey, appSecret, accessToken, true, type);
             }
         } catch (Exception e) {
-            log.error("Error executing sync for {}: {}", type, e.getMessage(), e);
+            log.error(e.getMessage(), e);
         }
     }
 

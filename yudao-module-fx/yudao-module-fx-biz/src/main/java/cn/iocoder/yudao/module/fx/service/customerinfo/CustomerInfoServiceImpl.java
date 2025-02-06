@@ -31,6 +31,7 @@ import com.jushuitan.api.ApiClient;
 import com.jushuitan.api.ApiRequest;
 import com.jushuitan.api.ApiResponse;
 import com.jushuitan.api.DefaultApiClient;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -50,6 +51,7 @@ import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.DICT_TYPE_
  *
  * @author 管理员
  */
+@Slf4j
 @Service
 @Validated
 public class CustomerInfoServiceImpl implements CustomerInfoService {
@@ -283,7 +285,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 }
