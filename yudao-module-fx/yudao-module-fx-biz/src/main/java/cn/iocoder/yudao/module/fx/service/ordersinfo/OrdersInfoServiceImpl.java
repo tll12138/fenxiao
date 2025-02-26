@@ -15,16 +15,19 @@ import cn.iocoder.yudao.module.fx.dal.mysql.ordersdetail.OrdersDetailMapper;
 import cn.iocoder.yudao.module.fx.dal.mysql.ordersinfo.OrdersInfoMapper;
 import cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants;
 import cn.iocoder.yudao.module.fx.enums.OrderStatusType;
+import cn.iocoder.yudao.module.fx.utils.CollectionUtil;
 import cn.iocoder.yudao.module.fx.utils.orderinfo.OrderProcessingContext;
 import cn.iocoder.yudao.module.fx.utils.orderinfo.template.SaveOrderProcessing;
 import cn.iocoder.yudao.module.fx.utils.orderinfo.template.SubmitOrderProcessing;
 import cn.iocoder.yudao.module.fx.utils.template.TemplateUtils;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -50,6 +53,7 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
     @Resource
     private BpmProcessInstanceApi processInstanceApi;
 
+    private static final int IS_TO_ERP_UNPROCESSED = 0;
 
     /**
      * 销售单对应的流程定义 KEY
@@ -58,7 +62,7 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
 
     @Override
     public Long saveOrdersInfo(OrdersInfoSaveReqVO saveReqVO) {
-        if (saveReqVO == null){
+        if (saveReqVO == null) {
             throw exception(ErrorCodeConstants.ORDERS_INFO_PARAMS_ERROR);
         }
         // 构建上下文对象
@@ -70,8 +74,8 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Long createOrdersInfo(OrdersInfoSaveReqVO createReqVO){
-        if (createReqVO == null){
+    public Long createOrdersInfo(OrdersInfoSaveReqVO createReqVO) {
+        if (createReqVO == null) {
             throw exception(ErrorCodeConstants.ORDERS_INFO_PARAMS_ERROR);
         }
         // 构建上下文对象
@@ -80,7 +84,7 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
         //  构建 提交订单的 模板对象
         Long id = TemplateUtils.invokeTemplateMethod(new SubmitOrderProcessing(context));
 
-        if (id == null){
+        if (id == null) {
             throw exception(ErrorCodeConstants.SYSTEM_ERROR);
         }
         //获取当前用户的ID
@@ -194,9 +198,15 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
 
     @Override
     public void cancelProcessInstance(Long loginUserId, ProcessInstanceCancelReqVO cancelReqVO) {
-        processInstanceApi.cancelProcessInstance(getLoginUserId(),cancelReqVO.getId(),cancelReqVO.getReason());
+        processInstanceApi.cancelProcessInstance(getLoginUserId(), cancelReqVO.getId(), cancelReqVO.getReason());
         ordersInfoMapper.updateById(new OrdersInfoDO().setId(cancelReqVO.getOrderId()).setOrderStatus(OrderStatusType.CANCELLED.getType()));
-        log.info("用户:{} 取消流程实例:{}",loginUserId,cancelReqVO.getId());
+        log.info("用户:{} 取消流程实例:{}", loginUserId, cancelReqVO.getId());
         // 更新此流程中所有代办的状态 TODO
+    }
+
+    @Override
+    public List<OrdersInfoDO> getUnUploadedOrders() {
+        List<OrdersInfoDO> orders = ordersInfoMapper.selectList(new LambdaQueryWrapper<OrdersInfoDO>().eq(OrdersInfoDO::getIsToErp, IS_TO_ERP_UNPROCESSED));
+        return CollectionUtil.isEmpty(orders) ? Collections.emptyList() : orders;
     }
 }

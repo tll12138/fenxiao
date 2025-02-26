@@ -20,17 +20,13 @@ import cn.iocoder.yudao.module.fx.dal.mysql.customeraccount.CustomerAccountMappe
 import cn.iocoder.yudao.module.fx.dal.mysql.customeraddress.CustomerAddressMapper;
 import cn.iocoder.yudao.module.fx.dal.mysql.customerinfo.CustomerInfoMapper;
 import cn.iocoder.yudao.module.fx.dal.mysql.subcompanyinfo.SubCompanyInfoMapper;
+import cn.iocoder.yudao.module.fx.service.jushuitanapi.JuShuiTanApiService;
 import cn.iocoder.yudao.module.fx.utils.CollectionUtil;
-import cn.iocoder.yudao.module.fx.utils.MapUtils;
-import cn.iocoder.yudao.module.system.service.dict.DictDataService;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
-import com.jushuitan.api.ApiClient;
-import com.jushuitan.api.ApiRequest;
 import com.jushuitan.api.ApiResponse;
-import com.jushuitan.api.DefaultApiClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,7 +40,6 @@ import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.*;
-import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.DICT_TYPE_NOT_EXISTS;
 
 /**
  * 分销商基础信息 Service 实现类
@@ -66,7 +61,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     @Resource
     private SubCompanyInfoMapper companyInfoMapper;
     @Resource
-    private DictDataService dictDataService;
+    private JuShuiTanApiService juShuiTanApiService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -171,17 +166,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void syncCustomers() {
-        //从数据字典获取接口数据
-        Map<String, String> apiInfo = dictDataService.getDictDataMapByDictType("fx_jushuitan_API_info");
-        if (MapUtils.isEmpty(apiInfo)) {
-            throw exception(DICT_TYPE_NOT_EXISTS);
-        }
-        String url = apiInfo.get("customerSyncUrl");
-        String appKey = apiInfo.get("appKey");
-        String appSecret = apiInfo.get("appSecret");
-        String accessToken = apiInfo.get("accessToken");
         //递归获取所有分销商信息
-        executeCustomers(1, url, appKey, appSecret, accessToken);
+        executeCustomers(1);
     }
 
 
@@ -243,16 +229,11 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         }
     }
 
-    private void executeCustomers(int pageNum, String url, String appKey, String appSecret, String accessToken) {
-        // 实例化client
-        ApiClient client = new DefaultApiClient();
+    private void executeCustomers(int pageNum) {
         String biz = String.format("{\"page_num\":\"%s\",\"page_size\":\"100\"}", pageNum);
-        // 构建请求对象
-        ApiRequest request = new ApiRequest.Builder(url, appKey, appSecret)
-                .biz(biz).build();
         // 执行接口调用
         try {
-            ApiResponse response = client.execute(request, accessToken);
+            ApiResponse response = juShuiTanApiService.execute("customerSyncUrl", biz);
             String body = response.getBody();
             CustomerResponseBodyMO bodyMO = JSONObject.parseObject(body, CustomerResponseBodyMO.class);
             List<ChannelVo> channelVos = bodyMO.getData().getChannelVos();
@@ -281,7 +262,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             Integer total = bodyMO.getData().getTotal();
             int totalPage = (total / 100) + 1;
             if (total > 0 && (totalPage > pageNum)) {
-                executeCustomers(pageNum + 1, url, appKey, appSecret, accessToken);
+                executeCustomers(pageNum + 1);
             }
 
         } catch (Exception e) {

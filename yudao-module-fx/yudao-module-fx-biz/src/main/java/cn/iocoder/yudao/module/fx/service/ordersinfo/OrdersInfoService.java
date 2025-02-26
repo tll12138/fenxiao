@@ -21,6 +21,7 @@ public interface OrdersInfoService {
 
     /**
      * 保存销售单
+     *
      * @param createReqVO
      * @return
      */
@@ -42,6 +43,7 @@ public interface OrdersInfoService {
     void updateOrdersInfo(@Valid OrdersInfoSaveReqVO updateReqVO);
 
     void updateOrdersInfoStatusSuccess(Long id);
+
     void updateOrdersInfoStatusFail(Long id);
 
     /**
@@ -79,4 +81,7 @@ public interface OrdersInfoService {
 
 
     void cancelProcessInstance(Long loginUserId, ProcessInstanceCancelReqVO cancelReqVO);
+
+    //获取未向聚水潭上传订单列表
+    List<OrdersInfoDO> getUnUploadedOrders();
 }

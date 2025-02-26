@@ -11,16 +11,12 @@ import cn.iocoder.yudao.module.fx.dal.dataobject.inventorydata.InventoryDataResp
 import cn.iocoder.yudao.module.fx.dal.dataobject.inventorydata.InventoryVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.sendrepository.SendRepositoryDO;
 import cn.iocoder.yudao.module.fx.dal.mysql.inventorydata.InventoryDataMapper;
+import cn.iocoder.yudao.module.fx.service.jushuitanapi.JuShuiTanApiService;
 import cn.iocoder.yudao.module.fx.service.sendrepository.SendRepositoryService;
 import cn.iocoder.yudao.module.fx.utils.CollectionUtil;
-import cn.iocoder.yudao.module.fx.utils.MapUtils;
-import cn.iocoder.yudao.module.system.service.dict.DictDataService;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.jushuitan.api.ApiClient;
-import com.jushuitan.api.ApiRequest;
 import com.jushuitan.api.ApiResponse;
-import com.jushuitan.api.DefaultApiClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +32,6 @@ import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.INVENTORY_DATA_NOT_EXISTS;
-import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.DICT_TYPE_NOT_EXISTS;
 
 /**
  * 分销商品库存 Service 实现类
@@ -53,7 +48,7 @@ public class InventoryDataServiceImpl implements InventoryDataService {
     @Resource
     private SendRepositoryService sendRepositoryService;
     @Resource
-    private DictDataService dictDataService;
+    private JuShuiTanApiService juShuiTanApiService;
 
     @Override
     public Integer createInventoryData(InventoryDataSaveReqVO createReqVO) {
@@ -100,15 +95,6 @@ public class InventoryDataServiceImpl implements InventoryDataService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void syncInventoryData() throws InterruptedException {
-        //从数据字典获取接口数据
-        Map<String, String> apiInfo = dictDataService.getDictDataMapByDictType("fx_jushuitan_API_info");
-        if (MapUtils.isEmpty(apiInfo)) {
-            throw exception(DICT_TYPE_NOT_EXISTS);
-        }
-        String url = apiInfo.get("InventoryDataSyncUrl");
-        String appKey = apiInfo.get("appKey");
-        String appSecret = apiInfo.get("appSecret");
-        String accessToken = apiInfo.get("accessToken");
         LocalDateTime now = LocalDateTime.now();
         List<SendRepositoryDO> sendRepositoryList = sendRepositoryService.getSendRepositoryList();
         for (SendRepositoryDO sendRepositoryDO : sendRepositoryList) {
@@ -117,20 +103,15 @@ public class InventoryDataServiceImpl implements InventoryDataService {
             log.info("仓库编码：{}", wmsCoId);
             //递归获取所有库存信息
             TimeUnit.MILLISECONDS.sleep(1000);
-            executeInventoryData(1, now.minusDays(2), now, url, appKey, appSecret, accessToken, wmsCoId, sendRepositoryDO);
+            executeInventoryData(1, now.minusDays(2), now, wmsCoId, sendRepositoryDO);
         }
     }
 
-    private void executeInventoryData(int pageNum, LocalDateTime modifiedBegin, LocalDateTime modifiedEnd, String url, String appKey, String appSecret, String accessToken, String wmsCoId, SendRepositoryDO sendRepositoryDO) {
-        // 实例化client
-        ApiClient client = new DefaultApiClient();
+    private void executeInventoryData(int pageNum, LocalDateTime modifiedBegin, LocalDateTime modifiedEnd, String wmsCoId, SendRepositoryDO sendRepositoryDO) {
         String biz = String.format("{\"page_num\":\"%s\",\"page_size\":\"100\",\"wms_co_id\":\"%s\",\"modified_begin\":\"%s\",\"modified_end\":\"%s\"}", pageNum, wmsCoId, modifiedBegin.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), modifiedEnd.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        // 构建请求对象
-        ApiRequest request = new ApiRequest.Builder(url, appKey, appSecret)
-                .biz(biz).build();
         // 执行接口调用
         try {
-            ApiResponse response = client.execute(request, accessToken);
+            ApiResponse response = juShuiTanApiService.execute("InventoryDataSyncUrl", biz);
             String body = response.getBody();
             log.info(body);
             InventoryDataResponse bodyMO = JSONObject.parseObject(body, InventoryDataResponse.class);
@@ -144,7 +125,13 @@ public class InventoryDataServiceImpl implements InventoryDataService {
                         codes.add(data.getSkuId());
                     }
                     List<InventoryDataDO> existingInfos = inventoryDataMapper.selectList(new LambdaQueryWrapper<InventoryDataDO>().in(InventoryDataDO::getSkuId, codes).eq(InventoryDataDO::getWarehouseCode, wmsCoId));
-                    Map<String, InventoryDataDO> existingInfoMap = existingInfos.stream().collect(Collectors.toMap(InventoryDataDO::getSkuId, Function.identity()));
+                    Map<String, InventoryDataDO> existingInfoMap = existingInfos.stream()
+                            .collect(Collectors.toMap(
+                                    e -> e.getSkuId() + "_" + e.getWarehouseCode(),
+                                    Function.identity(),
+                                    (oldVal, newVal) -> oldVal, // 根据业务需求选择保留策略
+                                    () -> new HashMap<>(Math.max((int) (existingInfos.size() / 0.75f) + 1, 16))
+                            ));
                     for (InventoryVO data : datas) {
                         InventoryDataDO one = existingInfoMap.get(data.getSkuId());
                         if (one == null) {
@@ -163,7 +150,7 @@ public class InventoryDataServiceImpl implements InventoryDataService {
                 }
                 if (bodyMO.getData().isHasNext()) {
                     TimeUnit.MILLISECONDS.sleep(1000);
-                    executeInventoryData(pageNum + 1, modifiedBegin, modifiedEnd, url, appKey, appSecret, accessToken, wmsCoId, sendRepositoryDO);
+                    executeInventoryData(pageNum + 1, modifiedBegin, modifiedEnd, wmsCoId, sendRepositoryDO);
                 }
             } else {
                 throw new RuntimeException(bodyMO.getMsg());

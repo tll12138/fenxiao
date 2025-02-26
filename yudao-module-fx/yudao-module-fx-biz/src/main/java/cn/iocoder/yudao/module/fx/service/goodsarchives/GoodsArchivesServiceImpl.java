@@ -9,15 +9,11 @@ import cn.iocoder.yudao.module.fx.dal.dataobject.goodsarchives.GoodsArchivesDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.goodsarchives.GoodsArchivesVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.goodsarchives.GoodsResponseBodyMO;
 import cn.iocoder.yudao.module.fx.dal.mysql.goodsarchives.GoodsArchivesMapper;
+import cn.iocoder.yudao.module.fx.service.jushuitanapi.JuShuiTanApiService;
 import cn.iocoder.yudao.module.fx.utils.CollectionUtil;
-import cn.iocoder.yudao.module.fx.utils.MapUtils;
-import cn.iocoder.yudao.module.system.service.dict.DictDataService;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.jushuitan.api.ApiClient;
-import com.jushuitan.api.ApiRequest;
 import com.jushuitan.api.ApiResponse;
-import com.jushuitan.api.DefaultApiClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +29,6 @@ import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.GOODS_ARCHIVES_NOT_EXISTS;
-import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.DICT_TYPE_NOT_EXISTS;
 
 /**
  * 分销商品资料 Service 实现类
@@ -48,7 +43,7 @@ public class GoodsArchivesServiceImpl implements GoodsArchivesService {
     @Resource
     private GoodsArchivesMapper goodsArchivesMapper;
     @Resource
-    private DictDataService dictDataService;
+    private JuShuiTanApiService juShuiTanApiService;
 
     @Override
     public Integer createGoodsArchives(GoodsArchivesSaveReqVO createReqVO) {
@@ -95,23 +90,15 @@ public class GoodsArchivesServiceImpl implements GoodsArchivesService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void syncGoodsArchives(boolean ifAll) {
-        //从数据字典获取接口数据
-        Map<String, String> apiInfo = dictDataService.getDictDataMapByDictType("fx_jushuitan_API_info");
-        if (MapUtils.isEmpty(apiInfo)) {
-            throw exception(DICT_TYPE_NOT_EXISTS);
-        }
-        String goodUrl = apiInfo.get("goodsSyncUrl");
-        String groupUrl = apiInfo.get("goodsGroupSyncUrl");
-        String appKey = apiInfo.get("appKey");
-        String appSecret = apiInfo.get("appSecret");
-        String accessToken = apiInfo.get("accessToken");
+        String goodUrl = "goodsSyncUrl";
+        String groupUrl = "goodsGroupSyncUrl";
         LocalDateTime now = LocalDateTime.now();
 
-        executeSync(1, now.minusDays(ifAll ? 7 : 2), now, goodUrl, appKey, appSecret, accessToken, ifAll, "goods");
-        executeSync(1, now.minusDays(ifAll ? 7 : 2), now, groupUrl, appKey, appSecret, accessToken, ifAll, "groupGoods");
+        executeSync(1, now.minusDays(ifAll ? 7 : 2), now, goodUrl, ifAll, "goods");
+        executeSync(1, now.minusDays(ifAll ? 7 : 2), now, groupUrl, ifAll, "groupGoods");
     }
 
-    private void executeSync(int pageNum, LocalDateTime modifiedBegin, LocalDateTime modifiedEnd, String url, String appKey, String appSecret, String accessToken, boolean ifAll, String type) {
+    private void executeSync(int pageNum, LocalDateTime modifiedBegin, LocalDateTime modifiedEnd, String url, boolean ifAll, String type) {
         //修改时间比聚水潭商品最早的修改还早就退出递归
         if (modifiedEnd.isBefore(LocalDateTime.parse("2021-08-19T09:00:06", DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))) && ifAll && "goods".equals(type)) {
             return;
@@ -120,14 +107,9 @@ public class GoodsArchivesServiceImpl implements GoodsArchivesService {
         if (modifiedEnd.isBefore(LocalDateTime.parse("2022-06-27T14:01:39", DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))) && ifAll && "groupGoods".equals(type)) {
             return;
         }
-
-        ApiClient client = new DefaultApiClient();
         String biz = String.format("{\"page_index\":\"%s\",\"page_size\":\"50\",\"modified_begin\":\"%s\",\"modified_end\":\"%s\"}", pageNum, modifiedBegin.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), modifiedEnd.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        ApiRequest request = new ApiRequest.Builder(url, appKey, appSecret).biz(biz).build();
-        log.info("request: {}", request.getBiz());
-
         try {
-            ApiResponse response = client.execute(request, accessToken);
+            ApiResponse response = juShuiTanApiService.execute(url, biz);
             log.info("response: {}", response);
             String body = response.getBody();
             GoodsResponseBodyMO bodyMO = JSONObject.parseObject(body, GoodsResponseBodyMO.class);
@@ -153,10 +135,10 @@ public class GoodsArchivesServiceImpl implements GoodsArchivesService {
                 goodsArchivesMapper.insertOrUpdateBatch(list);
             }
             if (bodyMO.getData().isHasNext()) {
-                executeSync(++pageNum, modifiedBegin, modifiedEnd, url, appKey, appSecret, accessToken, ifAll, type);
+                executeSync(++pageNum, modifiedBegin, modifiedEnd, url, ifAll, type);
             } else if (ifAll) {
                 TimeUnit.MILLISECONDS.sleep(1000);
-                executeSync(1, modifiedBegin.minusDays(7), modifiedEnd.minusDays(7), url, appKey, appSecret, accessToken, true, type);
+                executeSync(1, modifiedBegin.minusDays(7), modifiedEnd.minusDays(7), url, true, type);
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);

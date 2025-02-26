@@ -60,4 +60,8 @@ public interface ErrorCodeConstants {
 
     // =====================================  商品库存信息  =================================
     ErrorCode INVENTORY_DATA_NOT_EXISTS = new ErrorCode(1_120_000_100, "商品库存信息不存在");
+    // ========== 分销订单上传中间 ==========
+    ErrorCode EC2JST_ORDER_NOT_EXISTS = new ErrorCode(1_130_000_100, "分销订单上传中间不存在");
+    // ========== 分销订单上传详情中间  ==========
+    ErrorCode EC2JST_ORDERITEM_NOT_EXISTS = new ErrorCode(1_140_000_100, "分销订单上传详情中间不存在");
 }
