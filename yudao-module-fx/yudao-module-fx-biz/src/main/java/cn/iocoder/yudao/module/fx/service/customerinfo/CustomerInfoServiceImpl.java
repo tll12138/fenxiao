@@ -34,12 +34,18 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.*;
+import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.CUSTOMER_ACCOUNT_CREATE_FAIL;
+import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.CUSTOMER_ADDRESS_UPDATE_FAIL;
+import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.CUSTOMER_INFO_NOT_EXISTS;
 
 /**
  * 分销商基础信息 Service 实现类
@@ -134,12 +140,17 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
         //获取分销商账号信息
         LambdaQueryWrapper<CustomerAccountDO> accountQueryWrapper = new LambdaQueryWrapper<>();
-        accountQueryWrapper.eq(CustomerAccountDO::getDistributorId, id);
+        accountQueryWrapper.eq(CustomerAccountDO::getDistributorId, customerInfoDO.getDistributorNum());
         List<CustomerAccountDO> accountDOList = customerAccountMapper.selectList(accountQueryWrapper);
         List<CustomerAccountRespVO> customerAccountRespVOS = CustomerCovert.INSTANCE.convertAccount(accountDOList);
         customerInfoDetailRespVO.setCustomerAccounts(customerAccountRespVOS);
 
         return customerInfoDetailRespVO;
+    }
+
+    @Override
+    public List<CustomerInfoDO> getAllCustomerInfo() {
+        return customerInfoMapper.selectList();
     }
 
     @Override
@@ -185,7 +196,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         List<CustomerAccountDO> accountDOList = subCompanyInfoDOS.stream().map((item) -> {
             CustomerAccountDO customerAccountDO = new CustomerAccountDO();
             customerAccountDO.setDistributorId(customerInfoDO.getId());//设置分销商ID为已插入的基础信息返回的ID
-            customerAccountDO.setCompany(item.getId());
+            customerAccountDO.setCompany(Math.toIntExact(item.getId()));
             customerAccountDO.setBalance(new BigDecimal(0));
             int index = subCompanyInfoDOS.indexOf(item);
             customerAccountDO.setAccountId(customerInfoDO.getDistributorNum() + "-" + index);
@@ -211,6 +222,14 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     @Override
     public List<CustomerAddressDO> getCustomerAddressListById(Long id) {
         return customerAddressMapper.selectListById(id);
+    }
+
+    /**
+     * 获得无账号分销商地址列表
+     */
+    @Override
+    public List<CustomerInfoDO> getCustomerInfoByNoAccount() {
+        return customerInfoMapper.getCustomerInfoByNoAccount();
     }
 
     private void createCustomerAddressList(Long id, List<CustomerAddressDO> list) {

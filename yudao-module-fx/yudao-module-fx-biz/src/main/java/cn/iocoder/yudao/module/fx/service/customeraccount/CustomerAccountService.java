@@ -52,4 +52,9 @@ public interface CustomerAccountService {
      */
     PageResult<CustomerAccountDO> getCustomerAccountPage(CustomerAccountPageReqVO pageReqVO);
 
+    /**
+     * 自动分销商账号配置
+     */
+    void accountAutoConstructor();
+
 }

@@ -104,6 +104,34 @@
             <version>6.8.0</version>
             <scope>compile</scope>
         </dependency>
-
+        <!--        <dependency>-->
+        <!--            <groupId>dev.langchain4j</groupId>-->
+        <!--            <artifactId>langchain4j-open-ai-spring-boot-starter</artifactId>-->
+        <!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>dev.langchain4j</groupId>-->
+        <!--            <artifactId>langchain4j</artifactId>-->
+        <!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>dev.langchain4j</groupId>-->
+        <!--            <artifactId>langchain4j-open-ai</artifactId>-->
+        <!--        </dependency>-->
+        <dependency>
+            <groupId>com.example</groupId>
+            <artifactId>jushuitan</artifactId>
+            <version>1.0.0</version>
+        </dependency>
     </dependencies>
+    <!-- 加载bom 后，所有langchain4j引用不需要加版本号 -->
+    <!--    <dependencyManagement>-->
+    <!--        <dependencies>-->
+    <!--            <dependency>-->
+    <!--                <groupId>dev.langchain4j</groupId>-->
+    <!--                <artifactId>langchain4j-bom</artifactId>-->
+    <!--                <version>0.30.0</version>-->
+    <!--                <type>pom</type>-->
+    <!--                <scope>import</scope>-->
+    <!--            </dependency>-->
+    <!--        </dependencies>-->
+    <!--    </dependencyManagement>-->
 </project>

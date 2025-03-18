@@ -42,7 +42,7 @@ public class OrdersDetailDO extends BaseDO {
     private Long goodsId;
     /**
      * 销售类型
-     *
+     * <p>
      * 枚举 {@link TODO fx_detail_return_type 对应的类}
      */
     private Integer saleType;
@@ -121,6 +121,6 @@ public class OrdersDetailDO extends BaseDO {
     /**
      * 其他仓库可用库存
      */
-    private Integer otherAvailCount;
+    private Integer inventory;
 
 }

@@ -64,6 +64,6 @@ public class OrdersDetailRespVO {
 
     @Schema(description = "其他仓库可用库存", example = "27131")
     @ExcelProperty("其他仓库可用库存")
-    private Integer otherAvailCount;
+    private Integer inventory;
 
 }

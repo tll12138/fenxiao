@@ -28,14 +28,14 @@ public class InventoryValidationHandler extends ValidationHandler {
         Map<String, Integer> availCountMap = ordersDetails.stream().collect(
                 Collectors.toMap(
                         OrdersDetailDO::getSkuId,
-                        OrdersDetailDO::getOtherAvailCount,
+                        OrdersDetailDO::getInventory,
                         (existing, replacement) -> existing)
         );
         goodsQuantityMap.forEach((k, quantity) -> {
-            if (availCountMap.containsKey(k)){
+            if (availCountMap.containsKey(k)) {
                 // 判断数量是否大于库存
                 Integer total = availCountMap.get(k);
-                if (quantity > total){
+                if (quantity > total) {
                     Integer code = ORDERS_GOODS_INVENTORY_NOT_ENOUGH.getCode();
                     String message = String.format(ORDERS_GOODS_INVENTORY_NOT_ENOUGH.getMsg(), k, quantity, total);
                     throw exception(new ErrorCode(code, message)); // 库存不足

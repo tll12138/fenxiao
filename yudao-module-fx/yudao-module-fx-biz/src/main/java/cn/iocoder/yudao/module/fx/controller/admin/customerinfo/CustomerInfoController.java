@@ -11,6 +11,7 @@ import cn.iocoder.yudao.module.fx.dal.dataobject.customeraccount.CustomerAccount
 import cn.iocoder.yudao.module.fx.dal.dataobject.customeraddress.CustomerAddressDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customerinfo.CustomerInfoDO;
 import cn.iocoder.yudao.module.fx.service.customerinfo.CustomerInfoService;
+import cn.iocoder.yudao.module.fx.utils.CollectionUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -68,6 +69,15 @@ public class CustomerInfoController {
         return CommonResult.success(customerInfoService.getCustomerInfoDetail(id));
     }
 
+    @GetMapping("/getAll")
+    @Operation(summary = "获得全量分销商基础信息")
+    @Parameter(name = "id", description = "编号", required = true, example = "1024")
+    @PreAuthorize("@ss.hasPermission('fx:customer-info:query')")
+    public CommonResult<List<CustomerInfoDetailPageRespVO>> getAllCustomerInfo() {
+        List<CustomerInfoDO> allCustomerInfo = customerInfoService.getAllCustomerInfo();
+        return success(CollectionUtil.copyList(allCustomerInfo, CustomerInfoDetailPageRespVO.class));
+    }
+
     @GetMapping("/page")
     @Operation(summary = "获得分销商基础信息分页")
     @PreAuthorize("@ss.hasPermission('fx:customer-info:query')")
@@ -75,6 +85,7 @@ public class CustomerInfoController {
         PageResult<CustomerInfoDO> pageResult = customerInfoService.getCustomerInfoPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, CustomerInfoRespVO.class));
     }
+
     @GetMapping("/page/detail")
     @Operation(summary = "获得分销商基础信息分页")
     @PreAuthorize("@ss.hasPermission('fx:customer-info:query')")
@@ -82,6 +93,7 @@ public class CustomerInfoController {
         PageResult<CustomerInfoDetailPageRespVO> pageResult = customerInfoService.getCustomerInfoDetailPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, CustomerInfoDetailPageRespVO.class));
     }
+
 
     @GetMapping("/export-excel")
     @Operation(summary = "导出分销商基础信息 Excel")
@@ -123,8 +135,6 @@ public class CustomerInfoController {
     public CommonResult<List<CustomerAddressDO>> getCustomerAddressListById(@RequestParam("id") Long id) {
         return success(customerInfoService.getCustomerAddressListById(id));
     }
-
-
 
 
 }

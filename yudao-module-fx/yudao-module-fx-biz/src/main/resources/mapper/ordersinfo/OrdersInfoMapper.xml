@@ -9,4 +9,28 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
+    <select id="getCrossBorderOrders"
+            resultType="cn.iocoder.yudao.module.fx.dal.dataobject.ordersinfo.OrdersInfoDO">
+        #         SELECT *
+#         FROM fx_orders_info
+#         where order_status = 5
+#           and (supplier_id in
+#                (select label from system_dict_data where dict_type = 'fx_business_entity' and color_type = 'info')
+#             or
+#                receive_supplier_id in
+#                (select label from system_dict_data where dict_type = 'fx_business_entity' and color_type = 'info')
+#             )
+        WITH supplier_filter AS (SELECT label
+                                 FROM system_dict_data
+                                 WHERE dict_type = 'fx_business_entity'
+                                   AND color_type = 'info')
+        SELECT *
+        FROM fx_orders_info
+        WHERE order_status = 5
+          AND (
+            supplier_id IN (SELECT label FROM supplier_filter)
+                OR receive_supplier_id IN (SELECT label FROM supplier_filter)
+            )
+
+    </select>
 </mapper>

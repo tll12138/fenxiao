@@ -41,6 +41,7 @@ public class SaveOrderProcessing extends AbstractOrderProcessingTemplate {
         OrdersInfoSaveReqVO ordersInfoSaveReqVO = context.getOrdersInfoSaveReqVO();
         // 转换对象
         OrdersInfoDO ordersInfo = BeanUtils.toBean(ordersInfoSaveReqVO, OrdersInfoDO.class);
+        Db.saveOrUpdate(ordersInfo); //生成id
         List<OrdersDetailDO> ordersDetails = ordersInfoSaveReqVO.getOrdersDetails();
         context.setOrderInfo(ordersInfo);
         context.setOrdersDetails(ordersDetails);
@@ -51,6 +52,7 @@ public class SaveOrderProcessing extends AbstractOrderProcessingTemplate {
     /**
      * 1
      * 校验订单
+     *
      * @throws Exception
      */
     @Override
@@ -110,10 +112,10 @@ public class SaveOrderProcessing extends AbstractOrderProcessingTemplate {
     protected void generateOrderDetails() throws Exception {
         OrdersInfoDO orderInfo = context.getOrderInfo();
         Opt<Long> longOpt = Opt.of(orderInfo.getId());
-        if (longOpt.get() == null){
+        if (longOpt.get() == null) {
             orderInfo.setUpdater(SecurityFrameworkUtils.getLoginUserNickname());
             orderInfo.setUpdateTime(LocalDateTime.now());
-        }else{
+        } else {
             // 获取当前日期，转换格式为yyyyMMddHHmm
             LocalDateTime now = LocalDateTime.now();
             String dateStr = now.format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));

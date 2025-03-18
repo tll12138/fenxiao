@@ -133,7 +133,7 @@ public class InventoryDataServiceImpl implements InventoryDataService {
                                     () -> new HashMap<>(Math.max((int) (existingInfos.size() / 0.75f) + 1, 16))
                             ));
                     for (InventoryVO data : datas) {
-                        InventoryDataDO one = existingInfoMap.get(data.getSkuId());
+                        InventoryDataDO one = existingInfoMap.get(data.getSkuId() + "_" + wmsCoId);
                         if (one == null) {
                             one = new InventoryDataDO();
                             existingInfoMap.put(data.getSkuId(), one);

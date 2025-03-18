@@ -13,6 +13,7 @@ import cn.iocoder.yudao.module.fx.service.jushuitanapi.JuShuiTanApiService;
 import cn.iocoder.yudao.module.fx.utils.CollectionUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jushuitan.api.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -44,6 +45,7 @@ public class GoodsArchivesServiceImpl implements GoodsArchivesService {
     private GoodsArchivesMapper goodsArchivesMapper;
     @Resource
     private JuShuiTanApiService juShuiTanApiService;
+
 
     @Override
     public Integer createGoodsArchives(GoodsArchivesSaveReqVO createReqVO) {
@@ -85,6 +87,15 @@ public class GoodsArchivesServiceImpl implements GoodsArchivesService {
     @Override
     public PageResult<GoodsArchivesDO> getGoodsArchivesPage(GoodsArchivesPageReqVO pageReqVO) {
         return goodsArchivesMapper.selectPage(pageReqVO);
+    }
+
+    @Override
+    public PageResult<GoodsArchivesDO> getGoodsArchivesPageByWarehouseCode(GoodsArchivesPageReqVO pageReqVO) {
+        Page page = new Page(pageReqVO.getPageNo(), pageReqVO.getPageSize());
+        Page<GoodsArchivesDO> archivesPageByWarehouseCode = goodsArchivesMapper.getGoodsArchivesPageByWarehouseCode(page, pageReqVO);
+        log.info("archivesPageByWarehouseCode: {}", archivesPageByWarehouseCode.getRecords());
+
+        return new PageResult<>(archivesPageByWarehouseCode.getRecords(), archivesPageByWarehouseCode.getTotal());
     }
 
     @Override

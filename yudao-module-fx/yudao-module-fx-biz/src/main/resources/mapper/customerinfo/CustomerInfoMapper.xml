@@ -9,4 +9,14 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
+    <select id="getCustomerInfoByNoAccount"
+            resultType="cn.iocoder.yudao.module.fx.dal.dataobject.customerinfo.CustomerInfoDO">
+        SELECT t.id, t.distributor_num, ifnull(t.display_Name, t.distributor_Name) NAME
+        FROM fx_customer_info t
+        WHERE NOT EXISTS
+            (SELECT 1
+             FROM fx_customer_account a
+             WHERE a.distributor_id = t.id)
+          AND t.is_freeze = 1
+    </select>
 </mapper>

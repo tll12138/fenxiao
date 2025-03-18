@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+import javax.validation.constraints.NotBlank;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -98,5 +99,9 @@ public class GoodsArchivesPageReqVO extends PageParam {
 
     @Schema(description = "是否组合商品")
     private String isGroup;
+
+    @Schema(description = "仓库id")
+    @NotBlank(message = "发货仓库不能为空")
+    private String warehouseCode;
 
 }

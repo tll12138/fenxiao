@@ -22,7 +22,6 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CustomerAccountDO extends BaseDO {
-    private static final long serialVersionUID = 1L;
 
     /**
      * ID
@@ -33,10 +32,6 @@ public class CustomerAccountDO extends BaseDO {
      * 分销商编号
      */
     private Long distributorId;
-    /**
-     * 业务主体
-     */
-    private Long company;
     /**
      * 余额
      */
@@ -56,6 +51,38 @@ public class CustomerAccountDO extends BaseDO {
     /**
      * 押金
      */
-    private BigDecimal deposit;
+    private Integer deposit;
+    /**
+     * 业务主体
+     */
+    private Integer company;
+    /**
+     * 货补虚拟金额
+     */
+    private BigDecimal vAmount;
+    /**
+     * 是否允许超额提货（0否1是）
+     */
+    private Integer isAllow;
+    /**
+     * 超额提货额度
+     */
+    private BigDecimal quota;
+    /**
+     * 备注
+     */
+    private String remark;
+    /**
+     * 是否计算货补（0否1是）
+     */
+    private Integer isRep;
+    /**
+     * 暂扣货补金额
+     */
+    private BigDecimal zkVAmount;
+    /**
+     * 账户名
+     */
+    private String name;
 
 }

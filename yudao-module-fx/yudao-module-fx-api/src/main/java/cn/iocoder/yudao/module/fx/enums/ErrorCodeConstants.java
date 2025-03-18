@@ -64,4 +64,30 @@ public interface ErrorCodeConstants {
     ErrorCode EC2JST_ORDER_NOT_EXISTS = new ErrorCode(1_130_000_100, "分销订单上传中间不存在");
     // ========== 分销订单上传详情中间  ==========
     ErrorCode EC2JST_ORDERITEM_NOT_EXISTS = new ErrorCode(1_140_000_100, "分销订单上传详情中间不存在");
+    // ========== 分销价格对照
+    ErrorCode PRICELIST_NOT_EXISTS = new ErrorCode(1_150_000_100, "分销价格对照不存在");
+    // ========== 发票申请  ==========
+    ErrorCode BILL_APPLY_NOT_EXISTS = new ErrorCode(1_160_000_100, "发票申请不存在");
+    // ========== 发票邮箱库 ==========
+    ErrorCode EMAIL_ADDRESS_NOT_EXISTS = new ErrorCode(1_170_000_100, "发票邮箱库不存在");
+    // ==========  分销打款账户 ==========
+    ErrorCode FROM_ACCOUNT_NOT_EXISTS = new ErrorCode(1_180_000_100, " 分销打款账户不存在");
+    // ========== 分销账户调整  ==========
+    ErrorCode ACCOUNT_ADJUST_NOT_EXISTS = new ErrorCode(1_190_000_100, "分销账户调整不存在");
+    // ========== 分销账户月结  ==========
+    ErrorCode MON_SETTLEMENT_NOT_EXISTS = new ErrorCode(1_200_000_100, "分销账户月结不存在");
+    // ========== 分销账户收款记录  ==========
+    ErrorCode ACCOUNT_COLLECTION_NOT_EXISTS = new ErrorCode(1_201_000_100, "分销账户收款记录不存在");
+    // ========== 分销账户资金调整记录  ==========
+    ErrorCode AMOUNT_ADJ_NOT_EXISTS = new ErrorCode(1_202_000_100, "分销账户资金调整记录不存在");
+    // ========== 分销支付账户  ==========
+    ErrorCode PAY_ACCOUNT_NOT_EXISTS = new ErrorCode(1_203_000_100, "分销支付账户不存在");
+    // ========== 客商账户初始化配置  ==========
+    ErrorCode ACC_INFO_CONFIG_NOT_EXISTS = new ErrorCode(1_204_000_100, "客商账户初始化配置不存在");
+    // ========== 客商代发单  ==========
+    ErrorCode IMPORT_ORDER_NOT_EXISTS = new ErrorCode(1_205_000_100, "客商代发单不存在");
+    ErrorCode IMPORT_ORDER_IMPORT_LIST_IS_EMPTY = new ErrorCode(1_205_000_400, "导入客商代发数据不能为空！");
+    ErrorCode IMPORT_ORDER_EXISTS = new ErrorCode(1_205_000_201, "客商代发单已经存在");
+    ErrorCode IMPORT_ORDER_GENERATED_SALE = new ErrorCode(1_205_000_201, "该订单已生成销售单，不允许修改");
+
 }

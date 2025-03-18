@@ -1,13 +1,16 @@
 package cn.iocoder.yudao.module.fx.service.customerinfo;
 
-import java.util.*;
-
-import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.*;
-import cn.iocoder.yudao.module.fx.dal.dataobject.customerinfo.CustomerInfoDO;
+import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoDetailPageRespVO;
+import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoDetailRespVO;
+import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoPageReqVO;
+import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoSaveReqVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customeraccount.CustomerAccountDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customeraddress.CustomerAddressDO;
-import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.module.fx.dal.dataobject.customerinfo.CustomerInfoDO;
+
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * 分销商基础信息 Service 接口
@@ -55,6 +58,13 @@ public interface CustomerInfoService {
     CustomerInfoDetailRespVO getCustomerInfoDetail(Long id);
 
     /**
+     * 获得全量分销商详细基础信息
+     *
+     * @return 分销商基础信息
+     */
+    List<CustomerInfoDO> getAllCustomerInfo();
+
+    /**
      * 获得分销商基础信息分页
      *
      * @param pageReqVO 分页查询
@@ -95,4 +105,8 @@ public interface CustomerInfoService {
      */
     List<CustomerAddressDO> getCustomerAddressListById(Long id);
 
+    /**
+     * 获得无账号分销商地址列表
+     */
+    List<CustomerInfoDO> getCustomerInfoByNoAccount();
 }

@@ -5,6 +5,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.bpm.api.task.BpmProcessInstanceApi;
 import cn.iocoder.yudao.module.bpm.api.task.dto.BpmProcessInstanceCreateReqDTO;
+import cn.iocoder.yudao.module.fx.constant.FieldConstant;
 import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoDetailRespVO;
 import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoPageReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoSaveReqVO;
@@ -27,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -53,12 +55,10 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
     @Resource
     private BpmProcessInstanceApi processInstanceApi;
 
-    private static final int IS_TO_ERP_UNPROCESSED = 0;
-
     /**
      * 销售单对应的流程定义 KEY
      */
-    public static final String PROCESS_KEY = "sale-order";
+    public static final String PROCESS_KEY = "sale_audit";
 
     @Override
     public Long saveOrdersInfo(OrdersInfoSaveReqVO saveReqVO) {
@@ -206,7 +206,24 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
 
     @Override
     public List<OrdersInfoDO> getUnUploadedOrders() {
-        List<OrdersInfoDO> orders = ordersInfoMapper.selectList(new LambdaQueryWrapper<OrdersInfoDO>().eq(OrdersInfoDO::getIsToErp, IS_TO_ERP_UNPROCESSED));
+        List<OrdersInfoDO> orders = ordersInfoMapper.selectList(new LambdaQueryWrapper<OrdersInfoDO>().eq(OrdersInfoDO::getIsToErp, FieldConstant.IS_TO_ERP_UNPROCESSED));
         return CollectionUtil.isEmpty(orders) ? Collections.emptyList() : orders;
+    }
+
+    @Override
+    public void saleProcess() {
+        //跨境订单处理
+        List<OrdersInfoDO> crossBorderOrders = ordersInfoMapper.getCrossBorderOrders();
+        crossBorderOrders.forEach(o -> {
+            try {
+                //置为已发货
+                o.setOrderStatus(OrderStatusType.SHIPPED.getType());
+                o.setSendDate(LocalDate.now());
+                o.setSendTime(LocalDate.now());
+                //自动扣款，并且自动生成账户调整记录【类型为扣款】TODO
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 }

@@ -20,19 +20,24 @@ public interface CustomerAccountMapper extends BaseMapperX<CustomerAccountDO> {
     default PageResult<CustomerAccountDO> selectPage(CustomerAccountPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<CustomerAccountDO>()
                 .eqIfPresent(CustomerAccountDO::getDistributorId, reqVO.getDistributorId())
-                .eqIfPresent(CustomerAccountDO::getCompany, reqVO.getCompany())
                 .eqIfPresent(CustomerAccountDO::getBalance, reqVO.getBalance())
                 .eqIfPresent(CustomerAccountDO::getAccountId, reqVO.getAccountId())
                 .eqIfPresent(CustomerAccountDO::getDetainAmount, reqVO.getDetainAmount())
                 .eqIfPresent(CustomerAccountDO::getIsActive, reqVO.getIsActive())
                 .eqIfPresent(CustomerAccountDO::getDeposit, reqVO.getDeposit())
                 .betweenIfPresent(CustomerAccountDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(CustomerAccountDO::getCompany, reqVO.getCompany())
+                .eqIfPresent(CustomerAccountDO::getVAmount, reqVO.getVAmount())
+                .eqIfPresent(CustomerAccountDO::getIsAllow, reqVO.getIsAllow())
+                .eqIfPresent(CustomerAccountDO::getQuota, reqVO.getQuota())
+                .eqIfPresent(CustomerAccountDO::getRemark, reqVO.getRemark())
+                .eqIfPresent(CustomerAccountDO::getIsRep, reqVO.getIsRep())
+                .eqIfPresent(CustomerAccountDO::getZkVAmount, reqVO.getZkVAmount())
+                .likeIfPresent(CustomerAccountDO::getName, reqVO.getName())
                 .orderByDesc(CustomerAccountDO::getId));
     }
 
-    default List<CustomerAccountDO> selectListById(Long id){
-        return selectList(new LambdaQueryWrapperX<CustomerAccountDO>()
-                .eqIfPresent(CustomerAccountDO::getId, id)
-                .orderByDesc(CustomerAccountDO::getCreateTime));
-    };
+    default List<CustomerAccountDO> selectListById(Long id) {
+        return selectList(new LambdaQueryWrapperX<CustomerAccountDO>().eq(CustomerAccountDO::getId, id));
+    }
 }

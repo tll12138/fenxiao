@@ -53,6 +53,14 @@ public interface GoodsArchivesService {
     PageResult<GoodsArchivesDO> getGoodsArchivesPage(GoodsArchivesPageReqVO pageReqVO);
 
     /**
+     * 根据仓库编码获得分销商品资料分页
+     *
+     * @param pageReqVO 分页查询
+     * @return 分销商品资料分页
+     */
+    PageResult<GoodsArchivesDO> getGoodsArchivesPageByWarehouseCode(GoodsArchivesPageReqVO pageReqVO);
+
+    /**
      * 同步分销商品信息
      */
     void syncGoodsArchives(boolean ifAll);

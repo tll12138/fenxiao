@@ -77,6 +77,14 @@ public class GoodsArchivesController {
         return success(BeanUtils.toBean(pageResult, GoodsArchivesRespVO.class));
     }
 
+    @GetMapping("/page-warehouseCode")
+    @Operation(summary = "根据仓库id获得分销商品资料分页")
+    @PreAuthorize("@ss.hasPermission('fx:goods-archives:query')")
+    public CommonResult<PageResult<GoodsArchivesRespVO>> getGoodsArchivesPageByWarehouseCode(@Valid GoodsArchivesPageReqVO pageReqVO) {
+        PageResult<GoodsArchivesDO> pageResult = goodsArchivesService.getGoodsArchivesPageByWarehouseCode(pageReqVO);
+        return success(BeanUtils.toBean(pageResult, GoodsArchivesRespVO.class));
+    }
+
     @GetMapping("/export-excel")
     @Operation(summary = "导出分销商品资料 Excel")
     @PreAuthorize("@ss.hasPermission('fx:goods-archives:export')")

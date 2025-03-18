@@ -84,4 +84,9 @@ public interface OrdersInfoService {
 
     //获取未向聚水潭上传订单列表
     List<OrdersInfoDO> getUnUploadedOrders();
+
+    /**
+     * 销售单处理
+     */
+    void saleProcess();
 }

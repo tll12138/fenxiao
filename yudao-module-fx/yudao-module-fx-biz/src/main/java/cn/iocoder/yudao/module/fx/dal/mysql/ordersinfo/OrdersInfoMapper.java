@@ -7,6 +7,8 @@ import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoPageR
 import cn.iocoder.yudao.module.fx.dal.dataobject.ordersinfo.OrdersInfoDO;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.List;
+
 /**
  * 销售单 Mapper
  *
@@ -29,5 +31,10 @@ public interface OrdersInfoMapper extends BaseMapperX<OrdersInfoDO> {
                 .eqIfPresent(OrdersInfoDO::getBusinessBelong, reqVO.getBusinessBelong())
                 .orderByDesc(OrdersInfoDO::getId));
     }
+
+    /**
+     * 获取所有跨境订单
+     */
+    List<OrdersInfoDO> getCrossBorderOrders();
 
 }

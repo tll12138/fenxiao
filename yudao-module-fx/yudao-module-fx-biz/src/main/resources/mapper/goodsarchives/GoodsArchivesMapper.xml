@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.iocoder.yudao.module.fx.dal.mysql.goodsarchives.GoodsArchivesMapper">
+
+    <!--
+        一般情况下，尽可能使用 Mapper 进行 CRUD 增删改查即可。
+        无法满足的场景，例如说多表关联查询，才使用 XML 编写 SQL。
+        代码生成器暂时只生成 Mapper XML 文件本身，更多推荐 MybatisX 快速开发插件来生成查询。
+        文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
+     -->
+
+    <select id="getGoodsArchivesPageByWarehouseCode"
+            resultType="cn.iocoder.yudao.module.fx.dal.dataobject.goodsarchives.GoodsArchivesDO">
+        SELECT g.id,
+        g.sku_id,
+        g.name,
+        g.short_name,
+        g.sale_price,
+        g.cost_price,
+        g.properties_value,
+        g.category,
+        g.vc_name,
+        g.item_type,
+        g.unit,
+        g.sku_type,
+        g.modified,
+        g.billing_name,
+        g.brand,
+        g.pic_big,
+        g.i_id,
+        g.market_price,
+        g.enabled,
+        g.is_fx,
+        g.actual_cost_price,
+        g.sale_cost_price,
+        g.level1_category,
+        g.level2_category,
+        g.is_count,
+        g.is_formal,
+        g.weight,
+        g.scancode,
+        g.is_group,
+        g.deleted,
+        g.create_time,
+        g.update_time,
+        g.creator,
+        g.updater,
+        g.auto_id
+        ,if(i.qty,i.qty,0) as inventory
+        FROM fx_goods_archives g
+        LEFT JOIN fx.fx_inventory_data i ON i.sku_id = g.sku_id AND i.warehouse_code = #{reqVO.warehouseCode}
+        <where>
+            <if test="reqVO.skuId != null">
+                AND g.sku_id = #{reqVO.skuId}
+            </if>
+            <if test="reqVO.name != null and reqVO.name != ''">
+                AND g.name LIKE CONCAT('%', #{reqVO.name}, '%')
+            </if>
+            <if test="reqVO.shortName != null and reqVO.shortName != ''">
+                AND g.short_name LIKE CONCAT('%', #{reqVO.shortName}, '%')
+            </if>
+            <if test="reqVO.salePrice != null">
+                AND g.sale_price = #{reqVO.salePrice}
+            </if>
+            <if test="reqVO.costPrice != null">
+                AND g.cost_price = #{reqVO.costPrice}
+            </if>
+            <if test="reqVO.propertiesValue != null">
+                AND g.properties_value = #{reqVO.propertiesValue}
+            </if>
+            <if test="reqVO.category != null">
+                AND g.category = #{reqVO.category}
+            </if>
+            <if test="reqVO.vcName != null and reqVO.vcName != ''">
+                AND g.vc_name LIKE CONCAT('%', #{reqVO.vcName}, '%')
+            </if>
+            <if test="reqVO.itemType != null">
+                AND g.item_type = #{reqVO.itemType}
+            </if>
+            <if test="reqVO.unit != null">
+                AND g.unit = #{reqVO.unit}
+            </if>
+            <if test="reqVO.enabled != null">
+                AND g.enabled = #{reqVO.enabled}
+            </if>
+            <if test="reqVO.isFx != null">
+                AND g.is_fx = #{reqVO.isFx}
+            </if>
+            <if test="reqVO.actualCostPrice != null">
+                AND g.actual_cost_price = #{reqVO.actualCostPrice}
+            </if>
+            <if test="reqVO.saleCostPrice != null">
+                AND g.sale_cost_price = #{reqVO.saleCostPrice}
+            </if>
+            <if test="reqVO.level1Category != null">
+                AND g.level1_category = #{reqVO.level1Category}
+            </if>
+            <if test="reqVO.level2Category != null">
+                AND g.level2_category = #{reqVO.level2Category}
+            </if>
+            <if test="reqVO.isCount != null">
+                AND g.is_count = #{reqVO.isCount}
+            </if>
+            <if test="reqVO.isFormal != null">
+                AND g.is_formal = #{reqVO.isFormal}
+            </if>
+            <if test="reqVO.weight != null">
+                AND g.weight = #{reqVO.weight}
+            </if>
+            <if test="reqVO.scancode != null">
+                AND g.scancode = #{reqVO.scancode}
+            </if>
+        </where>
+        ORDER BY id DESC
+    </select>
+</mapper>

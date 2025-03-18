@@ -53,6 +53,6 @@ public class OrdersDetailSaveReqVO {
     private BigDecimal weight;
 
     @Schema(description = "其他仓库可用库存", example = "27131")
-    private Integer otherAvailCount;
+    private Integer inventory;
 
 }

@@ -1,11 +1,13 @@
 package cn.iocoder.yudao.module.fx.dal.mysql.customerinfo;
 
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
+import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
+import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoPageReqVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customerinfo.CustomerInfoDO;
 import org.apache.ibatis.annotations.Mapper;
-import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.*;
+
+import java.util.List;
 
 /**
  * 分销商基础信息 Mapper
@@ -34,4 +36,5 @@ public interface CustomerInfoMapper extends BaseMapperX<CustomerInfoDO> {
                 .orderByDesc(CustomerInfoDO::getId));
     }
 
+    List<CustomerInfoDO> getCustomerInfoByNoAccount();
 }

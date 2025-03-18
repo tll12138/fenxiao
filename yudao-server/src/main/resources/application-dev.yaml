@@ -43,14 +43,14 @@ spring:
       primary: master
       datasource:
         master:
-          url: jdbc:mysql://127.0.0.1:3306/fx?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
+          url: jdbc:mysql://127.0.0.1:3306/fx?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&allowMultiQueries=true # MySQL Connector/J 8.X 连接的示例
           username: root
-          password: 3333
+          password: 123456
         slave: # 模拟从库，可根据自己需要修改 # 模拟从库，可根据自己需要修改
           lazy: true # 开启懒加载，保证启动速度
-          url: jdbc:mysql://127.0.0.1:3306/fx?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
+          url: jdbc:mysql://127.0.0.1:3306/fx?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&allowMultiQueries=true # MySQL Connector/J 8.X 连接的示例
           username: root
-          password: 3333
+          password: 123456
 
   # Redis 配置。Redisson 默认的配置足够使用，一般不需要进行调优
   redis:
@@ -138,6 +138,25 @@ spring:
 
 # 日志文件配置
 logging:
+  level:
+    # 配置自己写的 MyBatis Mapper 打印日志
+    cn.iocoder.yudao.module.bpm.dal.mysql: debug
+    cn.iocoder.yudao.module.infra.dal.mysql: debug
+    cn.iocoder.yudao.module.infra.dal.mysql.logger.ApiErrorLogMapper: INFO # 配置 ApiErrorLogMapper 的日志级别为 info，避免和 GlobalExceptionHandler 重复打印
+    cn.iocoder.yudao.module.infra.dal.mysql.job.JobLogMapper: INFO # 配置 JobLogMapper 的日志级别为 info
+    cn.iocoder.yudao.module.infra.dal.mysql.file.FileConfigMapper: INFO # 配置 FileConfigMapper 的日志级别为 info
+    cn.iocoder.yudao.module.pay.dal.mysql: debug
+    cn.iocoder.yudao.module.pay.dal.mysql.notify.PayNotifyTaskMapper: INFO # 配置 PayNotifyTaskMapper 的日志级别为 info
+    cn.iocoder.yudao.module.system.dal.mysql: debug
+    cn.iocoder.yudao.module.system.dal.mysql.sms.SmsChannelMapper: INFO # 配置 SmsChannelMapper 的日志级别为 info
+    cn.iocoder.yudao.module.tool.dal.mysql: debug
+    cn.iocoder.yudao.module.member.dal.mysql: debug
+    cn.iocoder.yudao.module.trade.dal.mysql: debug
+    cn.iocoder.yudao.module.promotion.dal.mysql: debug
+    cn.iocoder.yudao.module.statistics.dal.mysql: debug
+    cn.iocoder.yudao.module.crm.dal.mysql: debug
+    cn.iocoder.yudao.module.erp.dal.mysql: debug
+    cn.iocoder.yudao.module.fx.dal.mysql: debug
   file:
     name: ${user.home}/logs/${spring.application.name}.log # 日志文件名，全路径
 
@@ -212,3 +231,12 @@ dingtalk:
   client-id: dingjlatgycryncjpnox
   client-secret: wPCPo5UzEZU_qxynmfw1tHNWaNLiwSOe6u-9gePM68CJohQPZ47GkfuAZnKltlvo
   agent-id: 3288970097
+#
+#langchain4j:
+#  open-ai:
+#    chat-model:
+#      # 课程测试 KEY，需要更换为实际可用 KEY
+#      api-key: sk-xx
+#      model-name: qwen-turbo
+#      # 百炼兼容OpenAI接口规范，base_url为https://dashscope.aliyuncs.com/compatible-mode/v1
+#      base-url: https://dashscope.aliyuncs.com/compatible-mode/v1

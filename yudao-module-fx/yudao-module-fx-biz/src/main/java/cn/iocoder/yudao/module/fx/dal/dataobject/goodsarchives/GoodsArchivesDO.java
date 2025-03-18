@@ -153,5 +153,9 @@ public class GoodsArchivesDO extends BaseDO {
      * 聚水潭唯一id，系统自增id
      */
     private Integer autoId;
+    /**
+     * 库存
+     */
+    private Integer inventory;
 
 }

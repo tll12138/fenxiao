@@ -175,7 +175,6 @@ public class Ec2jstOrderServiceImpl implements Ec2jstOrderService {
 //                    throw new RuntimeException("批量上传失败：" + bodyMO.getMsg());
 //                }
 
-                // 批次间延时防止速率限制
                 TimeUnit.MILLISECONDS.sleep(1000);
             }
         } catch (Exception e) {

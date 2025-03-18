@@ -29,7 +29,7 @@ public interface OrdersDetailMapper extends BaseMapperX<OrdersDetailDO> {
                 .eqIfPresent(OrdersDetailDO::getCount, reqVO.getCount())
                 .eqIfPresent(OrdersDetailDO::getPriceAmount, reqVO.getPriceAmount())
                 .eqIfPresent(OrdersDetailDO::getWeight, reqVO.getWeight())
-                .eqIfPresent(OrdersDetailDO::getOtherAvailCount, reqVO.getOtherAvailCount())
+                .eqIfPresent(OrdersDetailDO::getInventory, reqVO.getInventory())
                 .orderByDesc(OrdersDetailDO::getId));
     }
 

@@ -94,7 +94,7 @@ public class GoodsArchivesRespVO {
 
     @Schema(description = "是否分销商品")
     @ExcelProperty(value = "是否分销商品", converter = DictConvert.class)
-    @DictFormat("yes_no") // TODO 代码优化：建议设置到对应的 DictTypeConstants 枚举类中
+    @DictFormat("yes_no") //
     private String isFx;
 
     @Schema(description = "实际成本价")
@@ -115,12 +115,12 @@ public class GoodsArchivesRespVO {
 
     @Schema(description = "是否参与计算")
     @ExcelProperty(value = "是否参与计算", converter = DictConvert.class)
-    @DictFormat("yes_no") // TODO 代码优化：建议设置到对应的 DictTypeConstants 枚举类中
+    @DictFormat("yes_no") //
     private String isCount;
 
     @Schema(description = "是否正装")
     @ExcelProperty(value = "是否正装", converter = DictConvert.class)
-    @DictFormat("yes_no") // TODO 代码优化：建议设置到对应的 DictTypeConstants 枚举类中
+    @DictFormat("yes_no") //
     private String isFormal;
 
     @Schema(description = "净重(kg)")
@@ -133,7 +133,11 @@ public class GoodsArchivesRespVO {
 
     @Schema(description = "是否组合商品")
     @ExcelProperty(value = "是否组合商品", converter = DictConvert.class)
-    @DictFormat("yes_no") // TODO 代码优化：建议设置到对应的 DictTypeConstants 枚举类中
+    @DictFormat("yes_no") //
     private String isGroup;
+
+    @Schema(description = "库存")
+    @ExcelProperty("库存")
+    private Integer inventory;
 
 }
