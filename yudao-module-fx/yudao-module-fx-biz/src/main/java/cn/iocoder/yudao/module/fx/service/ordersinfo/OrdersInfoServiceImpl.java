@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.fx.service.ordersinfo;
 import cn.hutool.core.bean.BeanUtil;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
+import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.bpm.api.task.BpmProcessInstanceApi;
 import cn.iocoder.yudao.module.bpm.api.task.dto.BpmProcessInstanceCreateReqDTO;
 import cn.iocoder.yudao.module.fx.constant.FieldConstant;
@@ -16,6 +17,7 @@ import cn.iocoder.yudao.module.fx.dal.mysql.ordersdetail.OrdersDetailMapper;
 import cn.iocoder.yudao.module.fx.dal.mysql.ordersinfo.OrdersInfoMapper;
 import cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants;
 import cn.iocoder.yudao.module.fx.enums.OrderStatusType;
+import cn.iocoder.yudao.module.fx.service.bigcustomeraddress.BigCustomerAddressService;
 import cn.iocoder.yudao.module.fx.utils.CollectionUtil;
 import cn.iocoder.yudao.module.fx.utils.orderinfo.OrderProcessingContext;
 import cn.iocoder.yudao.module.fx.utils.orderinfo.template.SaveOrderProcessing;
@@ -51,9 +53,10 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
     private OrdersInfoMapper ordersInfoMapper;
     @Resource
     private OrdersDetailMapper ordersDetailMapper;
-
     @Resource
     private BpmProcessInstanceApi processInstanceApi;
+    @Resource
+    private BigCustomerAddressService bigCustomerAddressService;
 
     /**
      * 销售单对应的流程定义 KEY
@@ -87,6 +90,12 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
         if (id == null) {
             throw exception(ErrorCodeConstants.SYSTEM_ERROR);
         }
+        //更新销售单的一些字段
+        ordersInfoMapper.updateSaleMain(id);
+        String bigCustomerAddress = createReqVO.getBigCustomerAddress();
+        if (bigCustomerAddress != null) {
+            bigCustomerAddressService.updateBigCustomerAddressCountById(Long.parseLong(bigCustomerAddress));
+        }
         //获取当前用户的ID
         Long userId = getLoginUserId();
         log.info("用户ID:{}", userId);
@@ -96,7 +105,7 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
                 new BpmProcessInstanceCreateReqDTO().setProcessDefinitionKey(PROCESS_KEY)
                         .setVariables(processInstanceVariables).setBusinessKey(String.valueOf(id)));
 
-//        // 将工作流的编号，更新到 OA 请假单中
+        // 将工作流的编号，更新到销售单中
         ordersInfoMapper.updateById(
                 new OrdersInfoDO()
                         .setId(id)
@@ -107,17 +116,11 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
     }
 
     @Override
-    public void updateOrdersInfoStatusSuccess(Long id) {
+    public void updateOrdersInfoStatus(Long id, Integer orderStatusType) {
         validateOrdersInfoExists(id);
-        ordersInfoMapper.updateById(
-                new OrdersInfoDO().setId(id).setOrderStatus(OrderStatusType.COMPLETED.getType()));
-    }
-
-    @Override
-    public void updateOrdersInfoStatusFail(Long id) {
-        validateOrdersInfoExists(id);
-        ordersInfoMapper.updateById(
-                new OrdersInfoDO().setId(id).setOrderStatus(OrderStatusType.CREATION_FAILED.getType()));
+        ordersInfoMapper.updateById(new OrdersInfoDO()
+                .setId(id)
+                .setOrderStatus(orderStatusType));
     }
 
     @Override
@@ -157,6 +160,23 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
         OrdersInfoDetailRespVO respVO = BeanUtils.toBean(ordersInfoDO, OrdersInfoDetailRespVO.class);
         respVO.setOrdersDetails(ordersDetailMapper.selectListByOrderId(id));
         return respVO;
+    }
+
+    /**
+     * 根据流程编号获得销售单
+     *
+     * @param processInstanceId 流程编号
+     * @return 销售单
+     */
+    @Override
+    public OrdersInfoDetailRespVO getOrdersInfo(String processInstanceId) {
+        OrdersInfoDO ordersInfoDO = ordersInfoMapper.selectOne(new LambdaQueryWrapperX<OrdersInfoDO>().eq(OrdersInfoDO::getProcessInstanceId, processInstanceId));
+        if (ordersInfoDO != null) {
+            OrdersInfoDetailRespVO respVO = BeanUtils.toBean(ordersInfoDO, OrdersInfoDetailRespVO.class);
+            respVO.setOrdersDetails(ordersDetailMapper.selectListByOrderId(ordersInfoDO.getId()));
+            return respVO;
+        }
+        return null;
     }
 
     @Override

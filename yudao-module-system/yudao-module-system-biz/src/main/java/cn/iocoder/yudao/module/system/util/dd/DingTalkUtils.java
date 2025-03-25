@@ -9,7 +9,11 @@ import cn.iocoder.yudao.module.system.util.dd.vo.CreateDingTodoReqVO;
 import com.aliyun.dingtalkoauth2_1_0.models.GetAccessTokenRequest;
 import com.aliyun.dingtalkoauth2_1_0.models.GetAccessTokenResponse;
 import com.aliyun.dingtalktodo_1_0.Client;
-import com.aliyun.dingtalktodo_1_0.models.*;
+import com.aliyun.dingtalktodo_1_0.models.CreateTodoTaskHeaders;
+import com.aliyun.dingtalktodo_1_0.models.CreateTodoTaskRequest;
+import com.aliyun.dingtalktodo_1_0.models.CreateTodoTaskResponse;
+import com.aliyun.dingtalktodo_1_0.models.UpdateTodoTaskHeaders;
+import com.aliyun.dingtalktodo_1_0.models.UpdateTodoTaskRequest;
 import com.aliyun.tea.TeaException;
 import com.aliyun.teaopenapi.models.Config;
 import com.aliyun.teautil.models.RuntimeOptions;
@@ -38,7 +42,7 @@ import static cn.iocoder.yudao.module.system.enums.UrlConstant.DINGTALK_SEND_NOT
  */
 @Service
 @Slf4j
-public class    DingTalkUtils {
+public class DingTalkUtils {
 
     @Resource
     private DingTalkProperties dingTalkProperties;
@@ -107,10 +111,10 @@ public class    DingTalkUtils {
     // ==================================== 钉钉用户 相关API ===========================
 
 
-
     /**
      * 通过userId 获取用户的 unionId
-     * @param  userId 用户的userId
+     *
+     * @param userId 用户的userId
      * @return 用户的 unionId
      * @throws Exception 错误信息
      */
@@ -176,7 +180,10 @@ public class    DingTalkUtils {
         msg.getActionCard().setSingleUrl(url);
         request.setMsg(msg);
         try {
-            OapiMessageCorpconversationAsyncsendV2Response rsp = client.execute(request, getAccessToken());
+            String accessToken = getAccessToken();
+            log.info("[sendNotifyMessage][发送钉钉通知开始][accessToken:{},userId:{},title:{},description:{},url:{},actionTitle:{},buttonText:{}]]",
+                    accessToken, userId, title, description, url, actionTitle, buttonText);
+            OapiMessageCorpconversationAsyncsendV2Response rsp = client.execute(request, accessToken);
             log.info("[sendNotifyMessage][发送钉钉通知成功，消息ID为:{}]", rsp.getTaskId());
             return new SmsSendRespDTO().setSuccess(rsp.getErrcode() == 0)
                     .setSerialNo(null)
@@ -251,6 +258,7 @@ public class    DingTalkUtils {
                 .setPriority(reqVO.getPriority())
                 .setDueTime(reqVO.getDueTime())
                 .setNotifyConfigs(notifyConfigs);
+        log.info("[createTask][创建钉钉代办开始]，{}", JSONUtil.toJsonStr(createTodoTaskRequest));
         try {
             CreateTodoTaskResponse response = client.createTodoTaskWithOptions(reqVO.getCreator(), createTodoTaskRequest,
                     createTodoTaskHeaders, new RuntimeOptions());
@@ -280,8 +288,9 @@ public class    DingTalkUtils {
 
     /**
      * 更新钉钉代办
+     *
      * @param unionId 操作者unionId
-     * @param taskId 代办ID
+     * @param taskId  代办ID
      * @throws Exception 异常信息
      */
     public void updateTodoTask(String unionId, String taskId) throws Exception {

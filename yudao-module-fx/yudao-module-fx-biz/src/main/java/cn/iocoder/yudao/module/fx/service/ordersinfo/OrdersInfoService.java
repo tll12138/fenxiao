@@ -42,9 +42,7 @@ public interface OrdersInfoService {
      */
     void updateOrdersInfo(@Valid OrdersInfoSaveReqVO updateReqVO);
 
-    void updateOrdersInfoStatusSuccess(Long id);
-
-    void updateOrdersInfoStatusFail(Long id);
+    void updateOrdersInfoStatus(Long id, Integer orderStatusType);
 
     /**
      * 删除销售单
@@ -60,6 +58,14 @@ public interface OrdersInfoService {
      * @return 销售单
      */
     OrdersInfoDetailRespVO getOrdersInfo(Long id);
+
+    /**
+     * 根据流程编号获得销售单
+     *
+     * @param processInstanceId 流程编号
+     * @return 销售单
+     */
+    OrdersInfoDetailRespVO getOrdersInfo(String processInstanceId);
 
     /**
      * 获得销售单分页

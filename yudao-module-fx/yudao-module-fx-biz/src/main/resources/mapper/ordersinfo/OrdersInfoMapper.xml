@@ -33,4 +33,22 @@
             )
 
     </select>
+
+    <update id="updateSaleMain">
+        UPDATE fx_orders_info t
+        SET t.order_type   = CASE
+                                 WHEN LOCATE('一件代发单', t.remark) > 0 THEN 1
+                                 WHEN LOCATE('客商代发单', t.remark) > 0 THEN 2
+                                 WHEN LOCATE('销售退货单', t.remark) > 0 THEN 4
+                                 WHEN LOCATE('爱库存', t.remark) > 0 OR LOCATE('快团团', t.remark) > 0 THEN 3
+                                 ELSE 0 END,
+            t.brand        = (SELECT b.brand
+                              FROM fx_orders_detail a
+                                       JOIN fx_goods_archives b ON a.sku_id = b.id
+                              WHERE a.order_id = t.id
+                              ORDER BY b.brand DESC
+                              LIMIT 1),
+            t.order_status = 10
+        WHERE t.id = #{vId}
+    </update>
 </mapper>

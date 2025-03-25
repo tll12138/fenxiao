@@ -6,5 +6,10 @@ package cn.iocoder.yudao.module.fx.constant;
  */
 public class FieldConstant {
 
+    //未传ERP
     public static final int IS_TO_ERP_UNPROCESSED = 0;
+    //商品职位
+    public static final String PRODUCT_POSITION = "product";
+    //财务职位
+    public static final String FINANCE_POSITION = "finance";
 }

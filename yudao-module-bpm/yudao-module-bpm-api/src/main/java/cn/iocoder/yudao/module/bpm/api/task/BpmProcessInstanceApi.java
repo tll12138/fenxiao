@@ -21,4 +21,11 @@ public interface BpmProcessInstanceApi {
     String createProcessInstance(Long userId, @Valid BpmProcessInstanceCreateReqDTO reqDTO);
 
     void cancelProcessInstance(Long userId, String processInstanceId, String reason);
+
+    /**
+     * 获得流程实例名称
+     *
+     * @param processInstanceId 流程实例的编号
+     */
+    String getProcessInstanceName(String processInstanceId);
 }

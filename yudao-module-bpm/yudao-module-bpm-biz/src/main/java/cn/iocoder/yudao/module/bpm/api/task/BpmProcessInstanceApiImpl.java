@@ -34,4 +34,14 @@ public class BpmProcessInstanceApiImpl implements BpmProcessInstanceApi {
         bpmProcessInstanceCancelReqVO.setReason(reason);
         processInstanceService.cancelProcessInstanceByStartUser(userId, bpmProcessInstanceCancelReqVO);
     }
+
+    /**
+     * 获得流程实例名称
+     *
+     * @param processInstanceId 流程实例的编号
+     */
+    @Override
+    public String getProcessInstanceName(String processInstanceId) {
+        return processInstanceService.getProcessInstance(processInstanceId).getName();
+    }
 }

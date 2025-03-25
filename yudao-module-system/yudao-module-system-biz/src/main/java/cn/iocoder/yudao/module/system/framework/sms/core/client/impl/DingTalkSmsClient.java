@@ -21,10 +21,18 @@ import cn.iocoder.yudao.module.system.util.dd.DingTalkUtils;
 import cn.iocoder.yudao.module.system.util.dd.vo.CreateDingTodoReqVO;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.*;
+import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.SMS_TEMPLATE_CREATOR_ID_NOT_EXISTS;
+import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.SMS_TEMPLATE_EXECUTOR_ID_NOT_EXISTS;
+import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.SMS_TEMPLATE_TYPE_UN_SUPPORT;
+import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.SMS_TEMPLATE_URL_NOT_EXISTS;
 
 /**
  * 基于钉钉 WebHook 实现的调试的短信客户端实现类
@@ -150,7 +158,7 @@ public class DingTalkSmsClient extends AbstractSmsClient {
         if (type.equals(SmsTemplateTypeEnum.NOTICE.getType())) {  //发送审批结果
             String actionTitle = "CRM系统-流程审批结果通知";
             String buttonText = "点击查看审批详情";
-            return dingTalkUtils.sendNotifyMessage(creatorId, title, description, detailUrl,actionTitle,buttonText);
+            return dingTalkUtils.sendNotifyMessage(creatorId, title, description, detailUrl, actionTitle, buttonText);
         } else if (type.equals(SmsTemplateTypeEnum.TODO.getType())) {  //发送待办
             if (!params.containsKey("executor")) {
                 throw exception(SMS_TEMPLATE_EXECUTOR_ID_NOT_EXISTS);

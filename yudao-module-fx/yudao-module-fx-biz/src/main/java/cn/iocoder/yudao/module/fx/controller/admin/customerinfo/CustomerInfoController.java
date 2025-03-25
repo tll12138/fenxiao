@@ -6,18 +6,28 @@ import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
-import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.*;
+import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoDetailPageRespVO;
+import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoDetailRespVO;
+import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoPageReqVO;
+import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoRespVO;
+import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoSaveReqVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customeraccount.CustomerAccountDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customeraddress.CustomerAddressDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customerinfo.CustomerInfoDO;
 import cn.iocoder.yudao.module.fx.service.customerinfo.CustomerInfoService;
-import cn.iocoder.yudao.module.fx.utils.CollectionUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -73,9 +83,12 @@ public class CustomerInfoController {
     @Operation(summary = "获得全量分销商基础信息")
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
     @PreAuthorize("@ss.hasPermission('fx:customer-info:query')")
-    public CommonResult<List<CustomerInfoDetailPageRespVO>> getAllCustomerInfo() {
+    public CommonResult<PageResult<CustomerInfoDetailPageRespVO>> getAllCustomerInfo() {
         List<CustomerInfoDO> allCustomerInfo = customerInfoService.getAllCustomerInfo();
-        return success(CollectionUtil.copyList(allCustomerInfo, CustomerInfoDetailPageRespVO.class));
+        PageResult<CustomerInfoDO> customerInfoDOPageResult = new PageResult<>();
+        customerInfoDOPageResult.setList(allCustomerInfo);
+        customerInfoDOPageResult.setTotal(Long.valueOf(allCustomerInfo.size()));
+        return success(BeanUtils.toBean(customerInfoDOPageResult, CustomerInfoDetailPageRespVO.class));
     }
 
     @GetMapping("/page")

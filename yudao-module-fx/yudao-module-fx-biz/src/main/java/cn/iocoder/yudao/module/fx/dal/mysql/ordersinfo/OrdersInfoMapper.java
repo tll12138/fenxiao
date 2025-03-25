@@ -37,4 +37,10 @@ public interface OrdersInfoMapper extends BaseMapperX<OrdersInfoDO> {
      */
     List<OrdersInfoDO> getCrossBorderOrders();
 
+    /**
+     * 更新销售单更新订单状态
+     *
+     * @param id
+     */
+    void updateSaleMain(Long id);
 }

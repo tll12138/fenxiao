@@ -89,5 +89,6 @@ public interface ErrorCodeConstants {
     ErrorCode IMPORT_ORDER_IMPORT_LIST_IS_EMPTY = new ErrorCode(1_205_000_400, "导入客商代发数据不能为空！");
     ErrorCode IMPORT_ORDER_EXISTS = new ErrorCode(1_205_000_201, "客商代发单已经存在");
     ErrorCode IMPORT_ORDER_GENERATED_SALE = new ErrorCode(1_205_000_201, "该订单已生成销售单，不允许修改");
-
+    // ========== 分销大客户地址 ==========
+    ErrorCode BIG_CUSTOMER_ADDRESS_NOT_EXISTS = new ErrorCode(1_206_000_100, "分销大客户地址不存在");
 }
