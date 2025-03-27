@@ -1,13 +1,11 @@
 package cn.iocoder.yudao.module.fx.dal.mysql.amountadj;
 
-import java.util.*;
-
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
+import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
+import cn.iocoder.yudao.module.fx.controller.admin.amountadj.vo.AmountAdjPageReqVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.amountadj.AmountAdjDO;
 import org.apache.ibatis.annotations.Mapper;
-import cn.iocoder.yudao.module.fx.controller.admin.amountadj.vo.*;
 
 /**
  * 分销账户资金调整记录 Mapper
@@ -26,6 +24,7 @@ public interface AmountAdjMapper extends BaseMapperX<AmountAdjDO> {
                 .eqIfPresent(AmountAdjDO::getRemark, reqVO.getRemark())
                 .eqIfPresent(AmountAdjDO::getType, reqVO.getType())
                 .eqIfPresent(AmountAdjDO::getAdjustBalance, reqVO.getAdjustBalance())
+                .eqIfPresent(AmountAdjDO::getAdjustWithholdBalance, reqVO.getAdjustWithholdBalance())
                 .betweenIfPresent(AmountAdjDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(AmountAdjDO::getId));
     }

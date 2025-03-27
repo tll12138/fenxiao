@@ -11,6 +11,7 @@ import cn.iocoder.yudao.module.fx.dal.mysql.customeraccount.CustomerAccountMappe
 import cn.iocoder.yudao.module.fx.service.accinfoconfig.AccInfoConfigService;
 import cn.iocoder.yudao.module.fx.service.customerinfo.CustomerInfoService;
 import cn.iocoder.yudao.module.system.api.dict.DictDataApi;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -55,6 +56,16 @@ public class CustomerAccountServiceImpl implements CustomerAccountService {
         // 更新
         CustomerAccountDO updateObj = BeanUtils.toBean(updateReqVO, CustomerAccountDO.class);
         customerAccountMapper.updateById(updateObj);
+    }
+
+    /**
+     * 根据DO更新分销商账号
+     *
+     * @param account 更新信息
+     */
+    @Override
+    public void updateCustomerAccountByDO(CustomerAccountDO account) {
+        customerAccountMapper.updateById(account);
     }
 
     @Override
@@ -110,6 +121,32 @@ public class CustomerAccountServiceImpl implements CustomerAccountService {
             List<CustomerAccountDO> subList = accounts.subList(i, Math.min(i + batchSize, accounts.size()));
             customerAccountMapper.insertBatch(subList);
         }
+    }
+
+    /**
+     * 根据分销商id和业务主体查询账号
+     *
+     * @param distributorId 分销商id
+     * @param company       业务主体
+     * @return
+     */
+    @Override
+    public CustomerAccountDO getCustomerAccountByDistributorIdAndCompany(Long distributorId, Integer company) {
+        return customerAccountMapper.selectOne(new LambdaQueryWrapper<CustomerAccountDO>()
+                .eq(CustomerAccountDO::getDistributorId, distributorId)
+                .eq(CustomerAccountDO::getCompany, company));
+    }
+
+    /**
+     * 创建单个分销商的账户
+     */
+    @Override
+    public void createSingleCustomerAccount(Long distributorId, Integer company, String distributorName) {
+        customerAccountMapper.insert(new CustomerAccountDO()
+                .setDistributorId(distributorId)
+                .setCompany(company)
+                .setAccountId(String.join(company.toString(), "-", distributorId.toString()))
+                .setName(distributorName));
     }
 
 }

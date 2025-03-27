@@ -30,6 +30,13 @@ public interface CustomerAccountService {
     void updateCustomerAccount(@Valid CustomerAccountSaveReqVO updateReqVO);
 
     /**
+     * 根据DO更新分销商账号
+     *
+     * @param account 更新信息
+     */
+    void updateCustomerAccountByDO(CustomerAccountDO account);
+
+    /**
      * 删除分销商账号
      *
      * @param id 编号
@@ -57,4 +64,17 @@ public interface CustomerAccountService {
      */
     void accountAutoConstructor();
 
+    /**
+     * 根据分销商id和业务主体查询账号
+     *
+     * @param distributorId 分销商id
+     * @param company       业务主体
+     * @return
+     */
+    CustomerAccountDO getCustomerAccountByDistributorIdAndCompany(Long distributorId, Integer company);
+
+    /**
+     * 创建单个分销商的账户
+     */
+    void createSingleCustomerAccount(Long distributorId, Integer company, String distributorName);
 }

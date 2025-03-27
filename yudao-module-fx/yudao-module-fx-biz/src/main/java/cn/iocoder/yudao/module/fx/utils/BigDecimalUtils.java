@@ -62,7 +62,7 @@ public final class BigDecimalUtils {
     }
 
     /**
-     * 大于比较
+     * b1大于b2比较
      */
     public static boolean gt(BigDecimal b1, BigDecimal b2) {
         return compare(b1, b2) > 0;
@@ -73,6 +73,20 @@ public final class BigDecimalUtils {
      */
     public static boolean ge(BigDecimal b1, BigDecimal b2) {
         return compare(b1, b2) >= 0;
+    }
+
+    /**
+     * b1小于b2比较
+     */
+    public static boolean lt(BigDecimal b1, BigDecimal b2) {
+        return compare(b1, b2) < 0;
+    }
+
+    /**
+     * 小于等于比较
+     */
+    public static boolean le(BigDecimal b1, BigDecimal b2) {
+        return compare(b1, b2) <= 0;
     }
 
     /**

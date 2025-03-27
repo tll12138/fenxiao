@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Slf4j
 public class SaveOrderProcessing extends AbstractOrderProcessingTemplate {
@@ -123,6 +124,7 @@ public class SaveOrderProcessing extends AbstractOrderProcessingTemplate {
             orderInfo.setOrderDate(LocalDate.now());
             orderInfo.setOrderStatus(OrderStatusType.UN_SUBMITTED.getType()); // 默认未提交
             orderInfo.setCreator(SecurityFrameworkUtils.getLoginUserNickname());
+            orderInfo.setCreatorId(Objects.requireNonNull(SecurityFrameworkUtils.getLoginUserId()).intValue());
         }
         log.info("[SaveOrderProcessing] 订单参数新增成功...");
     }

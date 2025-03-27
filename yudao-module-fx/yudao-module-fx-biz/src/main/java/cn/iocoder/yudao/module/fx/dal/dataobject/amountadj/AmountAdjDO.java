@@ -1,13 +1,17 @@
 package cn.iocoder.yudao.module.fx.dal.dataobject.amountadj;
 
-import lombok.*;
-import java.util.*;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.*;
 import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
+import com.baomidou.mybatisplus.annotation.KeySequence;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+
+import java.math.BigDecimal;
 
 /**
  * 分销账户资金调整记录 DO
@@ -57,5 +61,9 @@ public class AmountAdjDO extends BaseDO {
      * 调整后余额
      */
     private BigDecimal adjustBalance;
+    /**
+     * 调整后暂扣金额
+     */
+    private BigDecimal adjustWithholdBalance;
 
 }

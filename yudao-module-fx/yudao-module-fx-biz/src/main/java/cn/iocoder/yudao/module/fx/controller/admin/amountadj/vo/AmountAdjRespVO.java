@@ -1,13 +1,12 @@
 package cn.iocoder.yudao.module.fx.controller.admin.amountadj.vo;
 
+import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
+import com.alibaba.excel.annotation.ExcelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import java.util.*;
-import java.util.*;
+import lombok.Data;
+
 import java.math.BigDecimal;
-import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDateTime;
-import com.alibaba.excel.annotation.*;
 
 @Schema(description = "管理后台 - 分销账户资金调整记录 Response VO")
 @Data
@@ -45,6 +44,10 @@ public class AmountAdjRespVO {
     @Schema(description = "调整后余额")
     @ExcelProperty("调整后余额")
     private BigDecimal adjustBalance;
+
+    @Schema(description = "调整后暂扣金额")
+    @ExcelProperty("调整后暂扣金额")
+    private BigDecimal adjustWithholdBalance;
 
     @Schema(description = "创建时间")
     @ExcelProperty("创建时间")

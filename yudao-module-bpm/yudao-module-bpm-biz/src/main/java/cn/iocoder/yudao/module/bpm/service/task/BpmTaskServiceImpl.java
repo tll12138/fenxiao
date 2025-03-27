@@ -10,7 +10,14 @@ import cn.iocoder.yudao.framework.common.util.date.DateUtils;
 import cn.iocoder.yudao.framework.common.util.number.NumberUtils;
 import cn.iocoder.yudao.framework.common.util.object.PageUtils;
 import cn.iocoder.yudao.framework.web.core.util.WebFrameworkUtils;
-import cn.iocoder.yudao.module.bpm.controller.admin.task.vo.task.*;
+import cn.iocoder.yudao.module.bpm.controller.admin.task.vo.task.BpmTaskApproveReqVO;
+import cn.iocoder.yudao.module.bpm.controller.admin.task.vo.task.BpmTaskDelegateReqVO;
+import cn.iocoder.yudao.module.bpm.controller.admin.task.vo.task.BpmTaskPageReqVO;
+import cn.iocoder.yudao.module.bpm.controller.admin.task.vo.task.BpmTaskRejectReqVO;
+import cn.iocoder.yudao.module.bpm.controller.admin.task.vo.task.BpmTaskReturnReqVO;
+import cn.iocoder.yudao.module.bpm.controller.admin.task.vo.task.BpmTaskSignCreateReqVO;
+import cn.iocoder.yudao.module.bpm.controller.admin.task.vo.task.BpmTaskSignDeleteReqVO;
+import cn.iocoder.yudao.module.bpm.controller.admin.task.vo.task.BpmTaskTransferReqVO;
 import cn.iocoder.yudao.module.bpm.convert.task.BpmTaskConvert;
 import cn.iocoder.yudao.module.bpm.enums.task.BpmCommentTypeEnum;
 import cn.iocoder.yudao.module.bpm.enums.task.BpmDeleteReasonEnum;
@@ -21,6 +28,9 @@ import cn.iocoder.yudao.module.bpm.framework.flowable.core.util.BpmnModelUtils;
 import cn.iocoder.yudao.module.bpm.framework.flowable.core.util.FlowableUtils;
 import cn.iocoder.yudao.module.bpm.service.definition.BpmModelService;
 import cn.iocoder.yudao.module.bpm.service.message.BpmMessageService;
+import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoDetailRespVO;
+import cn.iocoder.yudao.module.fx.enums.OrderStatusType;
+import cn.iocoder.yudao.module.fx.service.ordersinfo.OrdersInfoService;
 import cn.iocoder.yudao.module.system.api.user.AdminUserApi;
 import cn.iocoder.yudao.module.system.api.user.dto.AdminUserRespDTO;
 import lombok.extern.slf4j.Slf4j;
@@ -47,12 +57,21 @@ import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Stack;
 import java.util.stream.Stream;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static cn.iocoder.yudao.framework.common.util.collection.CollectionUtils.*;
+import static cn.iocoder.yudao.framework.common.util.collection.CollectionUtils.convertList;
+import static cn.iocoder.yudao.framework.common.util.collection.CollectionUtils.convertListByFlatMap;
+import static cn.iocoder.yudao.framework.common.util.collection.CollectionUtils.convertMap;
 import static cn.iocoder.yudao.module.bpm.enums.ErrorCodeConstants.*;
+import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.ORDERS_INFO_NOT_EXISTS;
 
 /**
  * 流程任务实例 Service 实现类
@@ -84,6 +103,8 @@ public class BpmTaskServiceImpl implements BpmTaskService {
 
     @Resource
     private AdminUserApi adminUserApi;
+    @Resource
+    private OrdersInfoService ordersInfoService;
 
     @Override
     public PageResult<Task> getTaskTodoPage(Long userId, BpmTaskPageReqVO pageVO) {
@@ -244,7 +265,7 @@ public class BpmTaskServiceImpl implements BpmTaskService {
 
     /**
      * 如果父任务是有前后【加签】的任务，如果它【加签】出来的子任务都被处理，需要处理父任务：
-     *
+     * <p>
      * 1. 如果是【向前】加签，则需要重新激活父任务，让它可以被审批
      * 2. 如果是【向后】加签，则需要完成父任务，让它完成审批
      *
@@ -277,7 +298,7 @@ public class BpmTaskServiceImpl implements BpmTaskService {
             taskService.resolveTask(parentTaskId);
             // 3.1.2 更新流程任务 status
             updateTaskStatus(parentTaskId, BpmTaskStatusEnum.RUNNING.getStatus());
-        // 3.2 情况二：处理向【向后】加签
+            // 3.2 情况二：处理向【向后】加签
         } else if (BpmTaskSignTypeEnum.AFTER.getType().equals(scopeType)) {
             // 只有 parentTask 处于 APPROVING 的情况下，才可以继续 complete 完成
             // 否则，一个未审批的 parentTask 任务，在加签出来的任务都被减签的情况下，就直接完成审批，这样会存在问题
@@ -321,7 +342,8 @@ public class BpmTaskServiceImpl implements BpmTaskService {
         // 1.1 校验任务存在
         Task task = validateTask(userId, reqVO.getId());
         // 1.2 校验流程实例存在
-        ProcessInstance instance = processInstanceService.getProcessInstance(task.getProcessInstanceId());
+        String processInstanceId = task.getProcessInstanceId();
+        ProcessInstance instance = processInstanceService.getProcessInstance(processInstanceId);
         if (instance == null) {
             throw exception(PROCESS_INSTANCE_NOT_EXISTS);
         }
@@ -329,17 +351,28 @@ public class BpmTaskServiceImpl implements BpmTaskService {
         // 2.1 更新流程实例为不通过
         updateTaskStatusAndReason(task.getId(), BpmTaskStatusEnum.REJECT.getStatus(), reqVO.getReason());
         // 2.2 添加评论
-        taskService.addComment(task.getId(), task.getProcessInstanceId(), BpmCommentTypeEnum.REJECT.getType(),
+        taskService.addComment(task.getId(), processInstanceId, BpmCommentTypeEnum.REJECT.getType(),
                 BpmCommentTypeEnum.REJECT.formatComment(reqVO.getReason()));
 
         // 3. 更新流程实例，审批不通过！
         processInstanceService.updateProcessInstanceReject(instance.getProcessInstanceId(), reqVO.getReason());
+
+        //4. 判断审批类型
+        String processDefinitionKey = instance.getProcessDefinitionKey();
+        if (processDefinitionKey.equals("sale_audit")) {
+            OrdersInfoDetailRespVO ordersInfo = ordersInfoService.getOrdersInfo(processInstanceId);
+            if (ordersInfo == null) {
+                throw exception(ORDERS_INFO_NOT_EXISTS);
+            }
+            //4.1 销售单审批不通过，更改状态
+            ordersInfoService.updateOrdersInfoStatus(ordersInfo.getId(), OrderStatusType.UN_SUBMITTED.getType());
+        }
     }
 
     /**
      * 更新流程任务的 status 状态
      *
-     * @param id    任务编号
+     * @param id     任务编号
      * @param status 状态
      */
     private void updateTaskStatus(String id, Integer status) {
@@ -349,7 +382,7 @@ public class BpmTaskServiceImpl implements BpmTaskService {
     /**
      * 更新流程任务的 status 状态、reason 理由
      *
-     * @param id 任务编号
+     * @param id     任务编号
      * @param status 状态
      * @param reason 理由（审批通过、审批不通过的理由）
      */
@@ -656,7 +689,7 @@ public class BpmTaskServiceImpl implements BpmTaskService {
         List<Long> currentAssigneeList = convertListByFlatMap(taskList, task -> // 需要考虑 owner 的情况，因为向后加签时，它暂时没 assignee 而是 owner
                 Stream.of(NumberUtils.parseLong(task.getAssignee()), NumberUtils.parseLong(task.getOwner())));
         if (CollUtil.containsAny(currentAssigneeList, reqVO.getUserIds())) {
-            List<AdminUserRespDTO> userList = adminUserApi.getUserList( CollUtil.intersection(currentAssigneeList, reqVO.getUserIds()));
+            List<AdminUserRespDTO> userList = adminUserApi.getUserList(CollUtil.intersection(currentAssigneeList, reqVO.getUserIds()));
             throw exception(TASK_SIGN_CREATE_USER_REPEAT, String.join(",", convertList(userList, AdminUserRespDTO::getNickname)));
         }
         return taskEntity;
@@ -665,8 +698,8 @@ public class BpmTaskServiceImpl implements BpmTaskService {
     /**
      * 创建加签子任务
      *
-     * @param userIds 被加签的用户 ID
-     * @param taskEntity        被加签的任务
+     * @param userIds    被加签的用户 ID
+     * @param taskEntity 被加签的任务
      */
     private void createSignTaskList(List<String> userIds, TaskEntityImpl taskEntity) {
         if (CollUtil.isEmpty(userIds)) {
@@ -695,7 +728,7 @@ public class BpmTaskServiceImpl implements BpmTaskService {
         // 2.1 向前加签，设置审批人
         if (BpmTaskSignTypeEnum.BEFORE.getType().equals(parentTask.getScopeType())) {
             task.setAssignee(assignee);
-        // 2.2 向后加签，设置 owner 不设置 assignee 是因为不能同时审批，需要等父任务完成
+            // 2.2 向后加签，设置 owner 不设置 assignee 是因为不能同时审批，需要等父任务完成
         } else {
             task.setOwner(assignee);
         }

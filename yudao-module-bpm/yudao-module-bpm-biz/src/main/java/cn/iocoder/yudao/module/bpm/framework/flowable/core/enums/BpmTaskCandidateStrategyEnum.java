@@ -6,7 +6,7 @@ import lombok.Getter;
 
 /**
  * BPM 任务的候选人策略枚举
- *
+ * <p>
  * 例如说：分配给指定人审批
  *
  * @author 芋道源码
@@ -15,6 +15,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum BpmTaskCandidateStrategyEnum {
 
+    OWNER(0, "发起人"),
     ROLE(10, "角色"),
     DEPT_MEMBER(20, "部门的成员"), // 包括负责人
     DEPT_LEADER(21, "部门的负责人"),

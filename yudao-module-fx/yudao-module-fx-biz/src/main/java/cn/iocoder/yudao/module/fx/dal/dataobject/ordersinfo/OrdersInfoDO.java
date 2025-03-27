@@ -6,7 +6,12 @@ import com.baomidou.mybatisplus.annotation.KeySequence;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.sun.xml.bind.v2.TODO;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -38,7 +43,7 @@ public class OrdersInfoDO extends BaseDO {
      * 流程实例id
      */
     private String processInstanceId;
-    
+
     /**
      * 发货仓库
      */
@@ -57,7 +62,7 @@ public class OrdersInfoDO extends BaseDO {
     private String erpOrderNumber;
     /**
      * 是否传erp
-     *
+     * <p>
      * 枚举 {@link TODO fx_is_2_erp 对应的类}
      */
     private Integer isToErp;
@@ -67,7 +72,7 @@ public class OrdersInfoDO extends BaseDO {
     private LocalDate toErpTime;
     /**
      * 是否开票
-     *
+     * <p>
      * 枚举 {@link TODO yes_no 对应的类}
      */
     private Integer isInvoice;
@@ -119,13 +124,13 @@ public class OrdersInfoDO extends BaseDO {
     private Integer orderStatus;
     /**
      * 发货类型
-     *
+     * <p>
      * 枚举 {@link TODO fx_send_type 对应的类}
      */
     private Integer sendType;
     /**
      * 销售类型
-     *
+     * <p>
      * 枚举 {@link TODO fx_sale_type 对应的类}
      */
     private Integer salesType;
@@ -179,7 +184,7 @@ public class OrdersInfoDO extends BaseDO {
     private String bigCustomerAddress;
     /**
      * 客户等级
-     *
+     * <p>
      * 枚举 {@link TODO fx_customer_level 对应的类}
      */
     private Integer customerLevel;
@@ -201,7 +206,7 @@ public class OrdersInfoDO extends BaseDO {
     private String requirement;
     /**
      * 品牌
-     *
+     * <p>
      * 枚举 {@link TODO fx_brand 对应的类}
      */
     private String brand;
@@ -215,7 +220,7 @@ public class OrdersInfoDO extends BaseDO {
     private Integer channel;
     /**
      * 订单类型
-     *
+     * <p>
      * 枚举 {@link TODO fx_sale_type 对应的类}
      */
     private Integer orderType;
@@ -229,13 +234,13 @@ public class OrdersInfoDO extends BaseDO {
     private Integer isNew;
     /**
      * 是否无痕发货
-     *
+     * <p>
      * 枚举 {@link TODO yes_no 对应的类}
      */
     private Integer isTraceless;
     /**
      * 分销商类型
-     *
+     * <p>
      * 枚举 {@link TODO fx_customer_type 对应的类}
      */
     private Integer customerType;
@@ -253,7 +258,7 @@ public class OrdersInfoDO extends BaseDO {
     private Integer isScan;
     /**
      * 是否代发
-     *
+     * <p>
      * 枚举 {@link TODO yes_no 对应的类}
      */
     private Integer isDf;
@@ -275,9 +280,13 @@ public class OrdersInfoDO extends BaseDO {
     private Long distributorId;
     /**
      * 业务归属
-     *
+     * <p>
      * 枚举 {@link TODO fx_belong 对应的类}
      */
     private Integer businessBelong;
+    /**
+     * 创建人id
+     */
+    private Integer creatorId;
 
 }

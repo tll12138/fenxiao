@@ -42,6 +42,10 @@ public interface OrdersInfoService {
      */
     void updateOrdersInfo(@Valid OrdersInfoSaveReqVO updateReqVO);
 
+    /**
+     * @param id
+     * @param orderStatusType
+     */
     void updateOrdersInfoStatus(Long id, Integer orderStatusType);
 
     /**
