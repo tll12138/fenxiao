@@ -37,8 +37,10 @@ public interface ErrorCodeConstants {
     ErrorCode ORDERS_GOODS_INVENTORY_NOT_ENOUGH = new ErrorCode(1_020_000_004,
             "商品skuId：[%s]，超出库存数量，订单中该商品数：%s，总可用库存数: %s");
     ErrorCode ORDERS_ACCOUNT_BALANCES_NOT_ENOUGH = new ErrorCode(1_020_000_005,
-            "收货方账户余额不足， 账号余额：%s");
+            "收货方账户余额不足且不允许超额， 账号余额：%s");
     ErrorCode ORDER_INFO_BRAND_NOT_SAME = new ErrorCode(1_020_000_006, "销售单商品包含不同品牌");
+    ErrorCode ORDERS_ACCOUNT_DETAIN_BALANCES_NOT_ENOUGH = new ErrorCode(1_020_000_007,
+            "收货方账户暂扣金额小于销售单金额");
 
 
     //=====================================  发货仓库  =================================

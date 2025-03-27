@@ -219,7 +219,6 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
     @Override
     public void cancelProcessInstance(Long loginUserId, ProcessInstanceCancelReqVO cancelReqVO) {
         processInstanceApi.cancelProcessInstance(getLoginUserId(), cancelReqVO.getId(), cancelReqVO.getReason());
-//        ordersInfoMapper.updateById(new OrdersInfoDO().setId(cancelReqVO.getOrderId()).setOrderStatus(OrderStatusType.UN_SUBMITTED.getType()));
         log.info("用户:{} 取消流程实例:{}", loginUserId, cancelReqVO.getId());
         // 更新此流程中所有代办的状态 TODO
     }

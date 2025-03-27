@@ -21,10 +21,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Objects;
-
-import static cn.iocoder.yudao.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
 
 @Component("salesOrderAuditTaskListener")
 @Slf4j
@@ -45,7 +41,7 @@ public class SalesOrderAuditTaskListener {
             // 审核通过逻辑
             CustomerAccountService accountService = SpringUtil.getObject(CustomerAccountService.class);
             CustomerAccountDO account = validateAccount(ordersInfo, Long.getLong(processInstanceId), accountService);
-            processApproveAction(ordersInfo, account, accountService, ordersInfoService);
+            processApproveAction(ordersInfo, account, ordersInfoService);
         } catch (BusinessException e) {
             errorMsg = e.getMessage();
             log.error("[流程{}] 业务异常: {}", processInstanceId, errorMsg);
@@ -112,28 +108,11 @@ public class SalesOrderAuditTaskListener {
         return account;
     }
 
-    private void processApproveAction(OrdersInfoDetailRespVO ordersInfo, CustomerAccountDO account, CustomerAccountService accountService, OrdersInfoService ordersInfoService) {
-        BigDecimal salesAmount = ordersInfo.getSalesAmount();
-        BigDecimal balance = account.getBalance();
-        boolean allowOverdraft = BooleanType.YES.getType().equals(account.getIsAllow());
-
-        // 统一金额处理逻辑
-        if (BigDecimalUtils.gt(salesAmount, balance) && !allowOverdraft) {
-            throw new BusinessException(StrUtil.format("账户[{}]余额不足且不允许超额", account.getId()));
-        }
-
-        updateAccountBalance(account, salesAmount, accountService);
-        createAmountAdjustRecord(account, salesAmount, ordersInfo.getOrderId(), ordersInfo.getRemark());
+    private void processApproveAction(OrdersInfoDetailRespVO ordersInfo, CustomerAccountDO account, OrdersInfoService ordersInfoService) {
+        createAmountAdjustRecord(account, ordersInfo.getSalesAmount(), ordersInfo.getOrderId(), ordersInfo.getRemark());
         ordersInfoService.updateOrdersInfoStatus(ordersInfo.getId(), OrderStatusType.WAITING_FOR_ERP.getType());
     }
 
-    private void updateAccountBalance(CustomerAccountDO account, BigDecimal salesAmount, CustomerAccountService accountService) {
-        account.setBalance(BigDecimalUtils.subtract(account.getBalance(), salesAmount));
-        account.setDetainAmount(salesAmount);
-        account.setUpdater(Objects.requireNonNull(getLoginUserId()).toString());
-        account.setUpdateTime(LocalDateTime.now());
-        accountService.updateCustomerAccountByDO(account);
-    }
 
     private void createAmountAdjustRecord(CustomerAccountDO account, BigDecimal salesAmount,
                                           String orderId, String remark) {
