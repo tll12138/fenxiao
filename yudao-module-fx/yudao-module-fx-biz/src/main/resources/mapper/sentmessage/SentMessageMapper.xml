@@ -9,4 +9,10 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
+    <select id="getNotSentMsgId" resultType="java.lang.Long">
+        SELECT a.id
+        FROM fx_sent_message a
+        <![CDATA[ WHERE a.send_time < NOW() ]]>
+        AND a.is_send = 0
+    </select>
 </mapper>

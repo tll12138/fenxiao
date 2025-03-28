@@ -18,13 +18,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.StringJoiner;
 
-@Component
+@Component("salesOrderAuditTaskEndListener")
 @Slf4j
 public class SalesOrderAuditTaskEndListener {
 
@@ -51,9 +52,9 @@ public class SalesOrderAuditTaskEndListener {
      * 销售单审核归档节点动作
      */
     @Transactional(rollbackFor = Exception.class)
-    public void execute(DelegateExecution delegateExecution) {
+    public void execute(DelegateExecution execution) {
         String errorMsg = StrUtil.EMPTY;
-        final String processId = delegateExecution.getProcessInstanceId();
+        final String processId = execution.getProcessInstanceId();
         // 通过流程实例ID关联业务数据
         try {
             //flowable流处理中不能用依赖注入，只能用SpringUtil.getObject获取bean
@@ -62,19 +63,23 @@ public class SalesOrderAuditTaskEndListener {
             CustomerInfoService customerInfoService = SpringUtil.getObject(CustomerInfoService.class);
             CustomerInfoDO customerInfo = customerInfoService.getCustomerInfo(ordersInfo.getDistributorId());
             //初始化延迟时间 fl\ec\vg 特殊
-            String brand = ordersInfo.getBrand();
+            String brand = ordersInfo.getOrdersDetails().get(0).getBrand();
             final int delayMinutes = SPECIAL_BRANDS.contains(brand) ? 3 : 8;
             String lateTime = DateUtil.format(DateUtil.offsetMinute(DateUtil.date(), delayMinutes), DATE_PATTERN);
             SentMessageService sentMessageService = SpringUtil.getObject(SentMessageService.class);
-            processWarehouse(ordersInfo.getWarehouseCode(), ordersInfo.getRequirement(), ordersInfoService, ordersInfo, sentMessageService
+            processWarehouse(ordersInfo.getWarehouseCode(), StrUtil.blankToDefault(ordersInfo.getRequirement(), StrUtil.EMPTY), ordersInfoService, ordersInfo, sentMessageService
                     , lateTime, ordersInfo.getOrderId(), customerInfo, brand);
         } catch (BusinessException e) {
             errorMsg = handleBusinessError(processId, e);
             throw e;
         } catch (Exception e) {
-            errorMsg = handleSystemError(processId, e);
+            errorMsg = StrUtil.format("系统异常: {}", e.getMessage());
+            log.error("[流程 {}] 处理异常", processId, e);
         } finally {
             logErrorIfNeeded(processId, errorMsg);
+        }
+        if (StrUtil.isNotBlank(errorMsg)) {
+            throw new BusinessException(errorMsg);
         }
     }
 
@@ -112,7 +117,7 @@ public class SalesOrderAuditTaskEndListener {
         Boolean checkBoxSize = ordersInfoService.checkBoxSize(ordersInfo.getId());
 
         String msg = buildFuLaiMessage(validityPeriodRequire, checkSample, checkBoxSize, requirement);
-        message.setMsg(msg)
+        message.setMsg(message.getMsg() + msg)
                 .setWebhook(DD_WEBHOOK)
                 .setSecret(DD_SECRET);
     }
@@ -132,7 +137,7 @@ public class SalesOrderAuditTaskEndListener {
         }
         joiner.add(BOX_SHIPMENT).add(PRODUCT_PROTECTION);
 
-        message.setMsg(msg + MESSAGE_SEPARATOR + joiner)
+        message.setMsg(message.getMsg() + msg + MESSAGE_SEPARATOR + joiner)
                 .setWebhook(DD_WEBHOOK)
                 .setSecret(DD_SECRET);
     }
@@ -146,7 +151,7 @@ public class SalesOrderAuditTaskEndListener {
             msg = requirement;
         }
 
-        message.setMsg(msg + MESSAGE_SEPARATOR + BOX_SHIPMENT + MESSAGE_SEPARATOR + PRODUCT_PROTECTION)
+        message.setMsg(message.getMsg() + msg + MESSAGE_SEPARATOR + BOX_SHIPMENT + MESSAGE_SEPARATOR + PRODUCT_PROTECTION)
                 .setWebhook(WUH_WEBHOOK)
                 .setSecret(StrUtil.EMPTY);
     }
@@ -156,12 +161,13 @@ public class SalesOrderAuditTaskEndListener {
                                                          String orderId, CustomerInfoDO customerInfo, String brand) {
 
         return new SentMessageSaveReqVO()
+                .setSoId(orderId)
                 .setType("发货要求")
-                .setSendTime(LocalDateTime.parse(lateTime))
+                .setSendTime(LocalDateTime.parse(lateTime, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
                 .setWarehouseId(Integer.valueOf(warehouseCode))
-                .setMsg(StrUtil.format("【{}-2B出货要求】：交易单号：{} 客商名称：{} 客商编码：{} 发货要求：{}",
+                .setMsg(StrUtil.format("【{}-2B出货要求】：\n交易单号：{} \n客商名称：{} \n客商编码：{} \n发货要求：",
                         brand, orderId, customerInfo.getDisplayName(),
-                        customerInfo.getDistributorNum(), ""));
+                        customerInfo.getDistributorNum()));
     }
 
     // 消息内容构建方法
@@ -200,12 +206,6 @@ public class SalesOrderAuditTaskEndListener {
     private String handleBusinessError(String processId, BusinessException e) {
         log.error("[流程 {}] 业务异常: {}", processId, e.getMessage(), e);
         throw e;
-    }
-
-    private String handleSystemError(String processId, Exception e) {
-        String errorMsg = StrUtil.format("系统异常: {}", e.getMessage());
-        log.error("[流程 {}] 处理异常", processId, e);
-        throw new BusinessException(errorMsg);
     }
 
     private void logErrorIfNeeded(String processId, String errorMsg) {

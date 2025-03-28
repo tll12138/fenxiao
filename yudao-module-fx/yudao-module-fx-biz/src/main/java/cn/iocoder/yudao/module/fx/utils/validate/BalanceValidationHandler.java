@@ -62,7 +62,7 @@ public class BalanceValidationHandler extends ValidationHandler {
             throw exception(new ErrorCode(code, message));
         }
         // 更新账户余额
-        customerAccountDO.setBalance(balance.subtract(salesAmount));
+        customerAccountDO.setBalance(BigDecimalUtils.subtract(balance, salesAmount));
         customerAccountDO.setDetainAmount(salesAmount);
         customerAccountDO.setUpdater(Objects.requireNonNull(getLoginUserId()).toString());
         customerAccountDO.setUpdateTime(LocalDateTime.now());

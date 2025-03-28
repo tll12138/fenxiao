@@ -1,10 +1,8 @@
 package cn.iocoder.yudao.module.fx.controller.admin.sentmessage.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import java.util.*;
-import javax.validation.constraints.*;
-import org.springframework.format.annotation.DateTimeFormat;
+import lombok.Data;
+
 import java.time.LocalDateTime;
 
 @Schema(description = "管理后台 - 分销发货要求消息新增/修改 Request VO")
@@ -23,9 +21,6 @@ public class SentMessageSaveReqVO {
     @Schema(description = "消息内容")
     private String msg;
 
-    @Schema(description = "是否发送")
-    private String isSend;
-
     @Schema(description = "计划发送时间")
     private LocalDateTime sendTime;
 
@@ -37,5 +32,8 @@ public class SentMessageSaveReqVO {
 
     @Schema(description = "仓库", example = "12456")
     private Integer warehouseId;
+
+    @Schema(description = "是否发送")
+    private Integer isSend;
 
 }

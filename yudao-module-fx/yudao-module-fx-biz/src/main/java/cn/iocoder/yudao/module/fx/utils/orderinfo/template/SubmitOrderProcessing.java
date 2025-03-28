@@ -4,10 +4,20 @@ import cn.iocoder.yudao.framework.common.exception.ErrorCode;
 import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.iocoder.yudao.framework.security.core.util.SecurityFrameworkUtils;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ordersinfo.OrdersInfoDO;
+import cn.iocoder.yudao.module.fx.enums.OrderNumPrefixType;
 import cn.iocoder.yudao.module.fx.enums.OrderStatusType;
 import cn.iocoder.yudao.module.fx.utils.orderinfo.OrderProcessingContext;
-import cn.iocoder.yudao.module.fx.utils.validate.*;
+import cn.iocoder.yudao.module.fx.utils.validate.BalanceValidationHandler;
+import cn.iocoder.yudao.module.fx.utils.validate.BrandValidationHandler;
+import cn.iocoder.yudao.module.fx.utils.validate.HandleChainBuilder;
+import cn.iocoder.yudao.module.fx.utils.validate.InventoryValidationHandler;
+import cn.iocoder.yudao.module.fx.utils.validate.ValidationHandler;
 import lombok.extern.slf4j.Slf4j;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 
@@ -25,8 +35,14 @@ public class SubmitOrderProcessing extends SaveOrderProcessing {
     @Override
     protected void generateOrderDetails() throws Exception {
         OrdersInfoDO orderInfo = context.getOrderInfo();
-        orderInfo.setOrderStatus(OrderStatusType.UN_SUBMITTED.getType()); // 默认未提交
-        orderInfo.setUpdater(SecurityFrameworkUtils.getLoginUserNickname());
+        // 获取当前日期，转换格式为yyyyMMddHHmm
+        LocalDateTime now = LocalDateTime.now();
+        String dateStr = now.format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+        orderInfo.setOrderId(String.format("%s%s", OrderNumPrefixType.SALE.getType(), dateStr));
+        orderInfo.setOrderDate(LocalDate.now());
+        orderInfo.setOrderStatus(OrderStatusType.AUDITING.getType()); // 默认审核中
+        orderInfo.setCreator(SecurityFrameworkUtils.getLoginUserNickname());
+        orderInfo.setCreatorId(Objects.requireNonNull(SecurityFrameworkUtils.getLoginUserId()).intValue());
         log.info("[SubmitOrderProcessing] 订单参数修改成功...");
     }
 
@@ -42,8 +58,8 @@ public class SubmitOrderProcessing extends SaveOrderProcessing {
                 .build();
         try {
             build.handle(context);
-        }catch (ServiceException e){
-            throw exception(new ErrorCode(e.getCode(),e.getMessage()));
+        } catch (ServiceException e) {
+            throw exception(new ErrorCode(e.getCode(), e.getMessage()));
         }
         log.info("[SubmitOrderProcessing] 订单校验通过...");
     }

@@ -265,7 +265,6 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
      */
     @Override
     public Boolean checkBoxSize(Long id) {
-        ordersInfoMapper.checkBoxSize(id);
-        return null;
+        return ordersInfoMapper.checkBoxSize(id) > 0;
     }
 }

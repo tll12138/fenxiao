@@ -1,10 +1,17 @@
 package cn.iocoder.yudao.module.fx.dal.dataobject.sentmessage;
 
-import lombok.*;
-import java.util.*;
-import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.*;
 import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
+import com.baomidou.mybatisplus.annotation.KeySequence;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+
+import java.time.LocalDateTime;
 
 /**
  * 分销发货要求消息 DO
@@ -39,10 +46,6 @@ public class SentMessageDO extends BaseDO {
      */
     private String msg;
     /**
-     * 是否发送
-     */
-    private String isSend;
-    /**
      * 计划发送时间
      */
     private LocalDateTime sendTime;
@@ -58,5 +61,11 @@ public class SentMessageDO extends BaseDO {
      * 仓库
      */
     private Integer warehouseId;
+    /**
+     * 是否发送
+     * <p>
+     * 枚举 {@link TODO yes_no 对应的类}
+     */
+    private Integer isSend;
 
 }

@@ -1,13 +1,13 @@
 package cn.iocoder.yudao.module.fx.dal.mysql.sentmessage;
 
-import java.util.*;
-
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
+import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
+import cn.iocoder.yudao.module.fx.controller.admin.sentmessage.vo.SentMessagePageReqVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.sentmessage.SentMessageDO;
 import org.apache.ibatis.annotations.Mapper;
-import cn.iocoder.yudao.module.fx.controller.admin.sentmessage.vo.*;
+
+import java.util.List;
 
 /**
  * 分销发货要求消息 Mapper
@@ -30,4 +30,5 @@ public interface SentMessageMapper extends BaseMapperX<SentMessageDO> {
                 .orderByDesc(SentMessageDO::getId));
     }
 
+    List<Long> getNotSentMsgId();
 }

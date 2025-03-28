@@ -1,12 +1,13 @@
 package cn.iocoder.yudao.module.fx.controller.admin.sentmessage.vo;
 
+import cn.iocoder.yudao.framework.excel.core.annotations.DictFormat;
+import cn.iocoder.yudao.framework.excel.core.convert.DictConvert;
+import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
+import com.alibaba.excel.annotation.ExcelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import java.util.*;
-import java.util.*;
-import org.springframework.format.annotation.DateTimeFormat;
+import lombok.Data;
+
 import java.time.LocalDateTime;
-import com.alibaba.excel.annotation.*;
 
 @Schema(description = "管理后台 - 分销发货要求消息 Response VO")
 @Data
@@ -29,10 +30,6 @@ public class SentMessageRespVO {
     @ExcelProperty("消息内容")
     private String msg;
 
-    @Schema(description = "是否发送")
-    @ExcelProperty("是否发送")
-    private String isSend;
-
     @Schema(description = "计划发送时间")
     @ExcelProperty("计划发送时间")
     private LocalDateTime sendTime;
@@ -48,5 +45,14 @@ public class SentMessageRespVO {
     @Schema(description = "仓库", example = "12456")
     @ExcelProperty("仓库")
     private Integer warehouseId;
+
+    @Schema(description = "是否发送")
+    @ExcelProperty(value = "是否发送", converter = DictConvert.class)
+    @DictFormat("yes_no") // TODO 代码优化：建议设置到对应的 DictTypeConstants 枚举类中
+    private Integer isSend;
+
+    @Schema(description = "创建时间")
+    @ExcelProperty("创建时间")
+    private LocalDateTime createTime;
 
 }

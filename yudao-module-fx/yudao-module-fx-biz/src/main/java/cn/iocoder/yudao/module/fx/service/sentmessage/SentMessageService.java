@@ -38,4 +38,12 @@ public interface SentMessageService {
      */
     PageResult<SentMessageDO> getSentMessagePage(SentMessagePageReqVO pageReqVO);
 
+    /**
+     * 执行发送消息
+     * id为空执行全部，id不为空执行单条
+     *
+     * @param id
+     */
+    void executeSendMsg(Long id);
+
 }
