@@ -44,6 +44,6 @@ public interface SentMessageService {
      *
      * @param id
      */
-    void executeSendMsg(Long id);
+    Boolean executeSendMsg(Long id);
 
 }

@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.fx.service.sentmessage;
 
+import cn.hutool.core.exceptions.ExceptionUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.http.HttpRequest;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
@@ -8,6 +9,7 @@ import cn.iocoder.yudao.module.fx.controller.admin.sentmessage.vo.SentMessagePag
 import cn.iocoder.yudao.module.fx.controller.admin.sentmessage.vo.SentMessageSaveReqVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.sentmessage.SentMessageDO;
 import cn.iocoder.yudao.module.fx.dal.mysql.sentmessage.SentMessageMapper;
+import cn.iocoder.yudao.module.fx.service.bizerrorlog.BizErrorLogService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -15,6 +17,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
@@ -33,6 +36,8 @@ public class SentMessageServiceImpl implements SentMessageService {
 
     @Resource
     private SentMessageMapper sentMessageMapper;
+    @Resource
+    private BizErrorLogService bizErrorLogService;
 
     @Override
     public Long createSentMessage(SentMessageSaveReqVO createReqVO) {
@@ -60,43 +65,64 @@ public class SentMessageServiceImpl implements SentMessageService {
      * @param id
      */
     @Override
-    public void executeSendMsg(Long id) {
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean executeSendMsg(Long id) {
         List<Long> targetIds = new ArrayList<>();
-        if (ObjUtil.isNotNull(id)) {
-            SentMessageDO message = sentMessageMapper.selectById(id);
-            if (message == null || message.getIsSend() == 1) {
-                log.warn("[executeSendMsg] 消息不存在或已发送，ID: {}", id);
-                return;
+        String errorMsg = "";
+        try {
+            // 处理目标ID逻辑
+            if (ObjUtil.isNotNull(id)) {
+                SentMessageDO message = sentMessageMapper.selectById(id);
+                if (message == null) {
+                    log.warn("[executeSendMsg] 消息不存在，ID: {}", id);
+                    return false;
+                }
+                targetIds.add(id);
+            } else {
+                targetIds = sentMessageMapper.getNotSentMsgId();
+                if (ObjUtil.isEmpty(targetIds)) {
+                    log.info("[executeSendMsg] 没有需要处理的发货消息推送记录");
+                    return true;
+                }
             }
-            targetIds.add(id);
-        } else { // 处理未发送消息
-            targetIds = sentMessageMapper.getNotSentMsgId();
-            if (ObjUtil.isEmpty(targetIds)) {
-                log.info("[executeSendMsg] 没有需要处理的发货消息推送记录");
-                return;
+
+            log.info("[executeSendMsg] 开始处理发货消息，数量: {}", targetIds.size());
+            JSONObject paramsJson = buildRequestParams(targetIds);
+            log.debug("[executeSendMsg] 请求参数: {}", paramsJson);
+
+            // 执行HTTP请求
+            String response = HttpRequest.post("https://oa.puqi.group/oa/yd-job-start")
+                    .body(paramsJson.toJSONString())
+                    .timeout(100000)
+                    .execute()
+                    .body();
+
+            // 处理响应结果
+            JSONObject responseJson = JSON.parseObject(response);
+            if (!"0".equals(responseJson.getString("code"))) {
+                errorMsg = responseJson.getString("msg");
+                log.error("[executeSendMsg] 接口业务异常: {}", errorMsg);
+                return false;
             }
+
+            // 更新发送状态
+            sentMessageMapper.update(new UpdateWrapper<SentMessageDO>()
+                    .set("is_send", 1)
+                    .in("id", targetIds));
+            log.info("[executeSendMsg] 成功处理 {} 条发货通知", targetIds.size());
+            return true;
+
+        } catch (Exception e) {
+            errorMsg = ExceptionUtil.getRootCauseMessage(e);
+            log.error("[executeSendMsg] 系统异常: {}", errorMsg);
+            // 记录业务错误日志（使用安全方法处理null）
+            bizErrorLogService.createBizErrorLog("fx", "executeSendMsg",
+                    targetIds.toString(), null, errorMsg);
+            return false;
         }
-        log.info("[executeSendMsg] 开始处理发货消息，数量: {}", targetIds.size());
-        JSONObject paramsJson = getJsonObject(targetIds);
-        log.info("[executeSendMsg] paramsJson: {}", paramsJson);
-        String response = HttpRequest.post("https://oa.puqi.group/oa/yd-job-start")
-                .body(paramsJson.toJSONString())
-                .timeout(100000)
-                .execute()
-                .body();
-        JSONObject responseJson = JSON.parseObject(response);
-        if (!"0".equals(responseJson.getString("code"))) {
-            log.error("[executeSendMsg] 接口调用失败: {}", responseJson.getString("msg"));
-            return;
-        }
-        // 更新发送状态
-        sentMessageMapper.update(new UpdateWrapper<SentMessageDO>()
-                .set("is_send", 1)
-                .in("id", targetIds));
-        log.info("[executeSendMsg] 成功处理 {} 条发货通知", targetIds.size());
     }
 
-    private static JSONObject getJsonObject(List<Long> targetIds) {
+    private static JSONObject buildRequestParams(List<Long> targetIds) {
         JSONArray paramsList = new JSONArray();
 
         JSONObject idParam = new JSONObject();

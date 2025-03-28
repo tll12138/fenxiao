@@ -72,8 +72,9 @@ public class SentMessageController {
     @Operation(summary = "发送消息提醒")
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
     @PreAuthorize("@ss.hasPermission('fx:sent-message:query')")
-    public void executeSendMsg(@RequestParam("id") Long id) {
+    public CommonResult<Boolean> executeSendMsg(@RequestParam("id") Long id) {
         sentMessageService.executeSendMsg(id);
+        return success(true);
     }
 
 }
