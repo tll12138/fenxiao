@@ -245,4 +245,27 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
             }
         });
     }
+
+    /**
+     * 检查商品中是否存在小样
+     *
+     * @return
+     */
+    @Override
+    public Boolean checkSample(Long id) {
+        Integer count = ordersInfoMapper.checkSample(id);
+        return count > 0;
+    }
+
+    /**
+     * 检查商品是否满足箱规
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public Boolean checkBoxSize(Long id) {
+        ordersInfoMapper.checkBoxSize(id);
+        return null;
+    }
 }

@@ -99,4 +99,18 @@ public interface OrdersInfoService {
      * 销售单处理
      */
     void saleProcess();
+
+    /**
+     * 检查商品中是否存在小样
+     *
+     * @return
+     */
+    Boolean checkSample(Long id);
+
+    /**
+     * 检查商品是否满足箱规
+     *
+     * @return
+     */
+    Boolean checkBoxSize(Long id);
 }

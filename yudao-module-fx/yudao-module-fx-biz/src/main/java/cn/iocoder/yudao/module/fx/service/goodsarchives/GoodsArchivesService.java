@@ -6,6 +6,7 @@ import cn.iocoder.yudao.module.fx.controller.admin.goodsarchives.vo.GoodsArchive
 import cn.iocoder.yudao.module.fx.dal.dataobject.goodsarchives.GoodsArchivesDO;
 
 import javax.validation.Valid;
+import java.util.Map;
 
 /**
  * 分销商品资料 Service 接口
@@ -43,6 +44,20 @@ public interface GoodsArchivesService {
      * @return 分销商品资料
      */
     GoodsArchivesDO getGoodsArchives(Integer id);
+
+    /**
+     * 获得分销商品资料
+     *
+     * @return 分销商品资料
+     */
+    GoodsArchivesDO getGoodsArchivesBySkuId(String skuId);
+
+
+    /**
+     * 获得分销商品skuId和品牌的映射关系
+     * 用于查询商品的品牌
+     */
+    Map<String, String> getGoodsArchivesBrandsMap();
 
     /**
      * 获得分销商品资料分页

@@ -172,4 +172,8 @@ public class OrdersInfoSaveReqVO {
     @NotNull(message = "销售订单明细列表不能为空")
     private List<OrdersDetailDO> ordersDetails;
 
+
+    @Schema(description = "创建人id")
+    private Long creatorId;
+
 }

@@ -126,6 +126,7 @@ public class SaveOrderProcessing extends AbstractOrderProcessingTemplate {
             orderInfo.setCreator(SecurityFrameworkUtils.getLoginUserNickname());
             orderInfo.setCreatorId(Objects.requireNonNull(SecurityFrameworkUtils.getLoginUserId()).intValue());
         }
+        orderInfo.setBrand(context.getBrands().get(0));
         log.info("[SaveOrderProcessing] 订单参数新增成功...");
     }
 

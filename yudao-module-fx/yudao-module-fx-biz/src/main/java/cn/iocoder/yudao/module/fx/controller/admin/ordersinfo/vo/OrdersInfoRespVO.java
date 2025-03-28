@@ -134,6 +134,9 @@ public class OrdersInfoRespVO implements VO {
     @Schema(description = "地址id")
     private Long addressId;
 
+    @Schema(description = "创建人id")
+    private Long creatorId;
+
     @Schema(description = "流程实例编号")
     private String processInstanceId;
 }

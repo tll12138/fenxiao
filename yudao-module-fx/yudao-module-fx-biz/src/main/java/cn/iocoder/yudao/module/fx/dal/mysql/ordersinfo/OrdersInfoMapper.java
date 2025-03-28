@@ -43,4 +43,18 @@ public interface OrdersInfoMapper extends BaseMapperX<OrdersInfoDO> {
      * @param id
      */
     void updateSaleMain(Long id);
+
+    /**
+     * 检验是否有小样
+     *
+     * @param id
+     */
+    Integer checkSample(Long id);
+
+    /**
+     * 检验是否满足箱规
+     *
+     * @param id
+     */
+    Integer checkBoxSize(Long id);
 }

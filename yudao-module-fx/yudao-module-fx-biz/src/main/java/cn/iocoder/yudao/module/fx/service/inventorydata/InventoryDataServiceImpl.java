@@ -11,6 +11,7 @@ import cn.iocoder.yudao.module.fx.dal.dataobject.inventorydata.InventoryDataResp
 import cn.iocoder.yudao.module.fx.dal.dataobject.inventorydata.InventoryVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.sendrepository.SendRepositoryDO;
 import cn.iocoder.yudao.module.fx.dal.mysql.inventorydata.InventoryDataMapper;
+import cn.iocoder.yudao.module.fx.service.goodsarchives.GoodsArchivesService;
 import cn.iocoder.yudao.module.fx.service.jushuitanapi.JuShuiTanApiService;
 import cn.iocoder.yudao.module.fx.service.sendrepository.SendRepositoryService;
 import cn.iocoder.yudao.module.fx.utils.CollectionUtil;
@@ -25,7 +26,12 @@ import org.springframework.validation.annotation.Validated;
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -49,6 +55,8 @@ public class InventoryDataServiceImpl implements InventoryDataService {
     private SendRepositoryService sendRepositoryService;
     @Resource
     private JuShuiTanApiService juShuiTanApiService;
+    @Resource
+    private GoodsArchivesService goodsArchivesService;
 
     @Override
     public Integer createInventoryData(InventoryDataSaveReqVO createReqVO) {
@@ -97,17 +105,19 @@ public class InventoryDataServiceImpl implements InventoryDataService {
     public void syncInventoryData() throws InterruptedException {
         LocalDateTime now = LocalDateTime.now();
         List<SendRepositoryDO> sendRepositoryList = sendRepositoryService.getSendRepositoryList();
+        //查询分销商品skuId和品牌的映射关系
+        final Map<String, String> goodsBrandsMap = goodsArchivesService.getGoodsArchivesBrandsMap();
         for (SendRepositoryDO sendRepositoryDO : sendRepositoryList) {
             //获取分仓仓库id
             String wmsCoId = sendRepositoryDO.getCode();
             log.info("仓库编码：{}", wmsCoId);
             //递归获取所有库存信息
             TimeUnit.MILLISECONDS.sleep(1000);
-            executeInventoryData(1, now.minusDays(2), now, wmsCoId, sendRepositoryDO);
+            executeInventoryData(1, now.minusDays(2), now, wmsCoId, sendRepositoryDO, goodsBrandsMap);
         }
     }
 
-    private void executeInventoryData(int pageNum, LocalDateTime modifiedBegin, LocalDateTime modifiedEnd, String wmsCoId, SendRepositoryDO sendRepositoryDO) {
+    private void executeInventoryData(int pageNum, LocalDateTime modifiedBegin, LocalDateTime modifiedEnd, String wmsCoId, SendRepositoryDO sendRepositoryDO, Map<String, String> goodsBrandsMap) {
         String biz = String.format("{\"page_num\":\"%s\",\"page_size\":\"100\",\"wms_co_id\":\"%s\",\"modified_begin\":\"%s\",\"modified_end\":\"%s\"}", pageNum, wmsCoId, modifiedBegin.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), modifiedEnd.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         // 执行接口调用
         try {
@@ -143,6 +153,7 @@ public class InventoryDataServiceImpl implements InventoryDataService {
                         one.setWarehouseCode(wmsCoId);
                         one.setWarehouseName(sendRepositoryDO.getName());
                         one.setWarehouseId(String.valueOf(sendRepositoryDO.getId()));
+                        one.setBrand(goodsBrandsMap.get(data.getSkuId()));
                         BeanUtil.copyProperties(data, one);
                         list.add(one);
                     }
@@ -150,7 +161,7 @@ public class InventoryDataServiceImpl implements InventoryDataService {
                 }
                 if (bodyMO.getData().isHasNext()) {
                     TimeUnit.MILLISECONDS.sleep(1000);
-                    executeInventoryData(pageNum + 1, modifiedBegin, modifiedEnd, wmsCoId, sendRepositoryDO);
+                    executeInventoryData(pageNum + 1, modifiedBegin, modifiedEnd, wmsCoId, sendRepositoryDO, goodsBrandsMap);
                 }
             } else {
                 throw new RuntimeException(bodyMO.getMsg());

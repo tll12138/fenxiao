@@ -164,4 +164,7 @@ public class OrdersInfoDetailRespVO implements VO {
     @Schema(description = "分销-销售订单明细列表")
     private List<OrdersDetailDO> ordersDetails;
 
+    @Schema(description = "创建人id")
+    private Long creatorId;
+
 }

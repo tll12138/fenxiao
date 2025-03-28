@@ -93,4 +93,8 @@ public interface ErrorCodeConstants {
     ErrorCode IMPORT_ORDER_GENERATED_SALE = new ErrorCode(1_205_000_201, "该订单已生成销售单，不允许修改");
     // ========== 分销大客户地址 ==========
     ErrorCode BIG_CUSTOMER_ADDRESS_NOT_EXISTS = new ErrorCode(1_206_000_100, "分销大客户地址不存在");
+    // ========== 商品箱规  ==========
+    ErrorCode SK_BOXSIZE_NOT_EXISTS = new ErrorCode(1_207_000_100, "商品箱规不存在");
+    // ========== 商品成本 ==========
+    ErrorCode SKU_COSTPRICE_NOT_EXISTS = new ErrorCode(1_208_000_100, "商品成本不存在");
 }

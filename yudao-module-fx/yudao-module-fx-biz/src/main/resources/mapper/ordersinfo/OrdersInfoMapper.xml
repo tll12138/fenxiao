@@ -33,6 +33,29 @@
             )
 
     </select>
+    <select id="checkSample" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM fx_orders_info a
+                 LEFT JOIN (SELECT DISTINCT c.order_id
+                            FROM fx_orders_detail c
+                                     INNER JOIN fx_goods_archives d ON c.goods_id = d.ID
+                                     INNER JOIN fx_sku_costprice b ON d.SKU_ID = b.sku_id AND b.TYPE = 0) sub
+                           ON a.id = sub.order_id
+        WHERE a.id = #{id}
+          AND sub.order_id IS NULL;
+    </select>
+    <select id="checkBoxSize" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM fx_orders_info a
+                 INNER JOIN (SELECT b.order_id
+                             FROM fx_orders_detail b
+                                      INNER JOIN fx_sk_boxsize c
+                                                 ON b.sku_id = c.sku_id
+                                                     AND b.count >= c.box_size
+                             WHERE b.order_id = #{id}
+                             GROUP BY b.order_id) sub ON a.id = sub.order_id
+        WHERE a.id = #{id}
+    </select>
 
     <update id="updateSaleMain">
         UPDATE fx_orders_info t
@@ -49,6 +72,6 @@
                               ORDER BY b.brand DESC
                               LIMIT 1),
             t.order_status = 10
-        WHERE t.id = #{vId}
+        WHERE t.id = #{id}
     </update>
 </mapper>
