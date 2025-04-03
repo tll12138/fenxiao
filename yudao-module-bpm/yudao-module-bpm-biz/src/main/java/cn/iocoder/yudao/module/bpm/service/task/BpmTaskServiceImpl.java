@@ -360,7 +360,7 @@ public class BpmTaskServiceImpl implements BpmTaskService {
         //4. 判断审批类型
         String processDefinitionKey = instance.getProcessDefinitionKey();
         if (processDefinitionKey.equals("sale_audit")) {
-            OrdersInfoDetailRespVO ordersInfo = ordersInfoService.getOrdersInfo(processInstanceId);
+            OrdersInfoDetailRespVO ordersInfo = ordersInfoService.getOrdersInfoByPIId(processInstanceId);
             if (ordersInfo == null) {
                 throw exception(ORDERS_INFO_NOT_EXISTS);
             }

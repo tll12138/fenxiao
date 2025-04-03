@@ -50,17 +50,25 @@ public final class CollectionUtil {
     public static boolean isEmpty(Collection<?> collection) {
         return collection == null || collection.isEmpty();
     }
+
     public static boolean isNotEmpty(Collection<?> collection) {
         return !isEmpty(collection);
     }
 
+    public static <T> List<T> emptyToDefault(Collection<T> collection) {
+        if (collection == null || collection.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return new ArrayList<>(collection);
+    }
 
     /**
      * copy集合中class信息到另一个集合的class
      * copy性能最好的工具
+     *
      * @param sources 被复制的集合
-     * @param clazz 转换后的class
-     * @param <T> 泛型
+     * @param clazz   转换后的class
+     * @param <T>     泛型
      * @return list
      */
     public static <T, M> List<T> copyList(Collection<M> sources, Class<T> clazz) {

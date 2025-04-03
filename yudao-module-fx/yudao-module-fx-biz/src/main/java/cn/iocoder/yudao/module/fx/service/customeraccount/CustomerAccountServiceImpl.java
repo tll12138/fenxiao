@@ -1,21 +1,31 @@
 package cn.iocoder.yudao.module.fx.service.customeraccount;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
+import cn.iocoder.yudao.module.fx.controller.admin.amountadj.vo.AmountAdjSaveReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.customeraccount.vo.CustomerAccountPageReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.customeraccount.vo.CustomerAccountSaveReqVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.accinfoconfig.AccInfoConfigDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customeraccount.CustomerAccountDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customerinfo.CustomerInfoDO;
+import cn.iocoder.yudao.module.fx.dal.dataobject.ordersinfo.OrdersInfoDO;
 import cn.iocoder.yudao.module.fx.dal.mysql.customeraccount.CustomerAccountMapper;
+import cn.iocoder.yudao.module.fx.enums.AmountAdjType;
+import cn.iocoder.yudao.module.fx.enums.BooleanType;
 import cn.iocoder.yudao.module.fx.service.accinfoconfig.AccInfoConfigService;
+import cn.iocoder.yudao.module.fx.service.amountadj.AmountAdjService;
 import cn.iocoder.yudao.module.fx.service.customerinfo.CustomerInfoService;
+import cn.iocoder.yudao.module.fx.utils.BigDecimalUtils;
 import cn.iocoder.yudao.module.system.api.dict.DictDataApi;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.diboot.core.exception.BusinessException;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +47,8 @@ public class CustomerAccountServiceImpl implements CustomerAccountService {
     private CustomerInfoService customerInfoService;
     @Resource
     private AccInfoConfigService accInfoConfigService;
+    @Resource
+    private AmountAdjService amountAdjService;
     @Resource
     private DictDataApi dataApi;
 
@@ -147,6 +159,42 @@ public class CustomerAccountServiceImpl implements CustomerAccountService {
                 .setCompany(company)
                 .setAccountId(String.join(company.toString(), "-", distributorId.toString()))
                 .setName(distributorName));
+    }
+
+    /**
+     * 销售单发货后扣款并且自动生成账户调整记录【类型为扣款】
+     *
+     * @param orderInfo
+     */
+    @Override
+    public BigDecimal saleReceivable(OrdersInfoDO orderInfo) {
+        Long distributorId = orderInfo.getDistributorId();
+        String orderId = orderInfo.getOrderId();
+        CustomerAccountDO account = this.getCustomerAccountByDistributorIdAndCompany(distributorId, orderInfo.getReceiveSupplierId().intValue());
+        if (account == null) {
+            throw new BusinessException(StrUtil.format("分销商[{}]未找到分销商扣款账户", distributorId));
+        }
+        // 账户状态检查（冻结状态拦截）
+        if (BooleanType.YES.getType().equals(account.getIsActive())) {
+            throw new BusinessException(StrUtil.format("账户[{}]已冻结", account.getId()));
+        }
+        if (BigDecimalUtils.lt(account.getDetainAmount(), orderInfo.getSalesAmount())) {
+            throw new BusinessException(StrUtil.format("{}:在单据扣款时存在异常，账户暂扣金额小于当前销售单金额，请确认！", orderId));
+        }
+        // 扣款
+        account.setDetainAmount(BigDecimalUtils.subtract(account.getDetainAmount(), orderInfo.getSalesAmount()));
+        customerAccountMapper.updateById(account);
+        // 生成账户调整记录
+        amountAdjService.createAmountAdj(new AmountAdjSaveReqVO()
+                .setAmount(orderInfo.getSalesAmount())
+                .setAccount(account.getId().toString())
+                .setRemark(orderInfo.getRemark())
+                .setSoId(orderId)
+                .setOrderDate(DateUtil.now())
+                .setType(AmountAdjType.SALE.getType())
+                .setAdjustBalance(account.getBalance())
+                .setAdjustWithholdBalance(account.getDetainAmount()));
+        return account.getBalance();
     }
 
 }

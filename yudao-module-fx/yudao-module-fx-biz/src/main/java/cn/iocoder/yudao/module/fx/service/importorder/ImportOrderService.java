@@ -6,6 +6,7 @@ import cn.iocoder.yudao.module.fx.controller.admin.importorder.vo.ImportOrderExc
 import cn.iocoder.yudao.module.fx.controller.admin.importorder.vo.ImportOrderPageReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.importorder.vo.ImportOrderSaveReqVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.importorder.ImportOrderDO;
+import cn.iocoder.yudao.module.fx.dal.dataobject.jstorderout.JstOrderOutDTO;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -63,4 +64,11 @@ public interface ImportOrderService {
      * @return 导入结果响应，包含成功与失败数量
      */
     ImportOrderExcelRespVO importOrderList(List<ImportOrderExcelVO> list, Boolean updateSupport);
+
+    /**
+     * 根据发货单更新客商代发单
+     *
+     * @param dto
+     */
+    void updateImportOrderByJstOut(JstOrderOutDTO dto);
 }

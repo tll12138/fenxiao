@@ -6,7 +6,11 @@ import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
-import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.*;
+import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoDetailRespVO;
+import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoPageReqVO;
+import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoRespVO;
+import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoSaveReqVO;
+import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.ProcessInstanceCancelReqVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ordersdetail.OrdersDetailDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ordersinfo.OrdersInfoDO;
 import cn.iocoder.yudao.module.fx.service.ordersinfo.OrdersInfoService;
@@ -15,7 +19,14 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -42,6 +53,7 @@ public class OrdersInfoController {
     public CommonResult<Long> saveOrdersInfo(@Valid @RequestBody OrdersInfoSaveReqVO createReqVO) throws Exception {
         return success(ordersInfoService.saveOrdersInfo(createReqVO));
     }
+
     @PostMapping("/create")
     @Operation(summary = "创建销售单")
     @PreAuthorize("@ss.hasPermission('fx:orders-info:create')")
@@ -71,7 +83,7 @@ public class OrdersInfoController {
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
     @PreAuthorize("@ss.hasPermission('fx:orders-info:query')")
     public CommonResult<OrdersInfoDetailRespVO> getOrdersInfo(@RequestParam("id") Long id) {
-        OrdersInfoDetailRespVO respVO = ordersInfoService.getOrdersInfo(id);
+        OrdersInfoDetailRespVO respVO = ordersInfoService.getOrdersInfoById(id);
         return success(respVO);
     }
 
@@ -88,12 +100,12 @@ public class OrdersInfoController {
     @PreAuthorize("@ss.hasPermission('fx:orders-info:export')")
     @ApiAccessLog(operateType = EXPORT)
     public void exportOrdersInfoExcel(@Valid OrdersInfoPageReqVO pageReqVO,
-              HttpServletResponse response) throws IOException {
+                                      HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(PageParam.PAGE_SIZE_NONE);
         List<OrdersInfoDO> list = ordersInfoService.getOrdersInfoPage(pageReqVO).getList();
         // 导出 Excel
         ExcelUtils.write(response, "销售单.xls", "数据", OrdersInfoRespVO.class,
-                        BeanUtils.toBean(list, OrdersInfoRespVO.class));
+                BeanUtils.toBean(list, OrdersInfoRespVO.class));
     }
 
     // ==================== 子表（分销-销售订单明细） ====================

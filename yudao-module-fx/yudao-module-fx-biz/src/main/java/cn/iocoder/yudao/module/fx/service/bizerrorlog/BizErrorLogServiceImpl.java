@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.fx.service.bizerrorlog;
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import cn.iocoder.yudao.module.fx.dal.dataobject.bizerrorlog.BizErrorLogDO;
 import cn.iocoder.yudao.module.fx.dal.mysql.bizerrorlog.BizErrorLogMapper;
@@ -35,7 +36,7 @@ public class BizErrorLogServiceImpl implements BizErrorLogService {
         log.setType(type);
         log.setBizId(bizId);
         log.setErrorData(JSONUtil.toJsonStr(errorData));
-        log.setErrorMsg(errorMsg);
+        log.setErrorMsg(StrUtil.blankToDefault(errorMsg, StrUtil.EMPTY));
         log.setCreateTime(LocalDateTime.now());
         log.setUserId(getLoginUserId());
         // 可以添加用户信息、请求信息等

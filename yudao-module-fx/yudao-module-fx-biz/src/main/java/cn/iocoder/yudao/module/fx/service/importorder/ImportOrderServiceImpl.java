@@ -8,7 +8,9 @@ import cn.iocoder.yudao.module.fx.controller.admin.importorder.vo.ImportOrderExc
 import cn.iocoder.yudao.module.fx.controller.admin.importorder.vo.ImportOrderPageReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.importorder.vo.ImportOrderSaveReqVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.importorder.ImportOrderDO;
+import cn.iocoder.yudao.module.fx.dal.dataobject.jstorderout.JstOrderOutDTO;
 import cn.iocoder.yudao.module.fx.dal.mysql.importorder.ImportOrderMapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -127,6 +129,20 @@ public class ImportOrderServiceImpl implements ImportOrderService {
             }
         });
         return respVO;
+    }
+
+    /**
+     * 根据发货单更新客商代发单
+     *
+     * @param dto
+     */
+    @Override
+    public void updateImportOrderByJstOut(JstOrderOutDTO dto) {
+        importOrderMapper.update(new LambdaUpdateWrapper<ImportOrderDO>()
+                .set(ImportOrderDO::getIsShipped, 1)
+                .set(ImportOrderDO::getTrackingNumber, dto.getExpress())
+                .set(ImportOrderDO::getExpressCompany, dto.getExpressName())
+                .eq(ImportOrderDO::getSoId, dto.getSoId()));
     }
 
 }

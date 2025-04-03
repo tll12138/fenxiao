@@ -97,4 +97,14 @@ public interface ErrorCodeConstants {
     ErrorCode SK_BOXSIZE_NOT_EXISTS = new ErrorCode(1_207_000_100, "商品箱规不存在");
     // ========== 商品成本 ==========
     ErrorCode SKU_COSTPRICE_NOT_EXISTS = new ErrorCode(1_208_000_100, "商品成本不存在");
+    // ========== 手动发货信息  ==========
+    ErrorCode MANUAL_DELIVERY_NOT_EXISTS = new ErrorCode(1_209_000_100, "手动发货信息不存在");
+    ErrorCode MANUAL_DELIVERY_JUSHUITAN_ERROR = new ErrorCode(1_209_000_101, "发货失败，聚水潭返回错误{}");
+    ErrorCode MANUAL_DELIVERY_SO_ID_NOT_EXISTS = new ErrorCode(1_209_000_102, "发货失败，销售单{}不存在");
+    ErrorCode MANUAL_DELIVERY_ERROR = new ErrorCode(1_209_000_103, "发货失败，{}");
+    ErrorCode MANUAL_DELIVERY_ERP_NO_NOT_EXIST = new ErrorCode(1_209_000_104, "手动发货失败，erp单号为空");
+    // ========== 聚水潭发货回传中间表 ==========
+    ErrorCode JST_ORDER_OUT_NOT_EXISTS = new ErrorCode(1_301_000_100, "聚水潭发货回传中间表不存在");
+    ErrorCode JST_ORDER_OUT_ERROR_EXPRESS_NOT_EXIST = new ErrorCode(1_301_000_101, "聚水潭发货回传执行失败，订单{}未找到匹配的物流公司编码，维护物流公司编码后重试！");
+    ErrorCode JST_ORDER_OUT_ERROR_SALE_FORM_EMPTY = new ErrorCode(1_301_000_102, "聚水潭发货回传执行失败，订单{}未找到匹配的单据来源，请确认！");
 }

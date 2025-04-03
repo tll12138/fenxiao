@@ -29,6 +29,7 @@ public interface OrdersInfoMapper extends BaseMapperX<OrdersInfoDO> {
                 .eqIfPresent(OrdersInfoDO::getOrderType, reqVO.getOrderType())
                 .eqIfPresent(OrdersInfoDO::getDistributorId, reqVO.getDistributorId())
                 .eqIfPresent(OrdersInfoDO::getBusinessBelong, reqVO.getBusinessBelong())
+                .eqIfPresent(OrdersInfoDO::getOrderStatus, reqVO.getOrderStatus())
                 .orderByDesc(OrdersInfoDO::getId));
     }
 
@@ -57,4 +58,9 @@ public interface OrdersInfoMapper extends BaseMapperX<OrdersInfoDO> {
      * @param id
      */
     Integer checkBoxSize(Long id);
+
+    /**
+     * 获取所有自动发货订单（天猫国际、中免日上、猫超）
+     */
+    List<OrdersInfoDO> getAutoSendOrders();
 }

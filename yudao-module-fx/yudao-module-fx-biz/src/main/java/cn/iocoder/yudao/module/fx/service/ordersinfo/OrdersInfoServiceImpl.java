@@ -136,6 +136,16 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
         updateOrdersDetailList(updateReqVO.getId(), updateReqVO.getOrdersDetails());
     }
 
+    /**
+     * 更新销售单
+     *
+     * @param ordersInfoDO
+     */
+    @Override
+    public void updateOrdersInfoByDO(OrdersInfoDO ordersInfoDO) {
+        ordersInfoMapper.updateById(ordersInfoDO);
+    }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteOrdersInfo(Long id) {
@@ -155,11 +165,21 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
     }
 
     @Override
-    public OrdersInfoDetailRespVO getOrdersInfo(Long id) {
+    public OrdersInfoDetailRespVO getOrdersInfoById(Long id) {
         OrdersInfoDO ordersInfoDO = ordersInfoMapper.selectById(id);
         OrdersInfoDetailRespVO respVO = BeanUtils.toBean(ordersInfoDO, OrdersInfoDetailRespVO.class);
         respVO.setOrdersDetails(ordersDetailMapper.selectListByOrderId(id));
         return respVO;
+    }
+
+    /**
+     * 获得销售单
+     *
+     * @return 销售单
+     */
+    @Override
+    public OrdersInfoDO getOrdersInfoByOrderId(String orderId) {
+        return ordersInfoMapper.selectOne(new LambdaQueryWrapperX<OrdersInfoDO>().eq(OrdersInfoDO::getOrderId, orderId));
     }
 
     /**
@@ -169,7 +189,7 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
      * @return 销售单
      */
     @Override
-    public OrdersInfoDetailRespVO getOrdersInfo(String processInstanceId) {
+    public OrdersInfoDetailRespVO getOrdersInfoByPIId(String processInstanceId) {
         OrdersInfoDO ordersInfoDO = ordersInfoMapper.selectOne(new LambdaQueryWrapperX<OrdersInfoDO>().eq(OrdersInfoDO::getProcessInstanceId, processInstanceId));
         if (ordersInfoDO != null) {
             OrdersInfoDetailRespVO respVO = BeanUtils.toBean(ordersInfoDO, OrdersInfoDetailRespVO.class);
@@ -266,5 +286,14 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
     @Override
     public Boolean checkBoxSize(Long id) {
         return ordersInfoMapper.checkBoxSize(id) > 0;
+    }
+
+    /**
+     * 获取自动发货的订单
+     */
+    @Override
+    public List<OrdersInfoDO> getAutoSendOrders() {
+        List<OrdersInfoDO> autoSendOrders = ordersInfoMapper.getAutoSendOrders();
+        return CollectionUtil.emptyToDefault(autoSendOrders);
     }
 }

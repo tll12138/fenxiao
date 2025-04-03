@@ -56,6 +56,15 @@
                              GROUP BY b.order_id) sub ON a.id = sub.order_id
         WHERE a.id = #{id}
     </select>
+    <select id="getAutoSendOrders"
+            resultType="cn.iocoder.yudao.module.fx.dal.dataobject.ordersinfo.OrdersInfoDO">
+        SELECT a.erp_order_number, a.id, a.order_id
+        FROM fx_orders_info a
+        WHERE a.order_status = 3
+          AND a.warehouse IN ('11834410', '12169831', '11202095')
+          AND a.is_to_erp = 1
+          AND EXISTS (SELECT 1 FROM fx_jst_order_out b WHERE b.o_id = a.erp_order_number)
+    </select>
 
     <update id="updateSaleMain">
         UPDATE fx_orders_info t

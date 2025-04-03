@@ -1,17 +1,13 @@
 package cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo;
 
-import lombok.*;
+import cn.iocoder.yudao.framework.common.pojo.PageParam;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
-import java.util.*;
-import io.swagger.v3.oas.annotations.media.Schema;
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
-import java.math.BigDecimal;
-import org.springframework.format.annotation.DateTimeFormat;
-import java.time.LocalDateTime;
-
-import static cn.iocoder.yudao.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY;
-import static cn.iocoder.yudao.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND;
 
 @Schema(description = "管理后台 - 销售单分页 Request VO")
 @Data
@@ -52,6 +48,9 @@ public class OrdersInfoPageReqVO extends PageParam {
 
     @Schema(description = "分销商类型", example = "15594")
     private Integer customerType;
+
+    @Schema(description = "销售单状态", example = "1")
+    private Integer orderStatus;
 
 
 }

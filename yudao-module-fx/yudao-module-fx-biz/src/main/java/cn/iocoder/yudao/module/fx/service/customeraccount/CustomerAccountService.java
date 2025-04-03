@@ -4,8 +4,10 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.fx.controller.admin.customeraccount.vo.CustomerAccountPageReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.customeraccount.vo.CustomerAccountSaveReqVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customeraccount.CustomerAccountDO;
+import cn.iocoder.yudao.module.fx.dal.dataobject.ordersinfo.OrdersInfoDO;
 
 import javax.validation.Valid;
+import java.math.BigDecimal;
 
 /**
  * 分销商账号 Service 接口
@@ -77,4 +79,11 @@ public interface CustomerAccountService {
      * 创建单个分销商的账户
      */
     void createSingleCustomerAccount(Long distributorId, Integer company, String distributorName);
+
+    /**
+     * 销售单发货后扣款并且自动生成账户调整记录【类型为扣款】
+     */
+    BigDecimal saleReceivable(OrdersInfoDO orderInfo);
+
+
 }

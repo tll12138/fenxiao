@@ -191,7 +191,7 @@ public class SalesOrderAuditTaskEndListener {
      * @throws BusinessException 当订单不存在或状态异常时抛出
      */
     private OrdersInfoDetailRespVO validateOrder(String processInstanceId, OrdersInfoService ordersInfoService) {
-        OrdersInfoDetailRespVO ordersInfo = ordersInfoService.getOrdersInfo(processInstanceId);
+        OrdersInfoDetailRespVO ordersInfo = ordersInfoService.getOrdersInfoByPIId(processInstanceId);
         // 订单存在性校验
         if (ordersInfo == null) {
             throw new BusinessException("流程对应的销售单不存在");

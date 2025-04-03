@@ -43,6 +43,11 @@ public interface OrdersInfoService {
     void updateOrdersInfo(@Valid OrdersInfoSaveReqVO updateReqVO);
 
     /**
+     * 更新销售单
+     */
+    void updateOrdersInfoByDO(@Valid OrdersInfoDO ordersInfoDO);
+
+    /**
      * @param id
      * @param orderStatusType
      */
@@ -61,7 +66,14 @@ public interface OrdersInfoService {
      * @param id 编号
      * @return 销售单
      */
-    OrdersInfoDetailRespVO getOrdersInfo(Long id);
+    OrdersInfoDetailRespVO getOrdersInfoById(Long id);
+
+    /**
+     * 获得销售单
+     *
+     * @return 销售单
+     */
+    OrdersInfoDO getOrdersInfoByOrderId(String orderId);
 
     /**
      * 根据流程编号获得销售单
@@ -69,7 +81,7 @@ public interface OrdersInfoService {
      * @param processInstanceId 流程编号
      * @return 销售单
      */
-    OrdersInfoDetailRespVO getOrdersInfo(String processInstanceId);
+    OrdersInfoDetailRespVO getOrdersInfoByPIId(String processInstanceId);
 
     /**
      * 获得销售单分页
@@ -113,4 +125,10 @@ public interface OrdersInfoService {
      * @return
      */
     Boolean checkBoxSize(Long id);
+
+
+    /**
+     * 获取自动发货的订单
+     */
+    List<OrdersInfoDO> getAutoSendOrders();
 }
