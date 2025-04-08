@@ -38,9 +38,12 @@
                   t.express) AS express,
                t.o_id,
                e.so_from,
-               e.receiver_name
+               e.receiver_name,
+               c.display_name
         FROM fx_jst_order_out t
                  LEFT JOIN fx_ec2jst_order e ON e.order_no = t.so_id
+                 left join fx_orders_info i on i.order_id = t.so_id
+                 LEFT JOIN fx_customer_info c ON c.distributor_num = i.distributor_id
         WHERE t.is_tran = 0
         GROUP BY t.so_id,
                  t.express_name,

@@ -49,5 +49,9 @@ public class JstOrderOutDTO extends BaseDO {
      * 收件人
      */
     private String receiverName;
+    /**
+     * 分销商名称
+     */
+    private String displayName;
 
 }

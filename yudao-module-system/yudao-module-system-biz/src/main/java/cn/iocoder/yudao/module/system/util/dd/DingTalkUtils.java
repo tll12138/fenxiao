@@ -149,60 +149,88 @@ public class DingTalkUtils {
 
 
     /**
-     * 发送钉钉通知消息（单个按钮）
-     *
-     * @param userId      用户 userID
-     * @param title       标题 发送内容的标题
-     * @param description 描述 发送内容的描述，会跟title 进行拼接，结果为markdown模式
-     * @param url         处理链接地址
-     * @param actionTitle 通知的来源 显示在钉钉通知中的来源
-     * @param buttonText  按钮文案
-     * @return 发送结果
-     * @throws Exception 异常信息
+     * 通用消息发送方法
      */
-    public SmsSendRespDTO sendNotifyMessage(String userId, String title,
-                                            String description, String url, String actionTitle, String buttonText) throws Exception {
+    private SmsSendRespDTO sendCommonMessage(String userId, String msgType,
+                                             String title, String content,
+                                             String actionTitle, String buttonText, String url) throws Exception {
         DingTalkClient client = new DefaultDingTalkClient(DINGTALK_SEND_NOTIFY_MESSAGE_URL);
-        OapiMessageCorpconversationAsyncsendV2Request request =
-                new OapiMessageCorpconversationAsyncsendV2Request();
+        OapiMessageCorpconversationAsyncsendV2Request request = new OapiMessageCorpconversationAsyncsendV2Request();
         request.setAgentId(Long.valueOf(dingTalkProperties.getAgentId()));
         request.setUseridList(userId);
         request.setToAllUser(false);
-        OapiMessageCorpconversationAsyncsendV2Request.Msg msg =
-                new OapiMessageCorpconversationAsyncsendV2Request.Msg();
 
-        msg.setMsgtype("action_card");
-        msg.setActionCard(new OapiMessageCorpconversationAsyncsendV2Request.ActionCard());
-        msg.getActionCard().setTitle(actionTitle);
-        String descriptionMarkdown = "## " + title + "  \n  " + description;
-        msg.getActionCard().setMarkdown(descriptionMarkdown);
-        msg.getActionCard().setSingleTitle(buttonText);
-        msg.getActionCard().setSingleUrl(url);
+        OapiMessageCorpconversationAsyncsendV2Request.Msg msg = buildMessage(msgType, title,
+                content, actionTitle, buttonText, url);
         request.setMsg(msg);
+
         try {
             String accessToken = getAccessToken();
-            log.info("[sendNotifyMessage][发送钉钉通知开始][accessToken:{},userId:{},title:{},description:{},url:{},actionTitle:{},buttonText:{}]]",
-                    accessToken, userId, title, description, url, actionTitle, buttonText);
+            log.info("[sendCommonMessage][发送开始] type:{}, accessToken:{}, userId:{}",
+                    msgType, accessToken, userId);
+
             OapiMessageCorpconversationAsyncsendV2Response rsp = client.execute(request, accessToken);
-            log.info("[sendNotifyMessage][发送钉钉通知成功，消息ID为:{}]", rsp.getTaskId());
-            return new SmsSendRespDTO().setSuccess(rsp.getErrcode() == 0)
-                    .setSerialNo(null)
-                    .setApiRequestId(rsp.getTaskId().toString())
+            log.info("[sendCommonMessage][发送成功] 消息ID:{}", rsp.getTaskId());
+
+            return new SmsSendRespDTO()
+                    .setSuccess(rsp.getErrcode() == 0)
+                    .setApiRequestId(String.valueOf(rsp.getTaskId()))
                     .setApiMsg(rsp.getErrmsg())
                     .setApiCode(rsp.getErrorCode());
-        } catch (ApiException err) {
-            if (!com.aliyun.teautil.Common.empty(err.getErrCode()) && !com.aliyun.teautil.Common.empty(err.getErrMsg())) {
-                log.error("[getUserInfo][发送钉钉通知失败],错误信息为：{}", err.getErrMsg());
-                return new SmsSendRespDTO().setSuccess(false)
-                        .setSerialNo(null)
-                        .setApiMsg(err.getErrMsg())
-                        .setApiCode(err.getErrCode());
-            }
+        } catch (ApiException e) {
+            log.error("[sendCommonMessage][发送失败] 类型:{} 错误码:{} 信息:{}",
+                    msgType, e.getErrCode(), e.getErrMsg());
+            return new SmsSendRespDTO()
+                    .setSuccess(false)
+                    .setApiMsg(e.getErrMsg())
+                    .setApiCode(e.getErrCode());
         }
-        return new SmsSendRespDTO().setSuccess(false)
-                .setSerialNo(null)
-                .setApiMsg("发送钉钉通知失败")
-                .setApiCode("1");
+    }
+
+    /**
+     * 构建消息体
+     */
+    private OapiMessageCorpconversationAsyncsendV2Request.Msg buildMessage(String msgType,
+                                                                           String title, String content, String actionTitle,
+                                                                           String buttonText, String url) {
+        OapiMessageCorpconversationAsyncsendV2Request.Msg msg =
+                new OapiMessageCorpconversationAsyncsendV2Request.Msg();
+        msg.setMsgtype(msgType);
+
+        switch (msgType) {
+            case "action_card":
+                OapiMessageCorpconversationAsyncsendV2Request.ActionCard actionCard = new OapiMessageCorpconversationAsyncsendV2Request.ActionCard();
+                actionCard.setTitle(actionTitle);
+                actionCard.setMarkdown("## " + title + "  \n  " + content);
+                actionCard.setSingleTitle(buttonText);
+                actionCard.setSingleUrl(url);
+                msg.setActionCard(actionCard);
+                break;
+            case "markdown":
+                OapiMessageCorpconversationAsyncsendV2Request.Markdown markdown = new OapiMessageCorpconversationAsyncsendV2Request.Markdown();
+                markdown.setTitle(title);
+                markdown.setText(content);
+                msg.setMarkdown(markdown);
+                break;
+        }
+        return msg;
+    }
+
+    /**
+     * 发送行动卡片通知
+     */
+    public SmsSendRespDTO sendNotifyMessage(String userId, String title, String description,
+                                            String url, String actionTitle, String buttonText) throws Exception {
+        return sendCommonMessage(userId, "action_card", title, description,
+                actionTitle, buttonText, url);
+    }
+
+    /**
+     * 发送Markdown格式通知
+     */
+    public SmsSendRespDTO sendNotifyMarkdown(String userId, String title, String text) throws Exception {
+        return sendCommonMessage(userId, "markdown", title, text,
+                null, null, null);
     }
 
 
