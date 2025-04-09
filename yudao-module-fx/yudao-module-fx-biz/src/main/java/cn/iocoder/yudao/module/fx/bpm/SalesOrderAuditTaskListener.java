@@ -22,6 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
+/**
+ * 销售单审核后动作
+ */
 @Component("salesOrderAuditTaskListener")
 @Slf4j
 public class SalesOrderAuditTaskListener {

@@ -46,6 +46,14 @@ public interface ReturnOrderService {
     ReturnOrderDO getReturnOrder(Long id);
 
     /**
+     * 根据流程id获取销售退货单
+     *
+     * @param processInstanceId 流程编号
+     * @return FX 销售退货单
+     */
+    ReturnOrdersInfoDetailRespVO getReturnOrderByProcessId(String processInstanceId);
+
+    /**
      * 获得FX 销售退货单分页
      *
      * @param pageReqVO 分页查询

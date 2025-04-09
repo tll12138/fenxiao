@@ -22,7 +22,7 @@ public class InventoryValidationHandler extends ValidationHandler {
 
     @Override
     public void handle(BaseProcessingContext context) {
-        List<OrdersDetailDO> ordersDetails = context.getOrdersDetails();
+        List<OrdersDetailDO> ordersDetails = (List<OrdersDetailDO>) context.getOrdersDetails();
         //根据商品id分组，计算数量之和
         Map<String, Integer> goodsQuantityMap = context.getGoodsQuantityMap();
         Map<String, Integer> availCountMap = ordersDetails.stream().collect(

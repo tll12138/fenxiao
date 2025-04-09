@@ -1,7 +1,7 @@
 package cn.iocoder.yudao.module.fx.controller.admin.returnorder.vo;
 
 import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
-import cn.iocoder.yudao.module.fx.dal.dataobject.ordersdetail.OrdersDetailDO;
+import cn.iocoder.yudao.module.fx.dal.dataobject.returnorderdetail.ReturnOrderDetailDO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -78,6 +78,9 @@ public class ReturnOrdersInfoDetailRespVO extends BaseDO {
     @NotNull(message = "总退货数量不能为空")
     private Integer totalReturnQuantity;
 
+    @Schema(description = "退货方名称")
+    private String returnUserName;
+
 
     // ===========================  待生成信息  ===========================
 
@@ -105,5 +108,5 @@ public class ReturnOrdersInfoDetailRespVO extends BaseDO {
     // ===========================  明细信息  ===========================
     @Schema(description = "退货订单-商品明细列表")
     @NotNull(message = "退货订单-商品明细列表不能为空")
-    private List<OrdersDetailDO> ordersDetails;
+    private List<ReturnOrderDetailDO> ordersDetails;
 }

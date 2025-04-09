@@ -107,4 +107,6 @@ public interface ErrorCodeConstants {
     ErrorCode JST_ORDER_OUT_NOT_EXISTS = new ErrorCode(1_301_000_100, "聚水潭发货回传中间表不存在");
     ErrorCode JST_ORDER_OUT_ERROR_EXPRESS_NOT_EXIST = new ErrorCode(1_301_000_101, "聚水潭发货回传执行失败，订单{}未找到匹配的物流公司编码，维护物流公司编码后重试！");
     ErrorCode JST_ORDER_OUT_ERROR_SALE_FORM_EMPTY = new ErrorCode(1_301_000_102, "聚水潭发货回传执行失败，订单{}未找到匹配的单据来源，请确认！");
+    // ========== 销售退货详情  ==========
+    ErrorCode RETURN_ORDER_DETAIL_NOT_EXISTS = new ErrorCode(1_302_000_100, "销售退货详情不存在");
 }

@@ -1,7 +1,7 @@
 package cn.iocoder.yudao.module.fx.controller.admin.returnorder.vo;
 
 import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
-import cn.iocoder.yudao.module.fx.dal.dataobject.ordersdetail.OrdersDetailDO;
+import cn.iocoder.yudao.module.fx.dal.dataobject.returnorderdetail.ReturnOrderDetailDO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -104,6 +104,6 @@ public class ReturnOrderSaveReqVO extends BaseDO {
 
     @Schema(description = "退货订单-商品明细列表")
     @NotNull(message = "退货订单-商品明细列表不能为空")
-    private List<OrdersDetailDO> ordersDetails;
+    private List<ReturnOrderDetailDO> ordersDetails;
 
 }

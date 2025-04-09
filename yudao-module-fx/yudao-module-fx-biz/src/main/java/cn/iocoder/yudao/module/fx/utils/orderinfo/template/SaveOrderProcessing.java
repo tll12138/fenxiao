@@ -24,6 +24,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class SaveOrderProcessing extends AbstractOrderProcessingTemplate {
@@ -31,6 +32,18 @@ public class SaveOrderProcessing extends AbstractOrderProcessingTemplate {
 
     public SaveOrderProcessing(OrderProcessingContext orderContext) {
         super(orderContext);
+    }
+
+    @Override
+    protected void AfterInit() {
+        List<OrdersDetailDO> ordersDetails = (List<OrdersDetailDO>) orderContext.getOrdersDetails();
+        List<String> brands = ordersDetails.stream().map(OrdersDetailDO::getBrand).collect(Collectors.toList());
+        orderContext.setBrands(brands);
+        //根据商品id分组，计算数量之和
+        Map<String, Integer> quantityMap = ordersDetails.stream().collect(
+                Collectors.groupingBy(OrdersDetailDO::getSkuId, Collectors.summingInt(OrdersDetailDO::getCount)));
+        orderContext.setGoodsQuantityMap(quantityMap);
+        log.info("[SaveOrderProcessing ] 初始化品牌信息 和 商品数量信息...");
     }
 
     /**

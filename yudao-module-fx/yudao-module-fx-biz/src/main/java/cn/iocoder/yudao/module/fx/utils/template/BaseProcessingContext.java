@@ -1,6 +1,5 @@
 package cn.iocoder.yudao.module.fx.utils.template;
 
-import cn.iocoder.yudao.module.fx.dal.dataobject.ordersdetail.OrdersDetailDO;
 import lombok.Data;
 
 import java.util.List;
@@ -21,7 +20,7 @@ public abstract class BaseProcessingContext {
     /**
      * 订单明细
      */
-    public List<OrdersDetailDO> ordersDetails; // 订单明细
+    public List<?> ordersDetails; // 订单明细
 
 
     /**

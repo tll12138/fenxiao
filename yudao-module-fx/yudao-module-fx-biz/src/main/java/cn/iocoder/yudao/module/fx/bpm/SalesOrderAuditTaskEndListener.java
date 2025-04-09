@@ -25,6 +25,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.StringJoiner;
 
+/**
+ * 销售单归档后动作
+ */
 @Component("salesOrderAuditTaskEndListener")
 @Slf4j
 public class SalesOrderAuditTaskEndListener {

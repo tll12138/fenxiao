@@ -4,12 +4,11 @@ import cn.hutool.core.lang.Opt;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.security.core.util.SecurityFrameworkUtils;
 import cn.iocoder.yudao.module.fx.controller.admin.returnorder.vo.ReturnOrderSaveReqVO;
-import cn.iocoder.yudao.module.fx.dal.dataobject.ordersdetail.OrdersDetailDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.returnorder.ReturnOrderDO;
+import cn.iocoder.yudao.module.fx.dal.dataobject.returnorderdetail.ReturnOrderDetailDO;
 import cn.iocoder.yudao.module.fx.enums.OrderNumPrefixType;
 import cn.iocoder.yudao.module.fx.enums.OrderStatusType;
 import cn.iocoder.yudao.module.fx.utils.returnorder.ReturnOrderProcessingContext;
-import cn.iocoder.yudao.module.fx.utils.validate.BrandValidationHandler;
 import cn.iocoder.yudao.module.fx.utils.validate.HandleChainBuilder;
 import cn.iocoder.yudao.module.fx.utils.validate.QuantityValidationHandler;
 import cn.iocoder.yudao.module.fx.utils.validate.ValidationHandler;
@@ -20,6 +19,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class SaveReturnOrderProcessing extends AbstractReturnOrderProcessingTemplate {
@@ -27,6 +28,16 @@ public class SaveReturnOrderProcessing extends AbstractReturnOrderProcessingTemp
 
     public SaveReturnOrderProcessing(ReturnOrderProcessingContext orderContext) {
         super(orderContext);
+    }
+
+    @Override
+    protected void AfterInit() {
+        List<ReturnOrderDetailDO> ordersDetails = (List<ReturnOrderDetailDO>) orderContext.getOrdersDetails();
+        //根据商品id分组，计算数量之和
+        Map<String, Integer> quantityMap = ordersDetails.stream().collect(
+                Collectors.groupingBy(ReturnOrderDetailDO::getSkuId, Collectors.summingInt(ReturnOrderDetailDO::getCount)));
+        orderContext.setGoodsQuantityMap(quantityMap);
+        log.info("[SaveReturnOrderProcessing ] 商品数量信息...");
     }
 
     /**
@@ -38,7 +49,8 @@ public class SaveReturnOrderProcessing extends AbstractReturnOrderProcessingTemp
         ReturnOrderSaveReqVO returnOrderSaveReqVO = context.getReturnOrderSaveReqVO();
         // 转换对象
         ReturnOrderDO returnOrderDO = BeanUtils.toBean(returnOrderSaveReqVO, ReturnOrderDO.class);
-        List<OrdersDetailDO> ordersDetails = returnOrderSaveReqVO.getOrdersDetails();
+        Db.saveOrUpdate(returnOrderDO); //生成id
+        List<ReturnOrderDetailDO> ordersDetails = returnOrderSaveReqVO.getOrdersDetails();
         context.setReturnOrderDO(returnOrderDO);
         context.setOrdersDetails(ordersDetails);
         log.info("[SaveReturnOrderProcessing] 初始化成功...");
@@ -47,13 +59,13 @@ public class SaveReturnOrderProcessing extends AbstractReturnOrderProcessingTemp
     /**
      * 1
      * 校验订单
+     *
      * @throws Exception
      */
     @Override
     protected void validateOrder() throws Exception {
         // 校验订单
         ValidationHandler build = new HandleChainBuilder()
-                .addHandler(new BrandValidationHandler()) // 品牌校验
                 .addHandler(new QuantityValidationHandler()) // 退货数量校验
                 .build();
         build.handle(context);
@@ -68,17 +80,20 @@ public class SaveReturnOrderProcessing extends AbstractReturnOrderProcessingTemp
      * @throws Exception
      */
     @Override
-    protected void handleAddress() throws Exception {}
+    protected void handleAddress() throws Exception {
+    }
 
 
     /**
      * 3
      * 计算订单商品合计
      * 上下文
+     *
      * @throws Exception
      */
     @Override
-    protected void calculateTotal() throws Exception {}
+    protected void calculateTotal() throws Exception {
+    }
 
 
     /**
@@ -92,10 +107,10 @@ public class SaveReturnOrderProcessing extends AbstractReturnOrderProcessingTemp
     protected void generateOrderDetails() throws Exception {
         ReturnOrderDO returnOrderDO = context.getReturnOrderDO();
         Opt<Long> longOpt = Opt.of(returnOrderDO.getId());
-        if (longOpt.get() == null){
+        if (longOpt.get() == null) {
             returnOrderDO.setUpdater(SecurityFrameworkUtils.getLoginUserNickname());
             returnOrderDO.setUpdateTime(LocalDateTime.now());
-        }else{
+        } else {
             // 获取当前日期，转换格式为yyyyMMddHHmm
             LocalDateTime now = LocalDateTime.now();
             String dateStr = now.format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
@@ -122,7 +137,7 @@ public class SaveReturnOrderProcessing extends AbstractReturnOrderProcessingTemp
         Db.saveOrUpdate(returnOrderDO);
         log.info("[SaveReturnOrderProcessing] 订单数据保存成功...");
         // 保存订单商品详情数据
-        saveOrderDetails(context, returnOrderDO.getId());
+        saveReturnOrderDetails(context, returnOrderDO.getId());
         return returnOrderDO.getId();
     }
 }

@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.fx.service.customerinfo;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.json.JSONUtil;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.fx.controller.admin.customeraccount.vo.CustomerAccountRespVO;
@@ -28,6 +29,7 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.jushuitan.api.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -39,6 +41,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -68,6 +71,8 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     private SubCompanyInfoMapper companyInfoMapper;
     @Resource
     private JuShuiTanApiService juShuiTanApiService;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -179,6 +184,20 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     public void syncCustomers() {
         //递归获取所有分销商信息
         executeCustomers(1);
+        List<CustomerInfoDO> allCustomerInfo = getAllCustomerInfo();
+        // 新增：生成分销商映射并缓存
+        Map<Long, String> distributorMap = allCustomerInfo.stream()
+                .collect(Collectors.toMap(
+                        CustomerInfoDO::getId,
+                        CustomerInfoDO::getDistributorName,
+                        (oldVal, newVal) -> newVal)); // 处理重复key的情况
+        String redisKey = "customer:info:distributor-mapping";
+        stringRedisTemplate.opsForValue().set(
+                redisKey,
+                JSONUtil.toJsonStr(distributorMap),
+                2, // 保留1天
+                TimeUnit.DAYS
+        );
     }
 
 
