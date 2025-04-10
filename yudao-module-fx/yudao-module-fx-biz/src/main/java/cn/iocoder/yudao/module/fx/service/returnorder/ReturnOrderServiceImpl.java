@@ -79,8 +79,10 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
         ReturnOrderDO orderDO = returnOrderMapper.selectById(id);
         ReturnOrdersInfoDetailRespVO respVO = BeanUtils.toBean(orderDO, ReturnOrdersInfoDetailRespVO.class);
         String customerMap = stringRedisTemplate.opsForValue().get("customer:info:distributor-mapping");
-        Map<String, String> customerNameMap = JSONUtil.parseObj(customerMap).toBean(Map.class);
-        respVO.setReturnUserName(customerNameMap.get(respVO.getReturnUserId().toString()));
+        if (customerMap != null) {
+            Map<String, String> customerNameMap = JSONUtil.parseObj(customerMap).toBean(Map.class);
+            respVO.setReturnUserName(customerNameMap.get(respVO.getReturnUserId().toString()));
+        }
         respVO.setOrdersDetails(returnOrderDetailMapper.selectListByReturnOrderId(id));
         return respVO;
     }
@@ -94,6 +96,19 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
         returnOrderMapper.updateById(updateObj);
     }
 
+    /**
+     * 更新销售退货单转换标志
+     */
+    @Override
+    public void updateReturnOrderByTran(ReturnOrdersInfoDetailRespVO returnOrder) {
+        // 校验存在
+        ReturnOrderDO orderDO = validateReturnOrderExists(returnOrder.getId());
+        orderDO.setIsToErp(returnOrder.getIsToErp());
+        orderDO.setToErpTime(returnOrder.getToErpTime());
+        orderDO.setOrderStatus(returnOrder.getOrderStatus());
+        returnOrderMapper.updateById(orderDO);
+    }
+
     @Override
     public void deleteReturnOrder(Long id) {
         // 校验存在
@@ -103,10 +118,12 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
         returnOrderDetailMapper.delete(new LambdaQueryWrapper<ReturnOrderDetailDO>().eq(ReturnOrderDetailDO::getMainId, id));
     }
 
-    private void validateReturnOrderExists(Long id) {
-        if (returnOrderMapper.selectById(id) == null) {
+    private ReturnOrderDO validateReturnOrderExists(Long id) {
+        ReturnOrderDO returnOrderDO = returnOrderMapper.selectById(id);
+        if (returnOrderDO == null) {
             throw exception(RETURN_ORDER_NOT_EXISTS);
         }
+        return returnOrderDO;
     }
 
     @Override
@@ -124,7 +141,8 @@ public class ReturnOrderServiceImpl implements ReturnOrderService {
     public ReturnOrdersInfoDetailRespVO getReturnOrderByProcessId(String processInstanceId) {
         ReturnOrderDO returnOrderDO = returnOrderMapper.selectOne(new LambdaQueryWrapper<ReturnOrderDO>().eq(ReturnOrderDO::getProcessInstanceId, processInstanceId));
         ReturnOrdersInfoDetailRespVO respVO = BeanUtils.toBean(returnOrderDO, ReturnOrdersInfoDetailRespVO.class);
-        respVO.setOrdersDetails(returnOrderDetailMapper.selectListByReturnOrderId(returnOrderDO.getId()));
+        //获取数量不为0的商品详情
+        respVO.setOrdersDetails(returnOrderDetailMapper.selectListByReturnOrderId(returnOrderDO.getId(), 0));
         return respVO;
     }
 

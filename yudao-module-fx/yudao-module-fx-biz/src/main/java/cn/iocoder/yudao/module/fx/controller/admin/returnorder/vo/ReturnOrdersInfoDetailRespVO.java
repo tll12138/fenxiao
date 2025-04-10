@@ -81,6 +81,9 @@ public class ReturnOrdersInfoDetailRespVO extends BaseDO {
     @Schema(description = "退货方名称")
     private String returnUserName;
 
+    @Schema(description = "品牌", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String brand;
+
 
     // ===========================  待生成信息  ===========================
 

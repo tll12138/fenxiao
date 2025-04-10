@@ -31,6 +31,11 @@ public interface ReturnOrderService {
     void updateReturnOrder(@Valid ReturnOrderSaveReqVO updateReqVO);
 
     /**
+     * 更新销售退货单转换标志
+     */
+    void updateReturnOrderByTran(ReturnOrdersInfoDetailRespVO returnOrder);
+
+    /**
      * 删除FX 销售退货单
      *
      * @param id 编号

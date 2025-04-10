@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.fx.service.sendrepository;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.json.JSONUtil;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.fx.controller.admin.sendrepository.vo.SendRepositoryPageReqVO;
@@ -16,12 +17,18 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.jushuitan.api.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -42,6 +49,8 @@ public class SendRepositoryServiceImpl implements SendRepositoryService {
     private SendRepositoryMapper sendRepositoryMapper;
     @Resource
     private JuShuiTanApiService juShuiTanApiService;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     @Override
     public Integer createSendRepository(SendRepositorySaveReqVO createReqVO) {
@@ -90,6 +99,20 @@ public class SendRepositoryServiceImpl implements SendRepositoryService {
     public void syncSendRepository() {
         //递归获取所有发货仓库信息
         executeSendRepository(1);
+        List<SendRepositoryDO> sendRepositoryDOS = sendRepositoryMapper.selectList();
+        // 新增：生成分销商映射并缓存
+        Map<String, SendRepositoryDO> sendRepositoryMap = sendRepositoryDOS.stream()
+                .collect(Collectors.toMap(
+                        SendRepositoryDO::getCode,
+                        Function.identity(),  // 修正这里
+                        (oldVal, newVal) -> newVal));
+        String redisKey = "repository:info:mapping";
+        stringRedisTemplate.opsForValue().set(
+                redisKey,
+                JSONUtil.toJsonStr(sendRepositoryMap),
+                30, // 保留30天
+                TimeUnit.DAYS
+        );
     }
 
     @Override

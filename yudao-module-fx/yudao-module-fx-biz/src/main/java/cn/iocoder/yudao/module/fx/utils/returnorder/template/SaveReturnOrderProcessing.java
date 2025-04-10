@@ -9,6 +9,7 @@ import cn.iocoder.yudao.module.fx.dal.dataobject.returnorderdetail.ReturnOrderDe
 import cn.iocoder.yudao.module.fx.enums.OrderNumPrefixType;
 import cn.iocoder.yudao.module.fx.enums.OrderStatusType;
 import cn.iocoder.yudao.module.fx.utils.returnorder.ReturnOrderProcessingContext;
+import cn.iocoder.yudao.module.fx.utils.validate.BrandValidationHandler;
 import cn.iocoder.yudao.module.fx.utils.validate.HandleChainBuilder;
 import cn.iocoder.yudao.module.fx.utils.validate.QuantityValidationHandler;
 import cn.iocoder.yudao.module.fx.utils.validate.ValidationHandler;
@@ -36,6 +37,8 @@ public class SaveReturnOrderProcessing extends AbstractReturnOrderProcessingTemp
         //根据商品id分组，计算数量之和
         Map<String, Integer> quantityMap = ordersDetails.stream().collect(
                 Collectors.groupingBy(ReturnOrderDetailDO::getSkuId, Collectors.summingInt(ReturnOrderDetailDO::getCount)));
+        List<String> brands = ordersDetails.stream().map(ReturnOrderDetailDO::getBrand).collect(Collectors.toList());
+        orderContext.setBrands(brands);
         orderContext.setGoodsQuantityMap(quantityMap);
         log.info("[SaveReturnOrderProcessing ] 商品数量信息...");
     }
@@ -66,6 +69,7 @@ public class SaveReturnOrderProcessing extends AbstractReturnOrderProcessingTemp
     protected void validateOrder() throws Exception {
         // 校验订单
         ValidationHandler build = new HandleChainBuilder()
+                .addHandler(new BrandValidationHandler()) // 品牌校验
                 .addHandler(new QuantityValidationHandler()) // 退货数量校验
                 .build();
         build.handle(context);

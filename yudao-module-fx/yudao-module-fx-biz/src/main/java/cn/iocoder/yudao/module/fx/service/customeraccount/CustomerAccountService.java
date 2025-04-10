@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.fx.service.customeraccount;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.fx.controller.admin.customeraccount.vo.CustomerAccountPageReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.customeraccount.vo.CustomerAccountSaveReqVO;
+import cn.iocoder.yudao.module.fx.controller.admin.returnorder.vo.ReturnOrdersInfoDetailRespVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customeraccount.CustomerAccountDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ordersinfo.OrdersInfoDO;
 
@@ -84,6 +85,11 @@ public interface CustomerAccountService {
      * 销售单发货后扣款并且自动生成账户调整记录【类型为扣款】
      */
     BigDecimal saleReceivable(OrdersInfoDO orderInfo);
+
+    /**
+     * 销售退货提交后自动生成退货还款，并且自动生成账户调整记录【类型为退货还款】
+     */
+    BigDecimal resaleReceivable(ReturnOrdersInfoDetailRespVO returnOrder);
 
 
 }

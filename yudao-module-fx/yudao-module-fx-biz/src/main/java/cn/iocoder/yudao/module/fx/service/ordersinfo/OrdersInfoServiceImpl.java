@@ -115,6 +115,17 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
         return id;
     }
 
+    /**
+     * 创建销售单
+     *
+     * @return 编号
+     */
+    @Override
+    public Long createOrdersInfoByDO(OrdersInfoDO ordersInfoDO) {
+        ordersInfoMapper.insert(ordersInfoDO);
+        return ordersInfoDO.getId();
+    }
+
     @Override
     public void updateOrdersInfoStatus(Long id, Integer orderStatusType) {
         validateOrdersInfoExists(id);

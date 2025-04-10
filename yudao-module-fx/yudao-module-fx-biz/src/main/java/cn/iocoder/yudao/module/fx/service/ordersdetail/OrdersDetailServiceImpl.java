@@ -1,22 +1,21 @@
 package cn.iocoder.yudao.module.fx.service.ordersdetail;
 
+import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
+import cn.iocoder.yudao.module.fx.controller.admin.ordersdetail.vo.OrdersDetailPageReqVO;
+import cn.iocoder.yudao.module.fx.controller.admin.ordersdetail.vo.OrdersDetailSaveReqVO;
+import cn.iocoder.yudao.module.fx.dal.dataobject.ordersdetail.OrdersDetailDO;
+import cn.iocoder.yudao.module.fx.dal.mysql.ordersdetail.OrdersDetailMapper;
+import cn.iocoder.yudao.module.fx.utils.CollectionUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.*;
-import cn.iocoder.yudao.module.fx.controller.admin.ordersdetail.vo.*;
-import cn.iocoder.yudao.module.fx.dal.dataobject.ordersdetail.OrdersDetailDO;
-import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
-import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
-
-import cn.iocoder.yudao.module.fx.dal.mysql.ordersdetail.OrdersDetailMapper;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.*;
+import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.ORDERS_DETAIL_NOT_EXISTS;
 
 /**
  * 分销-销售订单明细 Service 实现类
@@ -70,6 +69,38 @@ public class OrdersDetailServiceImpl implements OrdersDetailService {
     @Override
     public PageResult<OrdersDetailDO> getOrdersDetailPage(OrdersDetailPageReqVO pageReqVO) {
         return ordersDetailMapper.selectPage(pageReqVO);
+    }
+
+    /**
+     * 获得分销-销售订单明细list
+     *
+     * @return 分销-销售订单明细
+     */
+    @Override
+    public List<OrdersDetailDO> getOrdersDetailByOrderId(Long orderId) {
+        return ordersDetailMapper.selectList(new LambdaQueryWrapper<OrdersDetailDO>().eq(OrdersDetailDO::getOrderId, orderId));
+    }
+
+    /**
+     * 批量更新
+     */
+    @Override
+    public void updateBatchById(List<OrdersDetailDO> saveDetailList) {
+        if (CollectionUtil.isEmpty(saveDetailList)) {
+            return;
+        }
+        ordersDetailMapper.updateBatch(saveDetailList);
+    }
+
+    /**
+     * 批量保存
+     */
+    @Override
+    public void saveBatch(List<OrdersDetailDO> details) {
+        if (CollectionUtil.isEmpty(details)) {
+            return;
+        }
+        ordersDetailMapper.insertBatch(details);
     }
 
 }

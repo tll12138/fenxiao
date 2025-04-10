@@ -74,4 +74,7 @@ public class ReturnOrderRespVO extends BaseDO implements VO {
     @ExcelProperty("创建者")
     private String creator;
 
+    @Schema(description = "品牌", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String brand;
+
 }

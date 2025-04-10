@@ -302,7 +302,7 @@ public class JstOrderOutServiceImpl implements JstOrderOutService {
     }
 
     private void sendBalanceNotification(OrdersInfoDO orderInfo, BigDecimal balance, JstOrderOutDTO orderOut) throws Exception {
-        String userId = dictDataApi.getDictDataLabel("fx_notice_head", orderInfo.getBusinessBelong());
+        String userId = dictDataApi.getDictDataLabel("fx_notice_head", String.valueOf(orderInfo.getBusinessBelong()));
         log.info("[余额提醒] 准备发送通知给用户：{}", userId);
         // 钉钉通知实现逻辑...
         String msg = "# 销售单发货提醒：\n### 单号编号:\n" + orderInfo.getOrderId()

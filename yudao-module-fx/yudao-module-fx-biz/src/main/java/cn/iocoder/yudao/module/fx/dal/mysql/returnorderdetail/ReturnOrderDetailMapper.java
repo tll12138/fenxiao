@@ -5,6 +5,7 @@ import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.fx.controller.admin.returnorderdetail.vo.ReturnOrderDetailPageReqVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.returnorderdetail.ReturnOrderDetailDO;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -35,7 +36,24 @@ public interface ReturnOrderDetailMapper extends BaseMapperX<ReturnOrderDetailDO
                 .orderByDesc(ReturnOrderDetailDO::getId));
     }
 
+    /**
+     * 根据退货单id获取退货详情列表
+     *
+     * @param orderId
+     * @return
+     */
     default List<ReturnOrderDetailDO> selectListByReturnOrderId(Long orderId) {
         return selectList(ReturnOrderDetailDO::getMainId, orderId);
+    }
+
+    /**
+     * 根据退货单id获取不为指定数量的退货详情列表
+     *
+     * @param orderId
+     * @param InventoryCount
+     * @return
+     */
+    default List<ReturnOrderDetailDO> selectListByReturnOrderId(Long orderId, int InventoryCount) {
+        return selectList(new LambdaQueryWrapper<ReturnOrderDetailDO>().eq(ReturnOrderDetailDO::getMainId, orderId).ne(ReturnOrderDetailDO::getCount, InventoryCount));
     }
 }

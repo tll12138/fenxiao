@@ -75,6 +75,9 @@ public class ReturnOrderSaveReqVO extends BaseDO {
     @NotNull(message = "总退货数量不能为空")
     private Integer totalReturnQuantity;
 
+    @Schema(description = "品牌", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String brand;
+
 
     // ===========================  待生成信息  ===========================
 

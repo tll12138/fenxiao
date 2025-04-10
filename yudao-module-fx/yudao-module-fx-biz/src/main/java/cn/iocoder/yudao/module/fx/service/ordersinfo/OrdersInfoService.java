@@ -36,6 +36,13 @@ public interface OrdersInfoService {
     Long createOrdersInfo(@Valid OrdersInfoSaveReqVO createReqVO) throws Exception;
 
     /**
+     * 创建销售单
+     *
+     * @return 编号
+     */
+    Long createOrdersInfoByDO(OrdersInfoDO ordersInfoDO);
+
+    /**
      * 更新销售单
      *
      * @param updateReqVO 更新信息

@@ -2,6 +2,8 @@ package cn.iocoder.yudao.module.system.service.dict;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.map.MapUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
 import cn.iocoder.yudao.framework.common.enums.CommonStatusEnum;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.collection.CollectionUtils;
@@ -13,14 +15,22 @@ import cn.iocoder.yudao.module.system.dal.dataobject.dict.DictTypeDO;
 import cn.iocoder.yudao.module.system.dal.mysql.dict.DictDataMapper;
 import com.google.common.annotations.VisibleForTesting;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.*;
+import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.DICT_DATA_NOT_ENABLE;
+import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.DICT_DATA_NOT_EXISTS;
+import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.DICT_DATA_VALUE_DUPLICATE;
+import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.DICT_TYPE_NOT_ENABLE;
+import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.DICT_TYPE_NOT_EXISTS;
 
 /**
  * 字典数据 Service 实现类
@@ -43,6 +53,8 @@ public class DictDataServiceImpl implements DictDataService {
 
     @Resource
     private DictDataMapper dictDataMapper;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     @Override
     public List<DictDataDO> getDictDataList(Integer status, String dictType) {
@@ -160,17 +172,40 @@ public class DictDataServiceImpl implements DictDataService {
 
     @Override
     public DictDataDO getDictData(String dictType, String value) {
-        return dictDataMapper.selectByDictTypeAndValue(dictType, value);
+        DictDataDO dictDataDO;
+        String json = stringRedisTemplate.opsForValue().get("dictType" + dictType + "value" + value);
+        if (StrUtil.isNotBlank(json)) {
+            dictDataDO = JSONUtil.parseObj(json).toBean(DictDataDO.class);
+        } else {
+            dictDataDO = dictDataMapper.selectByDictTypeAndValue(dictType, value);
+            stringRedisTemplate.opsForValue().set("dictType" + dictType + "value" + value, JSONUtil.toJsonStr(dictDataDO));
+        }
+        return dictDataDO;
     }
 
     @Override
     public DictDataDO parseDictData(String dictType, String label) {
-        return dictDataMapper.selectByDictTypeAndLabel(dictType, label);
+        DictDataDO dictDataDO;
+        String json = stringRedisTemplate.opsForValue().get("dictType" + dictType + "label" + label);
+        if (StrUtil.isNotBlank(json)) {
+            dictDataDO = JSONUtil.parseObj(json).toBean(DictDataDO.class);
+        } else {
+            dictDataDO = dictDataMapper.selectByDictTypeAndLabel(dictType, label);
+            stringRedisTemplate.opsForValue().set("dictType" + dictType + "label" + label, JSONUtil.toJsonStr(dictDataDO));
+        }
+        return dictDataDO;
     }
 
     @Override
     public List<DictDataDO> getDictDataListByDictType(String dictType) {
-        List<DictDataDO> list = dictDataMapper.selectList(DictDataDO::getDictType, dictType);
+        List<DictDataDO> list;
+        String json = stringRedisTemplate.opsForValue().get("dictType" + dictType);
+        if (StrUtil.isNotBlank(json)) {
+            list = JSONUtil.parseObj(json).toBean(List.class);
+        } else {
+            list = dictDataMapper.selectList(DictDataDO::getDictType, dictType);
+            stringRedisTemplate.opsForValue().set("dictType" + dictType, JSONUtil.toJsonStr(list));
+        }
         list.sort(Comparator.comparing(DictDataDO::getSort));
         return list;
     }
@@ -178,7 +213,7 @@ public class DictDataServiceImpl implements DictDataService {
     @Override
     public Map<String, String> getDictDataMapByDictType(String dictType) {
         List<DictDataDO> list = dictDataMapper.selectList(DictDataDO::getDictType, dictType);
-        return CollUtil.isEmpty(list)? MapUtil.newHashMap() :list.stream()
+        return CollUtil.isEmpty(list) ? MapUtil.newHashMap() : list.stream()
                 .collect(Collectors.toMap(DictDataDO::getLabel, DictDataDO::getValue));
     }
 

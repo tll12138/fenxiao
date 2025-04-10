@@ -7,6 +7,7 @@ import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.fx.controller.admin.amountadj.vo.AmountAdjSaveReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.customeraccount.vo.CustomerAccountPageReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.customeraccount.vo.CustomerAccountSaveReqVO;
+import cn.iocoder.yudao.module.fx.controller.admin.returnorder.vo.ReturnOrdersInfoDetailRespVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.accinfoconfig.AccInfoConfigDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customeraccount.CustomerAccountDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customerinfo.CustomerInfoDO;
@@ -122,7 +123,7 @@ public class CustomerAccountServiceImpl implements CustomerAccountService {
                         .setAccountId(info.getDistributorNum() + "-" + config.getId())
                         .setName(displayName)
                         .setCompany(config.getYwzt())
-                        .setRemark(displayName + dataApi.getDictDataLabel("fx_business_entity", config.getYwzt()));
+                        .setRemark(displayName + dataApi.getDictDataLabel("fx_business_entity", String.valueOf(config.getYwzt())));
 
                 accounts.add(account);
             }
@@ -197,4 +198,33 @@ public class CustomerAccountServiceImpl implements CustomerAccountService {
         return account.getBalance();
     }
 
+    /**
+     * 销售退货提交后自动生成退货还款，并且自动生成账户调整记录【类型为退货还款】
+     */
+    @Override
+    public BigDecimal resaleReceivable(ReturnOrdersInfoDetailRespVO returnOrderDO) {
+        Long returnUserId = returnOrderDO.getReturnUserId();
+        CustomerAccountDO account = this.getCustomerAccountByDistributorIdAndCompany(returnUserId, returnOrderDO.getReturnDealer().intValue());
+        if (account == null) {
+            throw new BusinessException(StrUtil.format("分销商[{}]未找到分销商扣款账户", returnUserId));
+        }
+        // 账户状态检查（冻结状态拦截）
+        if (BooleanType.YES.getType().equals(account.getIsActive())) {
+            throw new BusinessException(StrUtil.format("账户[{}]已冻结", account.getId()));
+        }
+        // 更新账户金额=现账户金额+退货单金额
+        account.setBalance(BigDecimalUtils.add(account.getBalance(), returnOrderDO.getTotalReturnAmount()));
+        customerAccountMapper.updateById(account);
+        // 生成账户调整记录
+        amountAdjService.createAmountAdj(new AmountAdjSaveReqVO()
+                .setAmount(returnOrderDO.getTotalReturnAmount())
+                .setAccount(account.getId().toString())
+                .setRemark(returnOrderDO.getRemark())
+                .setSoId(returnOrderDO.getOrderId())
+                .setOrderDate(DateUtil.now())
+                .setType(AmountAdjType.RET_SALE.getType())
+                .setAdjustBalance(account.getBalance())
+                .setAdjustWithholdBalance(account.getDetainAmount()));
+        return account.getBalance();
+    }
 }

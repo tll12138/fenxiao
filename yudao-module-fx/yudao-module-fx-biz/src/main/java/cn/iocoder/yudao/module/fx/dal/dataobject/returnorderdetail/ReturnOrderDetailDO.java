@@ -80,8 +80,11 @@ public class ReturnOrderDetailDO extends BaseDO {
     /**
      * 退货类型
      * <p>
-     * 枚举 {@link TODO fx_business_type 对应的类}
      */
     private Integer retType;
+    /**
+     * 品牌
+     */
+    private String brand;
 
 }

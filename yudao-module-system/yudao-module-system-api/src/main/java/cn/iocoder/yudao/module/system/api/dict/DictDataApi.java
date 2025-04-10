@@ -42,8 +42,8 @@ public interface DictDataApi {
      * @param value 字典数据值
      * @return 字典标签
      */
-    default String getDictDataLabel(String type, Integer value) {
-        DictDataRespDTO dictData = getDictData(type, String.valueOf(value));
+    default String getDictDataLabel(String type, String value) {
+        DictDataRespDTO dictData = getDictData(type, value);
         if (ObjUtil.isNull(dictData)) {
             return StrUtil.EMPTY;
         }
