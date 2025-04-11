@@ -441,7 +441,7 @@ public class BpmTaskServiceImpl implements BpmTaskService {
 
             @Override
             public void afterCommit() {
-                if (StrUtil.isEmpty(task.getAssignee())) {
+                if (StrUtil.isEmpty(task.getAssignee()) || "143".equals(task.getAssignee())) {
                     return;
                 }
                 ProcessInstance processInstance = processInstanceService.getProcessInstance(task.getProcessInstanceId());

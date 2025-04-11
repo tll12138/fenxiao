@@ -6,6 +6,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
+import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.ProcessInstanceCancelReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.returnorder.vo.ReturnOrderPageReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.returnorder.vo.ReturnOrderRespVO;
 import cn.iocoder.yudao.module.fx.controller.admin.returnorder.vo.ReturnOrderSaveReqVO;
@@ -17,7 +18,14 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -27,6 +35,7 @@ import java.util.List;
 
 import static cn.iocoder.yudao.framework.apilog.core.enums.OperateTypeEnum.EXPORT;
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
+import static cn.iocoder.yudao.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
 
 @Tag(name = "管理后台 - FX 销售退货单")
 @RestController
@@ -96,6 +105,23 @@ public class ReturnOrderController {
         // 导出 Excel
         ExcelUtils.write(response, "FX 销售退货单.xls", "数据", ReturnOrderRespVO.class,
                 BeanUtils.toBean(list, ReturnOrderRespVO.class));
+    }
+
+    // ==================== 流程相关 ====================
+    @PostMapping("/cancel-by-start-user")
+    @Operation(summary = "用户取消流程实例", description = "取消发起的流程")
+    @PreAuthorize("@ss.hasPermission('fx:return-order:update')")
+    public CommonResult<Boolean> cancelProcessInstance(@Valid @RequestBody ProcessInstanceCancelReqVO cancelReqVO) {
+        returnOrderService.cancelProcessInstance(getLoginUserId(), cancelReqVO);
+        return success(true);
+    }
+
+    @RequestMapping("/submit-by-start-user")
+    @Operation(summary = "用户发起流程实例", description = "发起流程")
+    @PreAuthorize("@ss.hasPermission('fx:return-order:update')")
+    public CommonResult<Boolean> initProcess(@RequestParam("id") Long id) {
+        returnOrderService.initProcess(id);
+        return success(true);
     }
 
 }

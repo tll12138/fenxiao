@@ -307,4 +307,35 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
         List<OrdersInfoDO> autoSendOrders = ordersInfoMapper.getAutoSendOrders();
         return CollectionUtil.emptyToDefault(autoSendOrders);
     }
+
+    /**
+     * 获得待退货销售单分页
+     *
+     * @param pageReqVO 分页查询
+     * @return 销售单分页
+     */
+    @Override
+    public PageResult<OrdersInfoDO> getReturnOrdersInfoPage(OrdersInfoPageReqVO pageReqVO) {
+        return ordersInfoMapper.selectReturnPage(pageReqVO);
+    }
+
+    /**
+     * 用户创建流程实例
+     */
+    @Override
+    public void startProcessInstance(Long loginUserId, Long id) {
+        OrdersInfoDetailRespVO ordersInfoById = getOrdersInfoById(id);
+        // 发起 BPM 流程
+        Map<String, Object> processInstanceVariables = BeanUtil.beanToMap(ordersInfoById);
+        String processInstanceId = processInstanceApi.createProcessInstance(loginUserId,
+                new BpmProcessInstanceCreateReqDTO().setProcessDefinitionKey(PROCESS_KEY)
+                        .setVariables(processInstanceVariables).setBusinessKey(String.valueOf(id)));
+
+        // 将工作流的编号，更新到销售单中
+        ordersInfoMapper.updateById(
+                new OrdersInfoDO()
+                        .setId(id)
+                        .setProcessInstanceId(processInstanceId)
+                        .setOrderStatus(OrderStatusType.AUDITING.getType()));
+    }
 }

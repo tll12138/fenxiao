@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.fx.service.returnorder;
 
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.ProcessInstanceCancelReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.returnorder.vo.ReturnOrderPageReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.returnorder.vo.ReturnOrderSaveReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.returnorder.vo.ReturnOrdersInfoDetailRespVO;
@@ -69,4 +70,27 @@ public interface ReturnOrderService {
     Long saveOrdersInfo(ReturnOrderSaveReqVO createReqVO);
 
     ReturnOrdersInfoDetailRespVO getOrdersInfo(Long id);
+
+    /**
+     * 根据流程编号取消流程实例
+     *
+     * @param loginUserId
+     * @param cancelReqVO
+     */
+    void cancelProcessInstance(Long loginUserId, @Valid ProcessInstanceCancelReqVO cancelReqVO);
+
+    /**
+     * 初始化流程实例
+     *
+     * @param id
+     */
+    void initProcess(Long id);
+
+    /**
+     * 更改退换单状态
+     *
+     * @param id
+     * @param type
+     */
+    void updateReturnOrdersInfoStatus(Long id, Integer type);
 }

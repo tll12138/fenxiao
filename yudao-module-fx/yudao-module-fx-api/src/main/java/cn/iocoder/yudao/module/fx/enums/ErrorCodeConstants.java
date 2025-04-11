@@ -31,6 +31,7 @@ public interface ErrorCodeConstants {
 
     ErrorCode ORDERS_INFO_PARAMS_ERROR = new ErrorCode(1_020_000_007, "订单参数为空");
     ErrorCode ORDERS_INFO_NOT_EXISTS = new ErrorCode(1_020_000_001, "销售单不存在");
+    ErrorCode RETURN_ORDERS_INFO_NOT_EXISTS = new ErrorCode(1_020_000_001, "退货单不存在");
     ErrorCode ORDERS_DETAIL_NOT_EXISTS = new ErrorCode(1_020_000_002, "分销-销售订单明细不存在");
     ErrorCode ORDERS_DETAIL_BRAND_NOT_SAME = new ErrorCode(1_020_000_003, "商品必须为同一品牌的商品！");
 

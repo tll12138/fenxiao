@@ -95,6 +95,14 @@ public class OrdersInfoController {
         return success(BeanUtils.toBean(pageResult, OrdersInfoRespVO.class));
     }
 
+    @GetMapping("/return_page")
+    @Operation(summary = "获得销售单分页")
+    @PreAuthorize("@ss.hasPermission('fx:orders-info:query')")
+    public CommonResult<PageResult<OrdersInfoRespVO>> getReturnOrdersInfoPage(@Valid OrdersInfoPageReqVO pageReqVO) {
+        PageResult<OrdersInfoDO> pageResult = ordersInfoService.getReturnOrdersInfoPage(pageReqVO);
+        return success(BeanUtils.toBean(pageResult, OrdersInfoRespVO.class));
+    }
+
     @GetMapping("/export-excel")
     @Operation(summary = "导出销售单 Excel")
     @PreAuthorize("@ss.hasPermission('fx:orders-info:export')")
@@ -124,6 +132,14 @@ public class OrdersInfoController {
     @PreAuthorize("@ss.hasPermission('fx:orders-info:update')")
     public CommonResult<Boolean> cancelProcessInstance(@Valid @RequestBody ProcessInstanceCancelReqVO cancelReqVO) {
         ordersInfoService.cancelProcessInstance(getLoginUserId(), cancelReqVO);
+        return success(true);
+    }
+
+    @GetMapping("/start-by-start-user")
+    @Operation(summary = "用户创建流程实例", description = "发起流程")
+    @PreAuthorize("@ss.hasPermission('fx:orders-info:update')")
+    public CommonResult<Boolean> startProcessInstance(@RequestParam("id") Long id) {
+        ordersInfoService.startProcessInstance(getLoginUserId(), id);
         return success(true);
     }
 

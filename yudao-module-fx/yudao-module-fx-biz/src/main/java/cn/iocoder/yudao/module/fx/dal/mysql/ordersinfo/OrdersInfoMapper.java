@@ -33,6 +33,17 @@ public interface OrdersInfoMapper extends BaseMapperX<OrdersInfoDO> {
                 .orderByDesc(OrdersInfoDO::getId));
     }
 
+    default PageResult<OrdersInfoDO> selectReturnPage(OrdersInfoPageReqVO reqVO) {
+        return selectPage(reqVO, new LambdaQueryWrapperX<OrdersInfoDO>()
+                .eqIfPresent(OrdersInfoDO::getManager, reqVO.getManager())
+                .eqIfPresent(OrdersInfoDO::getOrderId, reqVO.getOrderId())
+                .betweenIfPresent(OrdersInfoDO::getOrderDate, reqVO.getOrderDate())
+//                .neIfPresent(OrdersInfoDO::getOrderType, 3)
+                .eqIfPresent(OrdersInfoDO::getDistributorId, reqVO.getDistributorId())
+//                .eqIfPresent(OrdersInfoDO::getIsToErp, 1)
+                .orderByDesc(OrdersInfoDO::getId));
+    }
+
     /**
      * 获取所有跨境订单
      */

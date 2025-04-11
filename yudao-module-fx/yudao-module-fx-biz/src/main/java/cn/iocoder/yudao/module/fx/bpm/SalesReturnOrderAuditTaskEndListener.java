@@ -82,27 +82,24 @@ public class SalesReturnOrderAuditTaskEndListener {
         JstAfterSaleService afterSaleService = SpringUtil.getObject(JstAfterSaleService.class);
         JstAfterSaleDataService afterSaleDataService = SpringUtil.getObject(JstAfterSaleDataService.class);
         CustomerAccountService accountService = SpringUtil.getObject(CustomerAccountService.class);
-
         final String processId = execution.getProcessInstanceId();
         String errorMsg = StrUtil.EMPTY;
         try {
             ReturnOrdersInfoDetailRespVO returnOrder = validateReturnOrder(processId, returnOrderService);
             //一个销售单只会有一个品牌
             List<ReturnOrderDetailDO> returnOrdersDetails = returnOrder.getOrdersDetails();
-            String brand = returnOrdersDetails.get(0).getBrand();
             //原销售单编号
             String originOrderId = returnOrder.getOriginOrder();
             //收货经销商
             int receiveDealer = returnOrder.getReceiveDealer().intValue();
-            //收货仓库
-            String warehouse = returnOrder.getWarehouse();
             //退货类型
+            Integer returnBusinessType = returnOrder.getReturnBusinessType();
             Integer returnType = returnOrder.getReturnType();
             OrdersInfoDO ordersInfo = ordersInfoService.getOrdersInfoByOrderId(originOrderId);
             List<OrdersDetailDO> ordersDetailDOList = ordersDetailService.getOrdersDetailByOrderId(ordersInfo.getId());
             List<OrdersDetailDO> saveDetailList = Lists.newArrayList();
             //找到原平台单号对应下单店铺,排除4内部仓，走另外逻辑
-            if (receiveDealer != 10 && receiveDealer != 22 && receiveDealer != 23 && receiveDealer != 24 && receiveDealer != 33 && receiveDealer != 34 && !"蒲岐内部仓".equals(warehouse)) {
+            if (!Lists.newArrayList(10, 22, 23, 24, 33, 34).contains(receiveDealer) && !"蒲岐内部仓".equals(returnOrder.getWarehouse())) {
                 Integer businessBelong = ordersInfo.getBusinessBelong();
                 int shopCode = SHOP_CODE_MAPPING.getOrDefault(businessBelong, 8888);
                 if (shopCode == 8888) {
@@ -126,7 +123,7 @@ public class SalesReturnOrderAuditTaskEndListener {
                                 OrdersDetailDO::getSkuId,
                                 Function.identity(),
                                 (oldVal, newVal) -> newVal));
-                if (returnOrder.getReturnBusinessType() == 0 || channel == 1 || channel == 2) {
+                if (returnBusinessType == 0 || channel == 1 || channel == 2) {
                     //2C的推单逻辑
                     BigDecimal refund = BigDecimal.ZERO;
                     List<JstAfterSaleDataDO> detailList = Lists.newArrayList();
@@ -141,7 +138,7 @@ public class SalesReturnOrderAuditTaskEndListener {
                         refund = BigDecimalUtils.add(refund, detail.getSaleAmt());
                         OrdersDetailDO ordersDetailDO = skuDetailMap.get(detail.getSkuId());
                         ordersDetailDO.setReturnFlag("1");
-                        ordersDetailDO.setReturnCount(ordersDetailDO.getReturnCount() + detail.getCount());
+                        ordersDetailDO.setReturnCount(Optional.ofNullable(ordersDetailDO.getReturnCount()).orElse(0) + detail.getCount());
                         saveDetailList.add(ordersDetailDO);
                     }
                     //插入主表
@@ -157,7 +154,7 @@ public class SalesReturnOrderAuditTaskEndListener {
                     ));
                     detailList.forEach(item -> item.setMainId(mainId));
                     afterSaleDataService.saveBatch(detailList);
-                } else if (returnOrder.getReturnBusinessType() == 1) {
+                } else if (returnBusinessType == 1) {
                     //插入主表
                     Long mainId = afterSaleService.createJstAfterSale(new JstAfterSaleDO(returnOrder.getOrderId()
                             , "0".equals(returnOrder.getWarehouseFeature()) ? 1 : 4
@@ -179,60 +176,55 @@ public class SalesReturnOrderAuditTaskEndListener {
                     }
                     afterSaleDataService.saveBatch(detailList);
                 } else {
-                    throw new BusinessException(StrUtil.format("不存在该退货业务类型：{}！请检查!", returnOrder.getReturnBusinessType()));
+                    throw new BusinessException(StrUtil.format("不存在该退货业务类型：{}！请检查!", returnBusinessType));
                 }
                 ordersDetailService.updateBatchById(saveDetailList);
             }
             //可退数量为0的行是否等于总行数
-            long retCount = ordersDetailDOList.stream()
-                    .filter(detail ->
-                            detail.getCount() != null &&
-                                    detail.getReturnCount() != null &&
-                                    detail.getCount().equals(detail.getReturnCount()))
-                    .count();
-            if (retCount == saveDetailList.size()) {
-                //是 更新标记为全退
-                ordersInfo.setReturnStatus(2);
-            } else {
-                //是 更新标记为部分退
-                ordersInfo.setReturnStatus(1);
-            }
+            boolean isAllReturned = saveDetailList.stream()
+                    .allMatch(detail ->
+                            Objects.equals(detail.getCount(), detail.getReturnCount())
+                    );
+            ordersInfo.setReturnStatus(isAllReturned ? 2 : 1);
+
             ordersInfoService.updateOrdersInfoByDO(ordersInfo);
             //标记退货单已转换，单据状态为ERP收货中
             returnOrder.setIsToErp(1).setOrderStatus(8).setToErpTime(LocalDate.now());
             returnOrderService.updateReturnOrderByTran(returnOrder);
 
-            String newSoId = generateNewSoId(originOrderId, returnType);
-            //创建新销售单
-            OrdersInfoDO newOrderInfo = createNewSale(ordersInfo, returnOrder, newSoId);
-            Long newMainId = ordersInfoService.createOrdersInfoByDO(newOrderInfo);
-            //创建新销售单明细
-            List<OrdersDetailDO> details = returnOrdersDetails.stream()
-                    .map(detail -> createOrderDetail(detail, newMainId))
-                    .collect(Collectors.toList());
-            ordersDetailService.saveBatch(details);
-            // 新增：汇总销售金额和数量
-            BigDecimal totalSaleAmt = details.stream()
-                    .map(OrdersDetailDO::getSaleAmount)
-                    .filter(Objects::nonNull)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            if (returnType == 4 || returnType == 5) {
+                String newSoId = generateNewSoId(originOrderId, returnBusinessType);
+                //创建新销售单
+                OrdersInfoDO newOrderInfo = createNewSale(ordersInfo, returnOrder, newSoId);
+                Long newMainId = ordersInfoService.createOrdersInfoByDO(newOrderInfo);
+                //创建新销售单明细
+                List<OrdersDetailDO> details = returnOrdersDetails.stream()
+                        .map(detail -> createOrderDetail(detail, newMainId))
+                        .collect(Collectors.toList());
+                ordersDetailService.saveBatch(details);
+                // 新增：汇总销售金额和数量
+                BigDecimal totalSaleAmt = details.stream()
+                        .map(OrdersDetailDO::getSaleAmount)
+                        .filter(Objects::nonNull)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-            int totalCount = details.stream()
-                    .mapToInt(d -> Optional.ofNullable(d.getCount()).orElse(0))
-                    .sum();
-            //更新汇总字段
-            newOrderInfo.setSalesAmount(totalSaleAmt);
-            newOrderInfo.setSendQuantity(totalCount);
-            ordersInfoService.updateOrdersInfoByDO(newOrderInfo);
+                int totalCount = details.stream()
+                        .mapToInt(d -> Optional.ofNullable(d.getCount()).orElse(0))
+                        .sum();
+                //更新汇总字段
+                newOrderInfo.setSalesAmount(totalSaleAmt);
+                newOrderInfo.setSendQuantity(totalCount);
+                ordersInfoService.updateOrdersInfoByDO(newOrderInfo);
+            }
 
             //调用退款账户调整的程序，返还客户账户余额
             accountService.resaleReceivable(returnOrder);
 
             //发送钉钉消息
-            if (returnType == 1) {
-                //消息通知给商品yyt,根据原单品牌判断且只用发2C
-                this.sendNotification("18768338906", returnOrder, dictDataApi);
-            }
+//            if (returnBusinessType == 1) {
+            //消息通知给商品yyt,根据原单品牌判断且只用发2C
+            this.sendNotification("18768338906", returnOrder, dictDataApi);
+//            }
 
             //TODO 调用聚水潭api统一执行退货推送
 

@@ -138,4 +138,17 @@ public interface OrdersInfoService {
      * 获取自动发货的订单
      */
     List<OrdersInfoDO> getAutoSendOrders();
+
+    /**
+     * 获得待退货销售单分页
+     *
+     * @param pageReqVO 分页查询
+     * @return 销售单分页
+     */
+    PageResult<OrdersInfoDO> getReturnOrdersInfoPage(@Valid OrdersInfoPageReqVO pageReqVO);
+
+    /**
+     * 用户创建流程实例
+     */
+    void startProcessInstance(Long loginUserId, Long id);
 }
