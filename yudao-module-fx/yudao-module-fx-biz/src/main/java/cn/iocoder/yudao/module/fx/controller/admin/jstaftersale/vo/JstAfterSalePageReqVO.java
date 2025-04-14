@@ -1,11 +1,13 @@
 package cn.iocoder.yudao.module.fx.controller.admin.jstaftersale.vo;
 
-import lombok.*;
-import java.util.*;
-import io.swagger.v3.oas.annotations.media.Schema;
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
-import java.math.BigDecimal;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.springframework.format.annotation.DateTimeFormat;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import static cn.iocoder.yudao.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND;
@@ -64,8 +66,8 @@ public class JstAfterSalePageReqVO extends PageParam {
     @Schema(description = "内部订单号", example = "12423")
     private Long oId;
 
-    @Schema(description = "是否自动确认状态0无需确认，1需要自动确认，2自动确认失败,3自动确认成功 或 是否确认，0否，1是")
-    private Integer isConfirm;
+    @Schema(description = "是否确认")
+    private boolean isConfirm;
 
     @Schema(description = "收货仓编码 或 分仓编号或者三方仓编码", example = "11779")
     private Long wmsCoId;
@@ -110,9 +112,6 @@ public class JstAfterSalePageReqVO extends PageParam {
     @Schema(description = "传erp时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private String[] toErpTime;
-
-    @Schema(description = "传erp状态，0未传，1成功，2失败", example = "2")
-    private Integer toErpStatus;
 
     @Schema(description = "传erp日志")
     private String toErpMsg;

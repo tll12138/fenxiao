@@ -3,10 +3,12 @@ package cn.iocoder.yudao.module.fx.service.jstaftersaledata;
 import cn.iocoder.yudao.module.fx.dal.dataobject.jstaftersaledata.JstAfterSaleDataDO;
 import cn.iocoder.yudao.module.fx.dal.mysql.jstaftersaledata.JstAfterSaleDataMapper;
 import cn.iocoder.yudao.module.fx.utils.CollectionUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -32,6 +34,18 @@ public class JstAfterSaleDataServiceImpl implements JstAfterSaleDataService {
     @Override
     public JstAfterSaleDataDO getJstAfterSaleData(Long id) {
         return jstAfterSaleDataMapper.selectById(id);
+    }
+
+    /**
+     * 根据主表id获取明细数据
+     *
+     * @param mainId
+     * @return
+     */
+    @Override
+    public List<JstAfterSaleDataDO> getJstAfterSaleDataListByMainId(Long mainId) {
+        List<JstAfterSaleDataDO> jstAfterSaleDataDOS = jstAfterSaleDataMapper.selectList(new LambdaQueryWrapper<JstAfterSaleDataDO>().eq(JstAfterSaleDataDO::getMainId, mainId));
+        return jstAfterSaleDataDOS.isEmpty() ? Collections.emptyList() : jstAfterSaleDataDOS;
     }
 
     @Override

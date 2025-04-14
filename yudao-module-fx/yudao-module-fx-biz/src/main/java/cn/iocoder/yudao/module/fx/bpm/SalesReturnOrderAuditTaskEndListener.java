@@ -61,6 +61,7 @@ public class SalesReturnOrderAuditTaskEndListener {
     private static final String LOG_MODULE = "fx";
     private static final String LOG_TYPE = "SalesReturnOrderAuditTaskEndListener";
     private static final Set<Integer> SPECIAL_DEALERS = new HashSet<>(Arrays.asList(10, 22, 23, 24, 33, 34));
+    private static final Set<Integer> NEED_CREATE_NEW_ORDER_TYPES = new HashSet<>(Arrays.asList(4, 5));
     private static final String INTERNAL_WAREHOUSE = "蒲岐内部仓";
     private static final int DEFAULT_SHOP_CODE = 8888;
     private static final Map<Integer, Integer> SHOP_CODE_MAPPING;
@@ -112,7 +113,7 @@ public class SalesReturnOrderAuditTaskEndListener {
                 Integer businessBelong = Optional.ofNullable(ordersInfo.getBusinessBelong())
                         .orElseThrow(() -> new BusinessException("原销售单业务归属不能为空"));
                 //校验店铺编码
-                validateShopCode(businessBelong);
+                Integer shopCode = validateShopCode(businessBelong);
 
                 //获取仓库特征
                 int channel = Optional.ofNullable(stringRedisTemplate.opsForValue().get("repository:info:mapping"))
@@ -138,18 +139,24 @@ public class SalesReturnOrderAuditTaskEndListener {
                                     .amount(detail.getSaleAmt())
                                     .name(orderDetail.getSkuName())  // 使用orderDetail更可靠
                                     .propertiesValue(orderDetail.getCategory())
+                                    .type("退货")
                                     .build());
                     BigDecimal refund = detailList.stream()
                             .map(JstAfterSaleDataDO::getAmount)
                             .reduce(BigDecimal.ZERO, BigDecimal::add);
                     //插入主表
                     mainId = afterSaleService.createJstAfterSale(createMainBuilder(returnOrder, logisticsCompanyName)
-                            .soId(ordersInfo.getErpOrderNumber())
+                            .soId(ordersInfo.getOrderId())
                             .remark(StrUtil.format("{}销售单{}退货，原内部单号：{}", returnOrder.getRemark(), originOrderId, ordersInfo.getErpOrderNumber()))
                             .totalAmount(ordersInfo.getSalesAmount())
                             .warehouseType("0".equals(returnOrder.getWarehouseFeature()) ? 1 : 2)
                             .refund(refund)
                             .sourceType("2C")
+                            .shopStatus("SELLER_REFUSE_BUYER")
+                            .type("普通退货")
+                            .questionType(StrUtil.EMPTY)
+                            .payment(BigDecimal.ZERO)
+                            .shopId(Long.valueOf(shopCode))
                             .build());
                     detailList.forEach(item -> item.setMainId(mainId));
                     afterSaleDataService.saveBatch(detailList);
@@ -174,18 +181,21 @@ public class SalesReturnOrderAuditTaskEndListener {
                 ordersDetailService.updateBatchById(saveDetailList);
             }
             //可退数量为0的行是否等于总行数
-            boolean isAllReturned = saveDetailList.stream()
+            boolean hasPartialReturn = saveDetailList.stream()
                     .allMatch(detail ->
                             Objects.equals(detail.getCount(), detail.getReturnCount())
                     );
-            ordersInfo.setReturnStatus(isAllReturned ? 2 : 1);
-
+            ordersInfo.setReturnStatus(hasPartialReturn ? 2 : 1);
             ordersInfoService.updateOrdersInfoByDO(ordersInfo);
             //标记退货单已转换，单据状态为ERP收货中
-            returnOrder.setIsToErp(1).setOrderStatus(8).setToErpTime(LocalDate.now());
+            returnOrder
+                    .setIsToErp(1)
+                    .setOrderStatus(8)
+                    .setToErpTime(LocalDate.now());
             returnOrderService.updateReturnOrderByTran(returnOrder);
 
-            if (returnType == 4 || returnType == 5) {
+            //换货和仅退款
+            if (NEED_CREATE_NEW_ORDER_TYPES.contains(returnType)) {
                 String newSoId = generateNewSoId(originOrderId, returnBusinessType);
                 //创建新销售单
                 OrdersInfoDO newOrderInfo = createNewSale(ordersInfo, returnOrder, newSoId);
@@ -214,12 +224,14 @@ public class SalesReturnOrderAuditTaskEndListener {
             accountService.resaleReceivable(returnOrder);
 
             //发送钉钉消息
-//            if (returnBusinessType == 1) {
-            //消息通知给商品yyt,根据原单品牌判断且只用发2C
-            this.sendNotification("18768338906", returnOrder, dictDataApi);
-//            }
+            if (returnBusinessType == 1) {
+                //消息通知给商品yyt,根据原单品牌判断且只用发2C
+                this.sendNotification("18768338906", returnOrder);
+            }
 
-            //TODO 调用聚水潭api统一执行退货推送
+            //调用聚水潭api统一执行退货推送
+            afterSaleService.updateCallERP();
+
 
         } catch (Exception e) {
             errorMsg = StrUtil.format("[退货单处理失败] processId:{},原因：{}", processId, e.getMessage());
@@ -345,7 +357,7 @@ public class SalesReturnOrderAuditTaskEndListener {
                 .logisticsCompany(logisticsCompanyName);
     }
 
-    private void sendNotification(String userId, ReturnOrdersInfoDetailRespVO returnOrder, DictDataApi dictDataApi) throws Exception {
+    private void sendNotification(String userId, ReturnOrdersInfoDetailRespVO returnOrder) throws Exception {
         DingTalkUtils dingTalkUtils = SpringUtil.getObject(DingTalkUtils.class);
         log.info("[退货提醒] 准备发送通知给用户：{}", userId);
         // 钉钉通知实现逻辑...
@@ -357,8 +369,8 @@ public class SalesReturnOrderAuditTaskEndListener {
         dingTalkUtils.sendNotifyMarkdown("15967343191", "客商退换货提醒", msg);
     }
 
-    private void validateShopCode(Integer businessBelong) {
-        Optional.ofNullable(SHOP_CODE_MAPPING.get(businessBelong))
+    private Integer validateShopCode(Integer businessBelong) {
+        return Optional.ofNullable(SHOP_CODE_MAPPING.get(businessBelong))
                 .filter(code -> code != DEFAULT_SHOP_CODE)
                 .orElseThrow(() -> new BusinessException(StrUtil.format("原销售单业务归属[{}]对应店铺编码不存在", businessBelong)));
     }

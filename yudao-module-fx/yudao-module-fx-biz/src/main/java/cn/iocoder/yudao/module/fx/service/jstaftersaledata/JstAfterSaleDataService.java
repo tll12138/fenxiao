@@ -26,6 +26,14 @@ public interface JstAfterSaleDataService {
      */
     JstAfterSaleDataDO getJstAfterSaleData(Long id);
 
+    /**
+     * 根据主表id获取明细数据
+     *
+     * @param mainId
+     * @return
+     */
+    List<JstAfterSaleDataDO> getJstAfterSaleDataListByMainId(Long mainId);
+
     void saveBatch(List<JstAfterSaleDataDO> jstAfterSaleDataDOList);
 
 }

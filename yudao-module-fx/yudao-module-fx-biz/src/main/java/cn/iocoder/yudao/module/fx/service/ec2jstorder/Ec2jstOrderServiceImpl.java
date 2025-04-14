@@ -23,7 +23,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -118,19 +122,19 @@ public class Ec2jstOrderServiceImpl implements Ec2jstOrderService {
 
                     List<OrderItem> items = itemList.stream().map(item -> {
                         OrderItem orderItem = ObjectUtils.copyProperties(item, OrderItem.class);
-                        orderItem.setAmount(item.getAmount().doubleValue());
-                        orderItem.setBasePrice(item.getBasePrice().doubleValue());
-                        orderItem.setQty(item.getQty().intValue());
+                        orderItem.setAmount(item.getAmount().doubleValue())
+                                .setBasePrice(item.getBasePrice().doubleValue())
+                                .setQty(item.getQty().intValue());
                         return orderItem;
                     }).collect(Collectors.toList());
 
-                    PaymentInfo paymentInfo = new PaymentInfo();
-                    paymentInfo.setAmount(orderDO.getPayAmount().doubleValue());
-                    paymentInfo.setOuterPayId(orderDO.getOrderNo());
-                    paymentInfo.setPayDate(orderDO.getOrderDate());
-                    paymentInfo.setPayment("线下支付");
-                    paymentInfo.setSellerAccount(StrUtil.EMPTY);
-                    paymentInfo.setBuyerAccount(StrUtil.EMPTY);
+                    PaymentInfo paymentInfo = new PaymentInfo()
+                            .setAmount(orderDO.getPayAmount().doubleValue())
+                            .setOuterPayId(orderDO.getOrderNo())
+                            .setPayDate(orderDO.getOrderDate())
+                            .setPayment("线下支付")
+                            .setSellerAccount(StrUtil.EMPTY)
+                            .setBuyerAccount(StrUtil.EMPTY);
 
                     OrderUploadReq req = ObjectUtils.copyProperties(orderDO, OrderUploadReq.class);
                     req.setItems(items);

@@ -1,9 +1,9 @@
 package cn.iocoder.yudao.module.fx.controller.admin.jstaftersale.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import java.util.*;
-import javax.validation.constraints.*;
+import lombok.Data;
+
+import javax.validation.constraints.NotEmpty;
 import java.math.BigDecimal;
 
 @Schema(description = "管理后台 - 分销退货传聚水潭中间新增/修改 Request VO")
@@ -61,8 +61,8 @@ public class JstAfterSaleSaveReqVO {
     @Schema(description = "内部订单号", example = "12423")
     private Long oId;
 
-    @Schema(description = "是否自动确认状态0无需确认，1需要自动确认，2自动确认失败,3自动确认成功 或 是否确认，0否，1是")
-    private Integer isConfirm;
+    @Schema(description = "是否确认")
+    private boolean isConfirm;
 
     @Schema(description = "收货仓编码 或 分仓编号或者三方仓编码", example = "11779")
     private Long wmsCoId;
@@ -102,9 +102,6 @@ public class JstAfterSaleSaveReqVO {
 
     @Schema(description = "传erp时间")
     private String toErpTime;
-
-    @Schema(description = "传erp状态，0未传，1成功，2失败", example = "2")
-    private Integer toErpStatus;
 
     @Schema(description = "传erp日志")
     private String toErpMsg;

@@ -24,4 +24,8 @@ public interface JstAfterSaleService {
      */
     JstAfterSaleDO getJstAfterSale(Long id);
 
+    /**
+     * 调用聚水潭售后api
+     */
+    void updateCallERP();
 }

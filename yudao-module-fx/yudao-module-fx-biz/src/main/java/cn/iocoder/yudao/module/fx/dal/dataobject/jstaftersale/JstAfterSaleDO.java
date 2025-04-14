@@ -100,7 +100,7 @@ public class JstAfterSaleDO extends BaseDO {
     /**
      * 是否自动确认状态0无需确认，1需要自动确认，2自动确认失败,3自动确认成功 或 是否确认，0否，1是
      */
-    private Integer isConfirm;
+    private boolean isConfirm;
     /**
      * 收货仓编码 或 分仓编号或者三方仓编码
      */
@@ -153,10 +153,6 @@ public class JstAfterSaleDO extends BaseDO {
      * 传erp时间
      */
     private String toErpTime;
-    /**
-     * 传erp状态，0未传，1成功，2失败
-     */
-    private Integer toErpStatus;
     /**
      * 传erp日志
      */

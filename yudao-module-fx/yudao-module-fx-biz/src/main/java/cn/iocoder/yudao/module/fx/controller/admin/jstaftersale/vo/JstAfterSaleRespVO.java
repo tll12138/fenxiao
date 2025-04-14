@@ -1,15 +1,12 @@
 package cn.iocoder.yudao.module.fx.controller.admin.jstaftersale.vo;
 
+import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
+import com.alibaba.excel.annotation.ExcelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import java.util.*;
-import java.util.*;
+import lombok.Data;
+
 import java.math.BigDecimal;
-import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDateTime;
-import com.alibaba.excel.annotation.*;
-import cn.iocoder.yudao.framework.excel.core.annotations.DictFormat;
-import cn.iocoder.yudao.framework.excel.core.convert.DictConvert;
 
 @Schema(description = "管理后台 - 分销退货传聚水潭中间 Response VO")
 @Data
@@ -84,9 +81,9 @@ public class JstAfterSaleRespVO {
     @ExcelProperty("内部订单号")
     private Long oId;
 
-    @Schema(description = "是否自动确认状态0无需确认，1需要自动确认，2自动确认失败,3自动确认成功 或 是否确认，0否，1是")
-    @ExcelProperty("是否自动确认状态0无需确认，1需要自动确认，2自动确认失败,3自动确认成功 或 是否确认，0否，1是")
-    private Integer isConfirm;
+    @ExcelProperty("是否确认")
+    @Schema(description = "是否确认")
+    private boolean isConfirm;
 
     @Schema(description = "收货仓编码 或 分仓编号或者三方仓编码", example = "11779")
     @ExcelProperty("收货仓编码 或 分仓编号或者三方仓编码")
@@ -143,11 +140,6 @@ public class JstAfterSaleRespVO {
     @Schema(description = "传erp时间")
     @ExcelProperty("传erp时间")
     private String toErpTime;
-
-    @Schema(description = "传erp状态，0未传，1成功，2失败", example = "2")
-    @ExcelProperty(value = "传erp状态，0未传，1成功，2失败", converter = DictConvert.class)
-    @DictFormat("yes_no") // TODO 代码优化：建议设置到对应的 DictTypeConstants 枚举类中
-    private Integer toErpStatus;
 
     @Schema(description = "传erp日志")
     @ExcelProperty("传erp日志")
