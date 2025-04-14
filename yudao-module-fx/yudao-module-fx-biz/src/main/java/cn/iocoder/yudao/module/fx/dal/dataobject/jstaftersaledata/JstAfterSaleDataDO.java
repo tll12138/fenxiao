@@ -93,23 +93,4 @@ public class JstAfterSaleDataDO extends BaseDO {
      * 标记数据来源，值为 2b 或 2c，对应具体主表
      */
     private String sourceType;
-
-    //2c
-    public JstAfterSaleDataDO(String outerOiId, String skuId, Integer qty, BigDecimal amount, String name, String propertiesValue) {
-        this.outerOiId = outerOiId;
-        this.skuId = skuId;
-        this.qty = qty;
-        this.amount = amount;
-        this.type = "退货";
-        this.name = name;
-        this.propertiesValue = propertiesValue;
-    }
-
-    //2b
-    public JstAfterSaleDataDO(Long mainId, String skuId, Integer qty, BigDecimal salePrice) {
-        this.mainId = mainId;
-        this.skuId = skuId;
-        this.qty = qty;
-        this.salePrice = salePrice;
-    }
 }

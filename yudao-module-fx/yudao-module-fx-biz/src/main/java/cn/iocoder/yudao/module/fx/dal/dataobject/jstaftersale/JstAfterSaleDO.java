@@ -1,6 +1,5 @@
 package cn.iocoder.yudao.module.fx.dal.dataobject.jstaftersale;
 
-import cn.hutool.core.util.StrUtil;
 import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
 import com.baomidou.mybatisplus.annotation.KeySequence;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -182,41 +181,4 @@ public class JstAfterSaleDO extends BaseDO {
      * 标记数据来源，值为 2b 或 2c，对应传聚水潭的接口
      */
     private String sourceType;
-
-    //2C存表构造
-    public JstAfterSaleDO(String outerAsId, String soId, String logisticsCompany, String lId, String remark, BigDecimal totalAmount, Long wmsCoId, Integer warehouseType, BigDecimal refund) {
-        this.outerAsId = outerAsId;
-        this.soId = soId;
-        this.type = "普通退货";
-        this.logisticsCompany = logisticsCompany;
-        this.lId = lId;
-        this.shopStatus = "SELLER_REFUSE_BUYER";
-        this.remark = remark;
-        this.goodStatus = "BUYER_RETURNED_GOODS";
-        this.questionType = StrUtil.EMPTY;
-        this.totalAmount = totalAmount;
-        this.payment = BigDecimal.ZERO;
-        this.orderStatus = 0;
-        this.wmsCoId = wmsCoId;
-        this.warehouseType = warehouseType;
-        this.sourceType = "2c";
-        this.refund = refund;
-    }
-    //2B存表构造
-
-    public JstAfterSaleDO(String externalId, Integer warehouse, Long wmsCoId, String lcId, String lId, String logisticsCompany) {
-        this.externalId = externalId;
-        this.drpCoName = "菜鸟B2B退货";
-        this.type = "in";
-        this.warehouse = warehouse;
-        this.wmsCoId = wmsCoId;
-        this.isConfirm = 0;
-        this.labels = "菜鸟B2B退货";
-        this.toErpStatus = 0;
-        this.orderFrom = "分销退货";
-        this.excuteConfirming = 1;
-        this.lcId = lcId;
-        this.lId = lId;
-        this.logisticsCompany = logisticsCompany;
-    }
 }

@@ -195,7 +195,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         stringRedisTemplate.opsForValue().set(
                 redisKey,
                 JSONUtil.toJsonStr(distributorMap),
-                2, // 保留1天
+                30, // 保留30天
                 TimeUnit.DAYS
         );
     }

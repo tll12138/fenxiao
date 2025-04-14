@@ -19,8 +19,6 @@ import cn.iocoder.yudao.module.fx.service.jstaftersaledata.JstAfterSaleDataServi
 import cn.iocoder.yudao.module.fx.service.ordersdetail.OrdersDetailService;
 import cn.iocoder.yudao.module.fx.service.ordersinfo.OrdersInfoService;
 import cn.iocoder.yudao.module.fx.service.returnorder.ReturnOrderService;
-import cn.iocoder.yudao.module.fx.utils.BigDecimalUtils;
-import cn.iocoder.yudao.module.fx.utils.CollectionUtil;
 import cn.iocoder.yudao.module.system.api.dict.DictDataApi;
 import cn.iocoder.yudao.module.system.util.dd.DingTalkUtils;
 import com.diboot.core.exception.BusinessException;
@@ -30,15 +28,20 @@ import org.flowable.engine.delegate.DelegateExecution;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -57,6 +60,9 @@ import java.util.stream.Collectors;
 public class SalesReturnOrderAuditTaskEndListener {
     private static final String LOG_MODULE = "fx";
     private static final String LOG_TYPE = "SalesReturnOrderAuditTaskEndListener";
+    private static final Set<Integer> SPECIAL_DEALERS = new HashSet<>(Arrays.asList(10, 22, 23, 24, 33, 34));
+    private static final String INTERNAL_WAREHOUSE = "蒲岐内部仓";
+    private static final int DEFAULT_SHOP_CODE = 8888;
     private static final Map<Integer, Integer> SHOP_CODE_MAPPING;
 
     static {
@@ -73,6 +79,7 @@ public class SalesReturnOrderAuditTaskEndListener {
         SHOP_CODE_MAPPING = Collections.unmodifiableMap(tempMap);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public void execute(DelegateExecution execution) {
         ReturnOrderService returnOrderService = SpringUtil.getObject(ReturnOrderService.class);
         OrdersInfoService ordersInfoService = SpringUtil.getObject(OrdersInfoService.class);
@@ -86,10 +93,11 @@ public class SalesReturnOrderAuditTaskEndListener {
         String errorMsg = StrUtil.EMPTY;
         try {
             ReturnOrdersInfoDetailRespVO returnOrder = validateReturnOrder(processId, returnOrderService);
-            //一个销售单只会有一个品牌
             List<ReturnOrderDetailDO> returnOrdersDetails = returnOrder.getOrdersDetails();
-            //原销售单编号
-            String originOrderId = returnOrder.getOriginOrder();
+            // 使用 Optional 处理原单号
+            String originOrderId = Optional.ofNullable(returnOrder.getOriginOrder())
+                    .filter(StrUtil::isNotBlank)
+                    .orElseThrow(() -> new BusinessException("原销售单流程编号为空"));
             //收货经销商
             int receiveDealer = returnOrder.getReceiveDealer().intValue();
             //退货类型
@@ -99,81 +107,66 @@ public class SalesReturnOrderAuditTaskEndListener {
             List<OrdersDetailDO> ordersDetailDOList = ordersDetailService.getOrdersDetailByOrderId(ordersInfo.getId());
             List<OrdersDetailDO> saveDetailList = Lists.newArrayList();
             //找到原平台单号对应下单店铺,排除4内部仓，走另外逻辑
-            if (!Lists.newArrayList(10, 22, 23, 24, 33, 34).contains(receiveDealer) && !"蒲岐内部仓".equals(returnOrder.getWarehouse())) {
-                Integer businessBelong = ordersInfo.getBusinessBelong();
-                int shopCode = SHOP_CODE_MAPPING.getOrDefault(businessBelong, 8888);
-                if (shopCode == 8888) {
-                    throw new BusinessException("原销售单的下单店铺为空！请检查!");
-                }
-                String repositoryJson = stringRedisTemplate.opsForValue().get("repository:info:mapping");
-                int channel = 2;
-                if (StrUtil.isNotBlank(repositoryJson)) {
-                    String warehouseCode = returnOrder.getWarehouseCode();
-                    if (StrUtil.isBlank(warehouseCode)) {
-                        throw new BusinessException("收货仓库为空！请检查!");
-                    }
-                    Map<String, SendRepositoryDO> sendRepositoryMap = JSONUtil.parseObj(repositoryJson).toBean(Map.class);
-                    SendRepositoryDO sendRepositoryDO = sendRepositoryMap.get(warehouseCode);
-                    channel = sendRepositoryDO.getChannel();
-                }
+            if (!SPECIAL_DEALERS.contains(receiveDealer) && !INTERNAL_WAREHOUSE.equals(returnOrder.getWarehouse())) {
+                //校验原销售单业务归属
+                Integer businessBelong = Optional.ofNullable(ordersInfo.getBusinessBelong())
+                        .orElseThrow(() -> new BusinessException("原销售单业务归属不能为空"));
+                //校验店铺编码
+                validateShopCode(businessBelong);
+
+                //获取仓库特征
+                int channel = Optional.ofNullable(stringRedisTemplate.opsForValue().get("repository:info:mapping"))
+                        .map(json -> parseChannelFromRepositoryJson(json, returnOrder))
+                        .orElse(2);
+                //物流公司名称查询
+                String logisticsCompanyName = Optional.ofNullable(dictDataApi.getDictDataLabel("fx_wl", returnOrder.getLogisticsCompany()))
+                        .orElseThrow(() -> new BusinessException(StrUtil.format("物流公司信息不存在，编码：{}", returnOrder.getLogisticsCompany())));
                 //更新销售单退货标记与销售单明细退货数量
-                String logisticsCompanyName = dictDataApi.getDictDataLabel("fx_wl", returnOrder.getLogisticsCompany());
-                Map<String, OrdersDetailDO> skuDetailMap = ordersDetailDOList.stream()
-                        .collect(Collectors.toMap(
-                                OrdersDetailDO::getSkuId,
-                                Function.identity(),
-                                (oldVal, newVal) -> newVal));
+                Map<String, OrdersDetailDO> skuDetailMap = createSkuDetailMap(ordersDetailDOList);
+                List<JstAfterSaleDataDO> detailList;
+                Long mainId;
+                // 统一主表创建逻辑
+                JstAfterSaleDO.JstAfterSaleDOBuilder mainBuilder = createMainBuilder(returnOrder, logisticsCompanyName)
+                        .warehouseType("0".equals(returnOrder.getWarehouseFeature()) ? 1 : 2);
                 if (returnBusinessType == 0 || channel == 1 || channel == 2) {
                     //2C的推单逻辑
-                    BigDecimal refund = BigDecimal.ZERO;
-                    List<JstAfterSaleDataDO> detailList = Lists.newArrayList();
-                    for (ReturnOrderDetailDO detail : returnOrdersDetails) {
-                        detailList.add(new JstAfterSaleDataDO(
-                                returnOrder.getOrderId()
-                                , detail.getSkuId()
-                                , detail.getCount()
-                                , detail.getSaleAmt()
-                                , detail.getSkuName()
-                                , detail.getCategory()));
-                        refund = BigDecimalUtils.add(refund, detail.getSaleAmt());
-                        OrdersDetailDO ordersDetailDO = skuDetailMap.get(detail.getSkuId());
-                        ordersDetailDO.setReturnFlag("1");
-                        ordersDetailDO.setReturnCount(Optional.ofNullable(ordersDetailDO.getReturnCount()).orElse(0) + detail.getCount());
-                        saveDetailList.add(ordersDetailDO);
-                    }
+                    detailList = processDetails(returnOrdersDetails, skuDetailMap, saveDetailList,
+                            (detail, orderDetail) -> JstAfterSaleDataDO.builder()
+                                    .outerOiId(returnOrder.getOrderId())
+                                    .skuId(detail.getSkuId())
+                                    .qty(detail.getCount())
+                                    .amount(detail.getSaleAmt())
+                                    .name(orderDetail.getSkuName())  // 使用orderDetail更可靠
+                                    .propertiesValue(orderDetail.getCategory())
+                                    .build());
+                    BigDecimal refund = detailList.stream()
+                            .map(JstAfterSaleDataDO::getAmount)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
                     //插入主表
-                    Long mainId = afterSaleService.createJstAfterSale(new JstAfterSaleDO(returnOrder.getOrderId()
-                            , originOrderId
-                            , logisticsCompanyName
-                            , returnOrder.getLogisticsNumber()
-                            , StrUtil.format("{}销售单{}退货，原内部单号：{}", returnOrder.getRemark(), originOrderId, ordersInfo.getErpOrderNumber())
-                            , ordersInfo.getSalesAmount()
-                            , Long.valueOf(returnOrder.getWarehouseCode().trim())
-                            , "0".equals(returnOrder.getWarehouseFeature()) ? 1 : 2
-                            , refund
-                    ));
+                    mainId = afterSaleService.createJstAfterSale(createMainBuilder(returnOrder, logisticsCompanyName)
+                            .soId(ordersInfo.getErpOrderNumber())
+                            .remark(StrUtil.format("{}销售单{}退货，原内部单号：{}", returnOrder.getRemark(), originOrderId, ordersInfo.getErpOrderNumber()))
+                            .totalAmount(ordersInfo.getSalesAmount())
+                            .warehouseType("0".equals(returnOrder.getWarehouseFeature()) ? 1 : 2)
+                            .refund(refund)
+                            .sourceType("2C")
+                            .build());
                     detailList.forEach(item -> item.setMainId(mainId));
                     afterSaleDataService.saveBatch(detailList);
                 } else if (returnBusinessType == 1) {
                     //插入主表
-                    Long mainId = afterSaleService.createJstAfterSale(new JstAfterSaleDO(returnOrder.getOrderId()
-                            , "0".equals(returnOrder.getWarehouseFeature()) ? 1 : 4
-                            , Long.valueOf(returnOrder.getWarehouseCode().trim())
-                            , returnOrder.getLogisticsCompany()
-                            , returnOrder.getLogisticsNumber()
-                            , logisticsCompanyName
-                    ));
-                    List<JstAfterSaleDataDO> detailList = Lists.newArrayList();
-                    for (ReturnOrderDetailDO detail : returnOrdersDetails) {
-                        detailList.add(new JstAfterSaleDataDO(mainId
-                                , detail.getSkuId()
-                                , detail.getCount()
-                                , detail.getSaleAmt()));
-                        OrdersDetailDO ordersDetailDO = skuDetailMap.get(detail.getSkuId());
-                        ordersDetailDO.setReturnFlag("1");
-                        ordersDetailDO.setReturnCount(ordersDetailDO.getReturnCount() + detail.getCount());
-                        saveDetailList.add(ordersDetailDO);
-                    }
+                    mainId = afterSaleService.createJstAfterSale(createMainBuilder(returnOrder, logisticsCompanyName)
+                            .warehouse("0".equals(returnOrder.getWarehouseFeature()) ? 1 : 4)
+                            .lcId(returnOrder.getLogisticsCompany())
+                            .sourceType("2B")
+                            .build());
+                    detailList = processDetails(returnOrdersDetails, skuDetailMap, saveDetailList,
+                            (detail, orderDetail) -> JstAfterSaleDataDO.builder()
+                                    .mainId(mainId)
+                                    .qty(detail.getCount())
+                                    .salePrice(detail.getSaleAmt())
+                                    .skuId(detail.getSkuId())
+                                    .build());
                     afterSaleDataService.saveBatch(detailList);
                 } else {
                     throw new BusinessException(StrUtil.format("不存在该退货业务类型：{}！请检查!", returnBusinessType));
@@ -242,23 +235,23 @@ public class SalesReturnOrderAuditTaskEndListener {
      *
      * @param processInstanceId 流程实例ID
      * @return 有效订单信息
-     * @throws BusinessException 当订单不存在或状态异常时抛出
      */
     private ReturnOrdersInfoDetailRespVO validateReturnOrder(String processInstanceId, ReturnOrderService returnOrderService) {
-        ReturnOrdersInfoDetailRespVO returnOrderDO = returnOrderService.getReturnOrderByProcessId(processInstanceId);
-        // 订单存在性校验
-        if (returnOrderDO == null) {
-            throw new BusinessException("流程对应的退货单不存在");
-        }
-        // 订单状态校验（防止重复操作）
-        if (OrderStatusType.WAITING_FOR_ERP.getType().equals(returnOrderDO.getOrderStatus())) {
-            throw new BusinessException("退货单已执行，无法重复操作");
-        }
-        //判断数量不为0的明细是否为空
-        if (CollectionUtil.isEmpty(returnOrderDO.getOrdersDetails())) {
-            throw new BusinessException("不存在退货明细,请检查!");
-        }
-        return returnOrderDO;
+        return Optional.ofNullable(returnOrderService.getReturnOrderByProcessId(processInstanceId))
+                .map(vo -> {
+                    Optional.of(vo.getOrderStatus())
+                            .filter(status -> OrderStatusType.WAITING_FOR_ERP.getType().equals(status))
+                            .ifPresent(s -> {
+                                throw new BusinessException("退货单已执行，无法重复操作");
+                            });
+
+                    Optional.ofNullable(vo.getOrdersDetails())
+                            .filter(list -> !list.isEmpty())
+                            .orElseThrow(() -> new BusinessException("不存在退货明细"));
+
+                    return vo;
+                })
+                .orElseThrow(() -> new BusinessException("流程对应的退货单不存在"));
     }
 
     private void logErrorIfNeeded(String processId, String errorMsg) {
@@ -319,6 +312,38 @@ public class SalesReturnOrderAuditTaskEndListener {
         return detail;
     }
 
+    // 处理SKU校验及明细更新
+    private OrdersDetailDO processSkuDetail(ReturnOrderDetailDO detail,
+                                            Map<String, OrdersDetailDO> skuDetailMap,
+                                            List<OrdersDetailDO> saveDetailList) {
+        OrdersDetailDO orderDetail = Optional.ofNullable(skuDetailMap.get(detail.getSkuId()))
+                .orElseThrow(() -> new BusinessException(StrUtil.format("SKU[{}]不存在", detail.getSkuId())));
+        orderDetail.setReturnFlag("1");
+        orderDetail.setReturnCount(Optional.ofNullable(orderDetail.getReturnCount()).orElse(0) + detail.getCount());
+        saveDetailList.add(orderDetail);
+        return orderDetail;
+    }
+
+    // 处理明细生成逻辑
+    private List<JstAfterSaleDataDO> processDetails(List<ReturnOrderDetailDO> returnOrdersDetails,
+                                                    Map<String, OrdersDetailDO> skuDetailMap,
+                                                    List<OrdersDetailDO> saveDetailList,
+                                                    BiFunction<ReturnOrderDetailDO, OrdersDetailDO, JstAfterSaleDataDO> builder) {
+        return returnOrdersDetails.stream()
+                .map(detail -> {
+                    OrdersDetailDO orderDetail = processSkuDetail(detail, skuDetailMap, saveDetailList);
+                    return builder.apply(detail, orderDetail);
+                })
+                .collect(Collectors.toList());
+    }
+
+    private JstAfterSaleDO.JstAfterSaleDOBuilder createMainBuilder(ReturnOrdersInfoDetailRespVO returnOrder, String logisticsCompanyName) {
+        return JstAfterSaleDO.builder()
+                .outerAsId(returnOrder.getOrderId())
+                .wmsCoId(Long.valueOf(returnOrder.getWarehouseCode().trim()))
+                .lId(returnOrder.getLogisticsNumber())
+                .logisticsCompany(logisticsCompanyName);
+    }
 
     private void sendNotification(String userId, ReturnOrdersInfoDetailRespVO returnOrder, DictDataApi dictDataApi) throws Exception {
         DingTalkUtils dingTalkUtils = SpringUtil.getObject(DingTalkUtils.class);
@@ -331,4 +356,31 @@ public class SalesReturnOrderAuditTaskEndListener {
                 + "\n### 请确认聚水潭售后单的相关信息！";
         dingTalkUtils.sendNotifyMarkdown("15967343191", "客商退换货提醒", msg);
     }
+
+    private void validateShopCode(Integer businessBelong) {
+        Optional.ofNullable(SHOP_CODE_MAPPING.get(businessBelong))
+                .filter(code -> code != DEFAULT_SHOP_CODE)
+                .orElseThrow(() -> new BusinessException(StrUtil.format("原销售单业务归属[{}]对应店铺编码不存在", businessBelong)));
+    }
+
+    private int parseChannelFromRepositoryJson(String repositoryJson, ReturnOrdersInfoDetailRespVO returnOrder) {
+        return Optional.ofNullable(returnOrder.getWarehouseCode())
+                .filter(StrUtil::isNotBlank)
+                .map(warehouseCode -> {
+                    Map<String, SendRepositoryDO> sendRepositoryMap = JSONUtil.parseObj(repositoryJson).toBean(Map.class);
+                    return Optional.ofNullable(sendRepositoryMap.get(warehouseCode))
+                            .map(SendRepositoryDO::getChannel)
+                            .orElse(2);
+                })
+                .orElseThrow(() -> new BusinessException("收货仓库编码不能为空"));
+    }
+
+    private Map<String, OrdersDetailDO> createSkuDetailMap(List<OrdersDetailDO> ordersDetailDOList) {
+        return ordersDetailDOList.stream()
+                .collect(Collectors.toMap(
+                        OrdersDetailDO::getSkuId,
+                        Function.identity(),
+                        (existing, replacement) -> existing));
+    }
+
 }
