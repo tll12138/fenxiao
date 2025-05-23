@@ -127,8 +127,7 @@ public class SalesReturnOrderAuditTaskEndListener {
                 List<JstAfterSaleDataDO> detailList;
                 Long mainId;
                 // 统一主表创建逻辑
-                JstAfterSaleDO.JstAfterSaleDOBuilder mainBuilder = createMainBuilder(returnOrder, logisticsCompanyName)
-                        .warehouseType("0".equals(returnOrder.getWarehouseFeature()) ? 1 : 2);
+                JstAfterSaleDO.JstAfterSaleDOBuilder mainBuilder = createMainBuilder(returnOrder, logisticsCompanyName);
                 if (returnBusinessType == 0 || channel == 1 || channel == 2) {
                     //2C的推单逻辑
                     detailList = processDetails(returnOrdersDetails, skuDetailMap, saveDetailList,
@@ -145,9 +144,9 @@ public class SalesReturnOrderAuditTaskEndListener {
                             .map(JstAfterSaleDataDO::getAmount)
                             .reduce(BigDecimal.ZERO, BigDecimal::add);
                     //插入主表
-                    mainId = afterSaleService.createJstAfterSale(createMainBuilder(returnOrder, logisticsCompanyName)
+                    mainId = afterSaleService.createJstAfterSale(mainBuilder
                             .soId(ordersInfo.getOrderId())
-                            .remark(StrUtil.format("{}销售单{}退货，原内部单号：{}", returnOrder.getRemark(), originOrderId, ordersInfo.getErpOrderNumber()))
+                            .remark(StrUtil.format("{}销售单{}退货，原内部单号：{}", StrUtil.isBlank(returnOrder.getRemark()) ? StrUtil.EMPTY : returnOrder.getRemark(), originOrderId, ordersInfo.getErpOrderNumber()))
                             .totalAmount(ordersInfo.getSalesAmount())
                             .warehouseType("0".equals(returnOrder.getWarehouseFeature()) ? 1 : 2)
                             .refund(refund)
@@ -156,13 +155,14 @@ public class SalesReturnOrderAuditTaskEndListener {
                             .type("普通退货")
                             .questionType(StrUtil.EMPTY)
                             .payment(BigDecimal.ZERO)
-                            .shopId(Long.valueOf(shopCode))
+//                            .shopId(Long.valueOf(shopCode))
+                            .shopId(18061827L)
                             .build());
                     detailList.forEach(item -> item.setMainId(mainId));
                     afterSaleDataService.saveBatch(detailList);
                 } else if (returnBusinessType == 1) {
                     //插入主表
-                    mainId = afterSaleService.createJstAfterSale(createMainBuilder(returnOrder, logisticsCompanyName)
+                    mainId = afterSaleService.createJstAfterSale(mainBuilder
                             .warehouse("0".equals(returnOrder.getWarehouseFeature()) ? 1 : 4)
                             .lcId(returnOrder.getLogisticsCompany())
                             .sourceType("2B")
@@ -361,7 +361,7 @@ public class SalesReturnOrderAuditTaskEndListener {
         DingTalkUtils dingTalkUtils = SpringUtil.getObject(DingTalkUtils.class);
         log.info("[退货提醒] 准备发送通知给用户：{}", userId);
         // 钉钉通知实现逻辑...
-        String msg = "# 客商退货提醒：\n### 客户名称:\n" + returnOrder.getReturnUserName()
+        String msg = "# 客商退货提醒：\n### 客户名称:" + returnOrder.getReturnUserName()
                 + "\n### 单据编号:" + returnOrder.getOrderId()
                 + "\n### 退货数量:" + returnOrder.getTotalReturnQuantity()
                 + "\n### 退货原单:" + returnOrder.getOriginOrder()

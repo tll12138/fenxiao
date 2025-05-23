@@ -1,9 +1,8 @@
 package cn.iocoder.yudao.module.fx.controller.admin.fromaccount.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import java.util.*;
-import javax.validation.constraints.*;
+import lombok.Data;
+
 import java.math.BigDecimal;
 
 @Schema(description = "管理后台 -  分销打款账户新增/修改 Request VO")
@@ -18,6 +17,9 @@ public class FromAccountSaveReqVO {
 
     @Schema(description = "所属分销商", example = "25852")
     private String customerId;
+
+    @Schema(description = "所属分销商名称", example = "25852")
+    private String customerName;
 
     @Schema(description = "账户类型", example = "1")
     private Integer accountType;

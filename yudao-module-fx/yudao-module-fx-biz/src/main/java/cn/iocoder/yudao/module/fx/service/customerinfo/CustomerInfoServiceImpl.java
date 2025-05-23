@@ -128,6 +128,17 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
         return customerInfoMapper.selectById(id);
     }
 
+    /**
+     * 获得分销商基础信息
+     *
+     * @param customerName 分销商名称
+     * @return 分销商基础信息
+     */
+    @Override
+    public CustomerInfoDO getCustomerInfoByName(String customerName) {
+        return customerInfoMapper.selectOne(new LambdaQueryWrapper<CustomerInfoDO>().eq(CustomerInfoDO::getDistributorName, customerName).last("limit 1"));
+    }
+
     @Override
     public CustomerInfoDetailRespVO getCustomerInfoDetail(Long id) {
         //获取分销商基础信息
@@ -145,7 +156,7 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
 
         //获取分销商账号信息
         LambdaQueryWrapper<CustomerAccountDO> accountQueryWrapper = new LambdaQueryWrapper<>();
-        accountQueryWrapper.eq(CustomerAccountDO::getDistributorId, customerInfoDO.getDistributorNum());
+        accountQueryWrapper.eq(CustomerAccountDO::getDistributorId, customerInfoDO.getId());
         List<CustomerAccountDO> accountDOList = customerAccountMapper.selectList(accountQueryWrapper);
         List<CustomerAccountRespVO> customerAccountRespVOS = CustomerCovert.INSTANCE.convertAccount(accountDOList);
         customerInfoDetailRespVO.setCustomerAccounts(customerAccountRespVOS);

@@ -1,7 +1,7 @@
 package cn.iocoder.yudao.module.fx.job;
 
 import cn.iocoder.yudao.framework.quartz.core.handler.JobHandler;
-import cn.iocoder.yudao.module.fx.service.ec2jstorder.Ec2jstOrderService;
+import cn.iocoder.yudao.module.fx.service.ordersinfo.OrdersInfoService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -15,11 +15,11 @@ import javax.annotation.Resource;
 @Component("OrderUploadJob")
 public class OrderUploadJob implements JobHandler {
     @Resource
-    private Ec2jstOrderService ec2jstOrderService;
+    private OrdersInfoService ordersInfoService;
 
     @Override
     public String execute(String param) throws Exception {
-        ec2jstOrderService.uploadOrders();
+        ordersInfoService.saleProcess();
         log.info("[execute][定时订单上传]");
         return "定时执行订单上传";
     }

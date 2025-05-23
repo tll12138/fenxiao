@@ -1,9 +1,8 @@
 package cn.iocoder.yudao.module.fx.controller.admin.skucostprice.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import java.util.*;
-import javax.validation.constraints.*;
+import lombok.Data;
+
 import java.math.BigDecimal;
 
 @Schema(description = "管理后台 - 商品成本新增/修改 Request VO")
@@ -26,10 +25,10 @@ public class SkuCostpriceSaveReqVO {
     private String value;
 
     @Schema(description = "品类", example = "2")
-    private BigDecimal type;
+    private Integer type;
 
     @Schema(description = "属性", example = "8")
-    private BigDecimal paid;
+    private Integer paid;
 
     @Schema(description = "财务结算价", example = "25310")
     private BigDecimal costPrice;

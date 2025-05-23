@@ -5,6 +5,8 @@ import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoDetai
 import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoPageReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoSaveReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.ProcessInstanceCancelReqVO;
+import cn.iocoder.yudao.module.fx.dal.dataobject.jushuitanapi.AfterSalesRequest;
+import cn.iocoder.yudao.module.fx.dal.dataobject.jushuitanapi.LogisticsRequest;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ordersdetail.OrdersDetailDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ordersinfo.OrdersInfoDO;
 
@@ -151,4 +153,20 @@ public interface OrdersInfoService {
      * 用户创建流程实例
      */
     void startProcessInstance(Long loginUserId, Long id);
+
+    /**
+     * 聚水潭回调物流同步
+     *
+     * @param logisticsRequest
+     * @return
+     */
+    Boolean processLogisticsSync(LogisticsRequest logisticsRequest);
+
+    /**
+     * 聚水潭回调售后同步
+     *
+     * @param afterSalesRequest
+     * @return
+     */
+    void processAfterSalesSync(AfterSalesRequest afterSalesRequest);
 }

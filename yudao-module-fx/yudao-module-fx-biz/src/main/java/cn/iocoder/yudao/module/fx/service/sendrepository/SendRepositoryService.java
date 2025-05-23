@@ -46,6 +46,14 @@ public interface SendRepositoryService {
     SendRepositoryDO getSendRepository(Integer id);
 
     /**
+     * 获得FX 发货仓库
+     *
+     * @param repositoryName 仓库名称
+     * @return FX 发货仓库
+     */
+    SendRepositoryDO getSendRepositoryByName(String repositoryName);
+
+    /**
      * 获得FX 发货仓库分页
      *
      * @param pageReqVO 分页查询
@@ -64,4 +72,9 @@ public interface SendRepositoryService {
      * @return 发货仓库
      */
     List<SendRepositoryDO> getSendRepositoryList();
+
+    /**
+     * 更新其他信息
+     */
+    void updateOtherInfo();
 }

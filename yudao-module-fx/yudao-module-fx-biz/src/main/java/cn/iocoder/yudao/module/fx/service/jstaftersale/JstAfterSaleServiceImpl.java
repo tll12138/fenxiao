@@ -4,6 +4,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.iocoder.yudao.module.fx.dal.dataobject.jstaftersale.AfterSaleRequest;
 import cn.iocoder.yudao.module.fx.dal.dataobject.jstaftersale.AfterSaleRequestItem;
 import cn.iocoder.yudao.module.fx.dal.dataobject.jstaftersale.AfterSaleResponse;
+import cn.iocoder.yudao.module.fx.dal.dataobject.jstaftersale.DataItem2B;
 import cn.iocoder.yudao.module.fx.dal.dataobject.jstaftersale.DataItem2C;
 import cn.iocoder.yudao.module.fx.dal.dataobject.jstaftersale.JstAfterSaleDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.jstaftersaledata.JstAfterSaleDataDO;
@@ -12,7 +13,9 @@ import cn.iocoder.yudao.module.fx.service.jstaftersaledata.JstAfterSaleDataServi
 import cn.iocoder.yudao.module.fx.service.jushuitanapi.JuShuiTanApiService;
 import cn.iocoder.yudao.module.fx.utils.CollectionUtil;
 import cn.iocoder.yudao.module.fx.utils.ObjectUtils;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.diboot.core.exception.BusinessException;
 import com.jushuitan.api.ApiResponse;
@@ -136,10 +139,10 @@ public class JstAfterSaleServiceImpl implements JstAfterSaleService {
                 .map(request -> processSingle2BRequest(request, idMap))
                 .collect(Collectors.toList());
 
-//        if (!updateList.isEmpty()) {
-//            jstAfterSaleMapper.updateBatch(updateList);
-//            log.info("成功处理{}笔2B售后单", updateList.size());
-//        }
+        if (!updateList.isEmpty()) {
+            jstAfterSaleMapper.updateBatch(updateList);
+            log.info("成功处理{}笔2B售后单", updateList.size());
+        }
     }
 
     /**
@@ -149,19 +152,19 @@ public class JstAfterSaleServiceImpl implements JstAfterSaleService {
         String biz = JSONObject.toJSONString(request);
         log.info("2B请求报文: {}", biz);
 
-//        ApiResponse apiResponse = juShuiTanApiService.execute("otherInoutUploadUrl", biz);
-//        validateApiResponse(apiResponse);
-//
-//        AfterSaleResponse response = JSON.parseObject(apiResponse.getBody(),
-//                new TypeReference<AfterSaleResponse>() {
-//                });
-//        DataItem2B dataItem2B = response.getData().getDataItem2B();
-//
-//        JstAfterSaleDO target = idMap.get(dataItem2B.getExternalId());
-//        return buildUpdateEntity(target, response)
-//                .setIoId((long) dataItem2B.getIoId())
-//                .setOrderStatus(1);
-        return new JstAfterSaleDO();
+        ApiResponse apiResponse = juShuiTanApiService.execute("otherInoutUploadUrl", biz);
+        validateApiResponse(apiResponse);
+
+        AfterSaleResponse response = JSON.parseObject(apiResponse.getBody(),
+                new TypeReference<AfterSaleResponse>() {
+                });
+        DataItem2B dataItem2B = response.getData().getDataItem2B();
+
+        JstAfterSaleDO target = idMap.get(dataItem2B.getExternalId());
+        return buildUpdateEntity(target, response)
+                .setIoId((long) dataItem2B.getIoId())
+                .setOrderStatus(1);
+//        return new JstAfterSaleDO();
     }
 
     /**
@@ -171,21 +174,21 @@ public class JstAfterSaleServiceImpl implements JstAfterSaleService {
         String biz = JSONObject.toJSONString(requests);
         log.info("2C批量请求报文: {}", biz);
 
-//        ApiResponse apiResponse = juShuiTanApiService.execute("afterSaleUploadUrl", biz);
-//        validateApiResponse(apiResponse);
-//
-//        AfterSaleResponse response = JSON.parseObject(apiResponse.getBody(),
-//                new TypeReference<AfterSaleResponse>() {
-//                });
-//
-//        List<JstAfterSaleDO> updateList = response.getData().getDataItem2C().stream()
-//                .map(item -> processSingle2CItem(item, idMap,response))
-//                .collect(Collectors.toList());
-//
-//        if (!updateList.isEmpty()) {
-//            jstAfterSaleMapper.updateBatch(updateList);
-//            log.info("成功处理{}笔2C售后单", updateList.size());
-//        }
+        ApiResponse apiResponse = juShuiTanApiService.execute("afterSaleUploadUrl", biz);
+        validateApiResponse(apiResponse);
+
+        AfterSaleResponse response = JSON.parseObject(apiResponse.getBody(),
+                new TypeReference<AfterSaleResponse>() {
+                });
+
+        List<JstAfterSaleDO> updateList = response.getData().getDataItem2C().stream()
+                .map(item -> processSingle2CItem(item, idMap, response))
+                .collect(Collectors.toList());
+
+        if (!updateList.isEmpty()) {
+            jstAfterSaleMapper.updateBatch(updateList);
+            log.info("成功处理{}笔2C售后单", updateList.size());
+        }
     }
 
     private JstAfterSaleDO processSingle2CItem(DataItem2C item, Map<String, JstAfterSaleDO> idMap, AfterSaleResponse response) {

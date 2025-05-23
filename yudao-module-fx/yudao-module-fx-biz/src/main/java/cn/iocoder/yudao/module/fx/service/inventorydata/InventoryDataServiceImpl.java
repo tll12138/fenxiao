@@ -114,6 +114,8 @@ public class InventoryDataServiceImpl implements InventoryDataService {
             //递归获取所有库存信息
             TimeUnit.MILLISECONDS.sleep(1000);
             executeInventoryData(1, now.minusDays(2), now, wmsCoId, sendRepositoryDO, goodsBrandsMap);
+            //更新库存的其他信息
+            sendRepositoryService.updateOtherInfo();
         }
     }
 

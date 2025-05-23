@@ -33,6 +33,10 @@ public class AmountAdjRespVO {
     @ExcelProperty("调整账户")
     private String account;
 
+    @Schema(description = "调整账户名称", example = "3960")
+    @ExcelProperty("调整账户名称")
+    private String accountName;
+
     @Schema(description = "调整说明", example = "随便")
     @ExcelProperty("调整说明")
     private String remark;

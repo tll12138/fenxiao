@@ -73,7 +73,7 @@ public class ImportOrderSaveReqVO {
     private Integer isTraceless;
 
     @Schema(description = "收款经销商", example = "8443")
-    private String payingDistributorId;
+    private Integer payingDistributorId;
 
     @Schema(description = "快递公司ID", example = "4418")
     private String expressCompanyId;

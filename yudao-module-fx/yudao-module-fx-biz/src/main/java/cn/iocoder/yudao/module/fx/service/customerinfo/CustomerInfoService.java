@@ -50,6 +50,14 @@ public interface CustomerInfoService {
     CustomerInfoDO getCustomerInfo(Long id);
 
     /**
+     * 获得分销商基础信息
+     *
+     * @param customerName 分销商名称
+     * @return 分销商基础信息
+     */
+    CustomerInfoDO getCustomerInfoByName(String customerName);
+
+    /**
      * 获得分销商详细基础信息
      *
      * @param id 编号

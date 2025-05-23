@@ -79,7 +79,7 @@ public class ImportOrderPageReqVO extends PageParam {
     private Integer isTraceless;
 
     @Schema(description = "收款经销商", example = "8443")
-    private String payingDistributorId;
+    private Integer payingDistributorId;
 
     @Schema(description = "快递公司ID", example = "4418")
     private String expressCompanyId;
@@ -87,5 +87,7 @@ public class ImportOrderPageReqVO extends PageParam {
     @Schema(description = "创建时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime[] createTime;
+
+    private Integer offset;
 
 }

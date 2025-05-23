@@ -1,6 +1,6 @@
 package cn.iocoder.yudao.module.fx.dal.dataobject.ec2jstorder;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
 
 /**
@@ -9,27 +9,31 @@ import lombok.Data;
  */
 @Data
 public class OrderItem {
-    @JsonProperty("sku_id")
+    @JSONField(name = "sku_id")
     // 商品编码
     private String skuId;
 
-    @JsonProperty("shop_sku_id")
+    @JSONField(name = "shop_sku_id")
     // 店铺商品编码
     private String shopSkuId;
 
-    @JsonProperty("amount")
+    @JSONField(name = "amount")
     // 商品金额
     private Double amount;
 
-    @JsonProperty("base_price")
+    @JSONField(name = "base_price")
     // 商品单价
     private Double basePrice;
 
-    @JsonProperty("qty")
+    @JSONField(name = "qty")
     // 购买数量
     private Integer qty;
 
-    @JsonProperty("name")
+    @JSONField(name = "name")
     // 商品名称
     private String name;
+
+    @JSONField(name = "outer_oi_id")
+    // 唯一值
+    private String outerOiId;
 }

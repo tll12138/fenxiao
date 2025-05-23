@@ -23,6 +23,13 @@ public interface Ec2jstOrderService {
     Integer createEc2jstOrder(@Valid Ec2jstOrderSaveReqVO createReqVO);
 
     /**
+     * 创建分销订单上传中间表
+     *
+     * @return 编号
+     */
+    Integer createEc2jstOrderByDO(Ec2jstOrderDO insertDO);
+
+    /**
      * 更新分销订单上传中间
      *
      * @param updateReqVO 更新信息

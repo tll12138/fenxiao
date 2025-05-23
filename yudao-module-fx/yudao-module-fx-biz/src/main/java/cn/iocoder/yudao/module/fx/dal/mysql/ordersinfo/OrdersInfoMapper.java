@@ -74,4 +74,10 @@ public interface OrdersInfoMapper extends BaseMapperX<OrdersInfoDO> {
      * 获取所有自动发货订单（天猫国际、中免日上、猫超）
      */
     List<OrdersInfoDO> getAutoSendOrders();
+
+    /**
+     * 获取正常发货已审核待传送单子
+     */
+    List<OrdersInfoDO> getNormalSendOrders();
+
 }

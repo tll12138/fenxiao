@@ -21,6 +21,7 @@ public interface AmountAdjMapper extends BaseMapperX<AmountAdjDO> {
                 .eqIfPresent(AmountAdjDO::getAmount, reqVO.getAmount())
                 .betweenIfPresent(AmountAdjDO::getOrderDate, reqVO.getOrderDate())
                 .eqIfPresent(AmountAdjDO::getAccount, reqVO.getAccount())
+                .eqIfPresent(AmountAdjDO::getAccountName, reqVO.getAccountName())
                 .eqIfPresent(AmountAdjDO::getRemark, reqVO.getRemark())
                 .eqIfPresent(AmountAdjDO::getType, reqVO.getType())
                 .eqIfPresent(AmountAdjDO::getAdjustBalance, reqVO.getAdjustBalance())

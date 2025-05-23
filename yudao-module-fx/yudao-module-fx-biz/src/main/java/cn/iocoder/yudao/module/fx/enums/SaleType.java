@@ -29,10 +29,7 @@ public enum SaleType {
     /**
      * 仅退款
      */
-    ONLY_REFUND(0, "仅退款")
-    ;
-
-
+    ONLY_REFUND(3, "仅退款");
 
 
     private final Integer type;

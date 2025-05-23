@@ -1,15 +1,14 @@
 package cn.iocoder.yudao.module.fx.controller.admin.fromaccount.vo;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import java.util.*;
-import java.util.*;
-import java.math.BigDecimal;
-import org.springframework.format.annotation.DateTimeFormat;
-import java.time.LocalDateTime;
-import com.alibaba.excel.annotation.*;
 import cn.iocoder.yudao.framework.excel.core.annotations.DictFormat;
 import cn.iocoder.yudao.framework.excel.core.convert.DictConvert;
+import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
+import com.alibaba.excel.annotation.ExcelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Schema(description = "管理后台 -  分销打款账户 Response VO")
 @Data
@@ -27,6 +26,10 @@ public class FromAccountRespVO {
     @Schema(description = "所属分销商", example = "25852")
     @ExcelProperty("所属分销商")
     private String customerId;
+
+    @Schema(description = "所属分销商名称", example = "25852")
+    @ExcelProperty("所属分销商名称")
+    private String customerName;
 
     @Schema(description = "账户类型", example = "1")
     @ExcelProperty("账户类型")

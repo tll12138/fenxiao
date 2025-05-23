@@ -42,4 +42,10 @@ public class PricelistSaveReqVO {
     @Schema(description = "创建时间")
     private LocalDateTime createTime;
 
+    @Schema(description = "客户id")
+    private Integer customerId;
+
+    @Schema(description = "品牌id")
+    private String brandId;
+
 }

@@ -43,6 +43,7 @@ public class SubmitOrderProcessing extends SaveOrderProcessing {
         orderInfo.setOrderStatus(OrderStatusType.AUDITING.getType()); // 默认审核中
         orderInfo.setCreator(SecurityFrameworkUtils.getLoginUserNickname());
         orderInfo.setCreatorId(Objects.requireNonNull(SecurityFrameworkUtils.getLoginUserId()).intValue());
+        orderInfo.setBrand(context.getBrands().get(0));
         log.info("[SubmitOrderProcessing] 订单参数修改成功...");
     }
 

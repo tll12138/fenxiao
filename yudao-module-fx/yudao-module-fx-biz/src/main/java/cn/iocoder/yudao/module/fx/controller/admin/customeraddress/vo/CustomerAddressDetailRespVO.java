@@ -38,6 +38,9 @@ public class CustomerAddressDetailRespVO {
     @Schema(description = "发货地址")
     private String address;
 
+    @Schema(description = "使用次数")
+    private Integer useCount;
+
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
     private LocalDateTime createTime;
 

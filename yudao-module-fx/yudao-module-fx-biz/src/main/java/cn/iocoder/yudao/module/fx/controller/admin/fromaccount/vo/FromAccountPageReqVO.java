@@ -1,11 +1,13 @@
 package cn.iocoder.yudao.module.fx.controller.admin.fromaccount.vo;
 
-import lombok.*;
-import java.util.*;
-import io.swagger.v3.oas.annotations.media.Schema;
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
-import java.math.BigDecimal;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.springframework.format.annotation.DateTimeFormat;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import static cn.iocoder.yudao.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND;
@@ -21,6 +23,9 @@ public class FromAccountPageReqVO extends PageParam {
 
     @Schema(description = "所属分销商", example = "25852")
     private String customerId;
+
+    @Schema(description = "所属分销商名称", example = "25852")
+    private String customerName;
 
     @Schema(description = "账户类型", example = "1")
     private Integer accountType;

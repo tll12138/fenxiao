@@ -29,6 +29,7 @@ public interface PricelistMapper extends BaseMapperX<PricelistDO> {
                 .likeIfPresent(PricelistDO::getName, reqVO.getName())
                 .eqIfPresent(PricelistDO::getIsNormal, reqVO.getIsNormal())
                 .eqIfPresent(PricelistDO::getBrand, reqVO.getBrand())
+                .eqIfPresent(PricelistDO::getBrandId, reqVO.getBrandId())
                 .betweenIfPresent(PricelistDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(PricelistDO::getId));
     }

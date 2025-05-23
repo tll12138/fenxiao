@@ -11,15 +11,6 @@
 
     <select id="getCrossBorderOrders"
             resultType="cn.iocoder.yudao.module.fx.dal.dataobject.ordersinfo.OrdersInfoDO">
-        #         SELECT *
-#         FROM fx_orders_info
-#         where order_status = 5
-#           and (supplier_id in
-#                (select label from system_dict_data where dict_type = 'fx_business_entity' and color_type = 'info')
-#             or
-#                receive_supplier_id in
-#                (select label from system_dict_data where dict_type = 'fx_business_entity' and color_type = 'info')
-#             )
         WITH supplier_filter AS (SELECT label
                                  FROM system_dict_data
                                  WHERE dict_type = 'fx_business_entity'
@@ -65,6 +56,41 @@
           AND a.is_to_erp = 1
           AND EXISTS (SELECT 1 FROM fx_jst_order_out b WHERE b.o_id = a.erp_order_number)
     </select>
+    <select id="getNormalSendOrders"
+            resultType="cn.iocoder.yudao.module.fx.dal.dataobject.ordersinfo.OrdersInfoDO">
+        SELECT
+        a.id,
+        a.order_id,
+        a.distributor_id,
+        a.supplier_id,
+        a.business_belong,
+        a.address_id,
+        a.province,
+        a.district,
+        a.city,
+        a.manager,
+        a.phone,
+        a.address,
+        IFNULL(a.warehouse_code, '11013410') AS warehouse_code,
+        a.logistics_company,
+        IF(IFNULL(a.warehouse, 1) = 1, '需要扫溯源码出库', '') AS requirement,
+        IFNULL(a.is_traceless, 0) AS is_traceless,
+        IF(a.BRAND = 'GIORZIO 1986（玖芝）', '玖芝', a.BRAND) AS brand,
+        IFNULL(a.cus_df_type,2),
+        a.send_quantity,
+        a.order_date,
+        a.sales_amount
+        FROM fx_orders_info a
+        WHERE a.order_status = 5     <!-- 已审核待传送单子 -->
+        AND a.sales_type = 0 <!-- 正常发货单据 -->
+        AND a.is_to_erp = 0  <!-- 传erp标记为0 -->
+        AND a.supplier_id != 10
+        AND a.receive_supplier_id != 10 <!-- 非跨境单据 -->
+        AND (
+        IFNULL(a.warehouse_code, '11013410') != '66666666'
+        OR (a.warehouse_code = '66666666' AND a.distributor_id != 108)
+        ) <!-- 仓库过滤条件 -->
+    </select>
 
     <update id="updateSaleMain">
         UPDATE fx_orders_info t
@@ -74,12 +100,6 @@
                                  WHEN LOCATE('销售退货单', t.remark) > 0 THEN 4
                                  WHEN LOCATE('爱库存', t.remark) > 0 OR LOCATE('快团团', t.remark) > 0 THEN 3
                                  ELSE 0 END,
-            t.brand        = (SELECT b.brand
-                              FROM fx_orders_detail a
-                                       JOIN fx_goods_archives b ON a.sku_id = b.id
-                              WHERE a.order_id = t.id
-                              ORDER BY b.brand DESC
-                              LIMIT 1),
             t.order_status = 10
         WHERE t.id = #{id}
     </update>

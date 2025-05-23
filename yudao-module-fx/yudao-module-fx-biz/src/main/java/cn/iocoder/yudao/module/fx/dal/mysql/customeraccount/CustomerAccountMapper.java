@@ -20,6 +20,7 @@ public interface CustomerAccountMapper extends BaseMapperX<CustomerAccountDO> {
     default PageResult<CustomerAccountDO> selectPage(CustomerAccountPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<CustomerAccountDO>()
                 .eqIfPresent(CustomerAccountDO::getDistributorId, reqVO.getDistributorId())
+                .eqIfPresent(CustomerAccountDO::getDistributorName, reqVO.getDistributorName())
                 .eqIfPresent(CustomerAccountDO::getBalance, reqVO.getBalance())
                 .eqIfPresent(CustomerAccountDO::getAccountId, reqVO.getAccountId())
                 .eqIfPresent(CustomerAccountDO::getDetainAmount, reqVO.getDetainAmount())

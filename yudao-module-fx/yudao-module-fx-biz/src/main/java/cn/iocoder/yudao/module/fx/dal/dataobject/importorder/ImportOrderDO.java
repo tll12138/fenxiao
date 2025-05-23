@@ -86,6 +86,14 @@ public class ImportOrderDO extends BaseDO {
      */
     private String customerid;
     /**
+     * 客商名称
+     */
+    private String customername;
+    /**
+     * 发货仓名称
+     */
+    private String warehousename;
+    /**
      * 发货仓
      */
     private String warehouseid;
@@ -120,7 +128,7 @@ public class ImportOrderDO extends BaseDO {
     /**
      * 收款经销商
      */
-    private String payingDistributorId;
+    private Integer payingDistributorId;
     /**
      * 快递公司ID
      */

@@ -15,6 +15,7 @@ import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * 销售单 DO
@@ -69,7 +70,7 @@ public class OrdersInfoDO extends BaseDO {
     /**
      * 传erp时间
      */
-    private LocalDate toErpTime;
+    private LocalDateTime toErpTime;
     /**
      * 是否开票
      * <p>
@@ -173,7 +174,7 @@ public class OrdersInfoDO extends BaseDO {
     /**
      * 发货时间
      */
-    private LocalDate sendTime;
+    private LocalDateTime sendTime;
     /**
      * 退货状态
      */

@@ -1,16 +1,17 @@
 package cn.iocoder.yudao.module.fx.dal.dataobject.skucostprice;
 
-import lombok.*;
-import java.util.*;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.*;
 import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
+import com.baomidou.mybatisplus.annotation.KeySequence;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+
+import java.math.BigDecimal;
 
 /**
  * 商品成本 DO
@@ -34,7 +35,7 @@ public class SkuCostpriceDO extends BaseDO {
     private Long id;
     /**
      * 品牌
-     *
+     * <p>
      * 枚举 {@link TODO fx_brand 对应的类}
      */
     private String brand;
@@ -53,11 +54,11 @@ public class SkuCostpriceDO extends BaseDO {
     /**
      * 品类
      */
-    private BigDecimal type;
+    private Integer type;
     /**
      * 属性
      */
-    private BigDecimal paid;
+    private Integer paid;
     /**
      * 财务结算价
      */

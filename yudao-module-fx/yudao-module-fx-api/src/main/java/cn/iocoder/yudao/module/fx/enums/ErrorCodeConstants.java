@@ -69,6 +69,9 @@ public interface ErrorCodeConstants {
     ErrorCode EC2JST_ORDERITEM_NOT_EXISTS = new ErrorCode(1_140_000_100, "分销订单上传详情中间不存在");
     // ========== 分销价格对照
     ErrorCode PRICELIST_NOT_EXISTS = new ErrorCode(1_150_000_100, "分销价格对照不存在");
+    ErrorCode IMPORT_PRICE_LIST_IS_EMPTY = new ErrorCode(1_150_000_101, "导入分销价格对照数据不能为空！");
+    ErrorCode PRICE_LIST_EXISTS = new ErrorCode(1_150_000_102, "导入数据已经存在了");
+    ErrorCode IMPORT_PRICE_BASE_LIST_IS_EMPTY = new ErrorCode(1_150_000_103, "导入分销商品基础数据不能为空！");
     // ========== 发票申请  ==========
     ErrorCode BILL_APPLY_NOT_EXISTS = new ErrorCode(1_160_000_100, "发票申请不存在");
     // ========== 发票邮箱库 ==========
@@ -91,13 +94,15 @@ public interface ErrorCodeConstants {
     ErrorCode IMPORT_ORDER_NOT_EXISTS = new ErrorCode(1_205_000_100, "客商代发单不存在");
     ErrorCode IMPORT_ORDER_IMPORT_LIST_IS_EMPTY = new ErrorCode(1_205_000_400, "导入客商代发数据不能为空！");
     ErrorCode IMPORT_ORDER_EXISTS = new ErrorCode(1_205_000_201, "客商代发单已经存在");
-    ErrorCode IMPORT_ORDER_GENERATED_SALE = new ErrorCode(1_205_000_201, "该订单已生成销售单，不允许修改");
+    ErrorCode IMPORT_ORDER_GENERATED_SALE = new ErrorCode(1_205_000_202, "该订单已生成销售单，不允许修改");
+    ErrorCode IMPORT_ORDER_ERROR = new ErrorCode(1_205_000_404, "客商代发单导入失败");
     // ========== 分销大客户地址 ==========
     ErrorCode BIG_CUSTOMER_ADDRESS_NOT_EXISTS = new ErrorCode(1_206_000_100, "分销大客户地址不存在");
     // ========== 商品箱规  ==========
     ErrorCode SK_BOXSIZE_NOT_EXISTS = new ErrorCode(1_207_000_100, "商品箱规不存在");
     // ========== 商品成本 ==========
     ErrorCode SKU_COSTPRICE_NOT_EXISTS = new ErrorCode(1_208_000_100, "商品成本不存在");
+    ErrorCode IMPORT_SKU_COST_PRICE_IS_EMPTY = new ErrorCode(1_208_000_101, "导入商品成本数据不能为空！");
     // ========== 手动发货信息  ==========
     ErrorCode MANUAL_DELIVERY_NOT_EXISTS = new ErrorCode(1_209_000_100, "手动发货信息不存在");
     ErrorCode MANUAL_DELIVERY_JUSHUITAN_ERROR = new ErrorCode(1_209_000_101, "发货失败，聚水潭返回错误{}");

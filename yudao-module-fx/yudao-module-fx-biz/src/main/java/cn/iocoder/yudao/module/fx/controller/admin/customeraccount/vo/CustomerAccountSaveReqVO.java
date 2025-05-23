@@ -15,6 +15,9 @@ public class CustomerAccountSaveReqVO {
     @Schema(description = "分销商编号", example = "4297")
     private Long distributorId;
 
+    @Schema(description = "分销商名称", example = "4297")
+    private String distributorName;
+
     @Schema(description = "余额")
     private BigDecimal balance;
 

@@ -7,9 +7,14 @@ import cn.iocoder.yudao.module.fx.controller.admin.importorder.vo.ImportOrderExc
 import cn.iocoder.yudao.module.fx.controller.admin.importorder.vo.ImportOrderExcelVO;
 import cn.iocoder.yudao.module.fx.controller.admin.importorder.vo.ImportOrderPageReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.importorder.vo.ImportOrderSaveReqVO;
+import cn.iocoder.yudao.module.fx.dal.dataobject.customerinfo.CustomerInfoDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.importorder.ImportOrderDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.jstorderout.JstOrderOutDTO;
+import cn.iocoder.yudao.module.fx.dal.dataobject.sendrepository.SendRepositoryDO;
 import cn.iocoder.yudao.module.fx.dal.mysql.importorder.ImportOrderMapper;
+import cn.iocoder.yudao.module.fx.service.customerinfo.CustomerInfoService;
+import cn.iocoder.yudao.module.fx.service.sendrepository.SendRepositoryService;
+import cn.iocoder.yudao.module.system.api.dict.DictDataApi;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -37,6 +42,12 @@ public class ImportOrderServiceImpl implements ImportOrderService {
 
     @Resource
     private ImportOrderMapper importOrderMapper;
+    @Resource
+    private SendRepositoryService sendRepositoryService;
+    @Resource
+    private CustomerInfoService customerInfoService;
+    @Resource
+    private DictDataApi dataApi;
 
     @Override
     public Integer createImportOrder(ImportOrderSaveReqVO createReqVO) {
@@ -92,43 +103,102 @@ public class ImportOrderServiceImpl implements ImportOrderService {
         if (CollUtil.isEmpty(list)) {
             throw exception(IMPORT_ORDER_IMPORT_LIST_IS_EMPTY);
         }
-        ImportOrderExcelRespVO respVO = ImportOrderExcelRespVO.builder().createSoIds(new ArrayList<>())
-                .updateSoIds(new ArrayList<>()).failureSoIds(new LinkedHashMap<>()).build();
-        list.forEach(ImportOrderExcelVO -> {
-            String soId = ImportOrderExcelVO.getSoId();
-            // 正则表达式，匹配不包含中文和空格的字符串
-            final Pattern SO_ID_REGEX = Pattern.compile("^[^\u4e00-\u9fa5\\s]+$");
-            if (!SO_ID_REGEX.matcher(soId).matches()) {
-                respVO.getFailureSoIds().put(soId, "单号" + soId + "包含中文或空格");
-                return;
-            } else if (soId.length() > 50) {
-                respVO.getFailureSoIds().put(soId, "单号长度超过限制（最大50字符）");
-                return;
+
+        ImportOrderExcelRespVO respVO = ImportOrderExcelRespVO.builder()
+                .createSoIds(new ArrayList<>())
+                .updateSoIds(new ArrayList<>())
+                .failureSoIds(new LinkedHashMap<>())
+                .build();
+
+        // 预编译正则表达式提升性能
+        final Pattern SO_ID_REGEX = Pattern.compile("^[^\u4e00-\u9fa5\\s]+$");
+
+        for (ImportOrderExcelVO excelVO : list) {
+            String soId = excelVO.getSoId();
+
+            // 参数校验
+            if (!validateSoId(soId, SO_ID_REGEX, respVO)) {
+                continue;
             }
-            // 判断如果不存在，在进行插入
-            ImportOrderDO existOrder = importOrderMapper.selectOne(ImportOrderDO::getSoId, soId);
-            if (existOrder == null) {
-                importOrderMapper.insert(BeanUtils.toBean(ImportOrderExcelVO, ImportOrderDO.class));
-                respVO.getCreateSoIds().add(soId);
-                return;
+            try {
+                ImportOrderDO orderDO = BeanUtils.toBean(excelVO, ImportOrderDO.class);
+
+                // 字典转换逻辑
+                dataApi.parseDictDataForOptional("fx_belong", excelVO.getBusinessAffiliation()).map(Integer::parseInt).ifPresent(orderDO::setBusinessAffiliation);
+                dataApi.parseDictDataForOptional("yes_no", excelVO.getIsTraceless()).map(Integer::parseInt).ifPresent(orderDO::setIsTraceless);
+                dataApi.parseDictDataForOptional("fx_wl", excelVO.getExpressCompany()).ifPresent(orderDO::setExpressCompanyId);
+                dataApi.parseDictDataForOptional("fx_business_entity", excelVO.getPayingDistributor()).map(Integer::parseInt).ifPresent(orderDO::setPayingDistributorId);
+
+                // 客户和仓库查询逻辑
+                if (!processCustomerAndWarehouse(excelVO, orderDO, respVO, soId)) {
+                    continue;
+                }
+
+                // 核心处理逻辑
+                processOrderRecord(orderDO, updateSupport, respVO, soId);
+            } catch (Exception e) {
+                respVO.getFailureSoIds().put(soId, "数据处理异常: " + e.getMessage());
             }
-            // 如果存在，判断是否允许更新
-            if (!updateSupport) {
-                respVO.getFailureSoIds().put(soId, IMPORT_ORDER_EXISTS.getMsg());
-                return;
-            }
-            // 校验组合条件
-            if (1 == existOrder.getIsSalesOrderGenerated()) {
-                respVO.getFailureSoIds().put(soId, IMPORT_ORDER_GENERATED_SALE.getMsg());
-            } else {
-                // 所有校验通过后执行更新
-                ImportOrderDO updateOrder = BeanUtils.toBean(ImportOrderExcelVO, ImportOrderDO.class);
-                updateOrder.setId(existOrder.getId());
-                importOrderMapper.updateById(updateOrder);
-                respVO.getUpdateSoIds().add(soId);
-            }
-        });
+        }
         return respVO;
+    }
+
+
+    private boolean validateSoId(String soId, Pattern pattern, ImportOrderExcelRespVO respVO) {
+        if (!pattern.matcher(soId).matches()) {
+            respVO.getFailureSoIds().put(soId, "单号包含中文或空格");
+            return false;
+        }
+        if (soId.length() > 50) {
+            respVO.getFailureSoIds().put(soId, "单号长度超过限制");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean processCustomerAndWarehouse(ImportOrderExcelVO excelVO, ImportOrderDO orderDO,
+                                                ImportOrderExcelRespVO respVO, String soId) {
+        // 客户查询逻辑
+        CustomerInfoDO customer = customerInfoService.getCustomerInfoByName(excelVO.getCustomername());
+        if (customer == null) {
+            respVO.getFailureSoIds().put(soId, "客商不存在");
+            return false;
+        }
+        orderDO.setCustomerid(customer.getId().toString());
+
+        // 仓库查询逻辑
+        SendRepositoryDO repository = sendRepositoryService.getSendRepositoryByName(excelVO.getWarehousename());
+        if (repository == null) {
+            respVO.getFailureSoIds().put(soId, "发货仓库不存在");
+            return false;
+        }
+        orderDO.setWarehouseid(repository.getId().toString());
+        return true;
+    }
+
+    private void processOrderRecord(ImportOrderDO orderDO, Boolean updateSupport,
+                                    ImportOrderExcelRespVO respVO, String soId) {
+        ImportOrderDO existOrder = importOrderMapper.selectOne(ImportOrderDO::getSoId, soId);
+
+        if (existOrder == null) {
+            importOrderMapper.insert(orderDO);
+            respVO.getCreateSoIds().add(soId);
+            return;
+        }
+
+        if (!updateSupport) {
+            respVO.getFailureSoIds().put(soId, IMPORT_ORDER_EXISTS.getMsg());
+            return;
+        }
+
+        if (existOrder.getIsSalesOrderGenerated() == 1) {
+            respVO.getFailureSoIds().put(soId, IMPORT_ORDER_GENERATED_SALE.getMsg());
+            return;
+        }
+
+        orderDO.setId(existOrder.getId());
+        importOrderMapper.updateById(orderDO);
+        respVO.getUpdateSoIds().add(soId);
     }
 
     /**

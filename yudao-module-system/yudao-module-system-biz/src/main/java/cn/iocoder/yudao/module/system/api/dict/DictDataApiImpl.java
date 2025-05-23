@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 字典数据 API 实现类
@@ -36,6 +37,19 @@ public class DictDataApiImpl implements DictDataApi {
     public DictDataRespDTO parseDictData(String dictType, String label) {
         DictDataDO dictData = dictDataService.parseDictData(dictType, label);
         return BeanUtils.toBean(dictData, DictDataRespDTO.class);
+    }
+
+    /**
+     * 解析获得指定的字典数据转为Optional流，从缓存中
+     *
+     * @param type  字典类型
+     * @param label 字典数据标签
+     * @return 字典数据
+     */
+    @Override
+    public Optional<String> parseDictDataForOptional(String type, String label) {
+        DictDataDO dictData = dictDataService.parseDictData(type, label);
+        return Optional.ofNullable(dictData).map(DictDataDO::getValue);
     }
 
     @Override

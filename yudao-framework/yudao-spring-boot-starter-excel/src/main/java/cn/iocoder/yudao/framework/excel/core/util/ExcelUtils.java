@@ -2,14 +2,19 @@ package cn.iocoder.yudao.framework.excel.core.util;
 
 import cn.iocoder.yudao.framework.excel.core.handler.SelectSheetWriteHandler;
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.converters.longconverter.LongStringConverter;
+import com.alibaba.excel.event.AnalysisEventListener;
+import com.alibaba.excel.exception.ExcelDataConvertException;
 import com.alibaba.excel.write.style.column.LongestMatchColumnWidthStyleStrategy;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,6 +22,7 @@ import java.util.List;
  *
  * @author 芋道源码
  */
+@Slf4j
 public class ExcelUtils {
 
     /**
@@ -45,9 +51,28 @@ public class ExcelUtils {
     }
 
     public static <T> List<T> read(MultipartFile file, Class<T> head) throws IOException {
-        return EasyExcel.read(file.getInputStream(), head, null)
-                .autoCloseStream(false)  // 不要自动关闭，交给 Servlet 自己处理
-                .doReadAllSync();
+        List<T> result = new ArrayList<>();
+        EasyExcel.read(file.getInputStream(), head, new AnalysisEventListener<T>() {
+                    @Override
+                    public void invoke(T data, AnalysisContext context) {
+                        result.add(data);
+                    }
+
+                    @Override
+                    public void doAfterAllAnalysed(AnalysisContext context) {
+                    }
+
+                    @Override
+                    public void onException(Exception exception, AnalysisContext context) {
+                        if (exception instanceof ExcelDataConvertException) {
+                            ExcelDataConvertException excelException = (ExcelDataConvertException) exception;
+                            log.error("第{}行第{}列解析失败", excelException.getRowIndex() + 1, excelException.getColumnIndex() + 1);
+                        }
+                    }
+                })
+                .autoCloseStream(true)
+                .doReadAll();
+        return result;
     }
 
 }

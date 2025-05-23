@@ -10,22 +10,22 @@
      -->
 
     <select id="selectBasePrice" resultType="cn.iocoder.yudao.module.fx.dal.dataobject.pricelist.PricelistDO">
-        SELECT sku_id, saleprice, distributor_level, brand
+        SELECT sku_id, saleprice, distributor_level, brand_id
         FROM fx_pricelist
         WHERE id = #{id}
           AND is_normal = '1'
           AND deleted = 0
     </select>
     <select id="selectNeedInsertCustomers" resultType="java.lang.String">
-        SELECT DISTINCT customer
-        FROM fx_pricelist
-        WHERE distributor_level = #{level}
-          AND brand = #{brand}
-          AND is_normal = '0'
+        SELECT DISTINCT a.customer
+        FROM fx_pricelist a
+        WHERE a.distributor_level = #{level}
+          AND a.brand_id = #{brand}
+          AND (a.is_normal = '0' or a.is_normal is null)
           AND NOT EXISTS (SELECT 1
                           FROM fx_pricelist b
                           WHERE b.sku_id = #{skuId}
-                            AND b.customer = customer)
+                            AND b.customer = a.customer)
     </select>
 
     <update id="batchUpdatePrices">
@@ -34,7 +34,7 @@
             update_time = NOW()
         WHERE distributor_level = #{level}
           AND sku_id = #{skuId}
-          AND brand = #{brand}
-          AND is_normal = '0'
+          AND brand_id = #{brand}
+          AND (is_normal = '0' or is_normal is null)
     </update>
 </mapper>

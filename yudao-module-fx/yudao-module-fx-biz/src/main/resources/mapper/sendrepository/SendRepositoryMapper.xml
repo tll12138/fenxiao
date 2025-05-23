@@ -9,4 +9,14 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
+    <update id="updateOtherInfo">
+        UPDATE fx_inventory_data t
+            LEFT JOIN fx_send_repository u1 ON u1.code = t.warehouse_code
+            LEFT JOIN fx_goods_archives u2 ON u2.sku_id = t.sku_id
+        SET t.type    = u1.type,
+            t.good_id = u2.id,
+            t.value   = u2.properties_value
+        WHERE t.warehouse_code IS NOT NULL
+          AND t.sku_id IS NOT NULL
+    </update>
 </mapper>

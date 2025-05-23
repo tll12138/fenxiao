@@ -23,6 +23,10 @@ public class CustomerAccountRespVO {
     @ExcelProperty("分销商编号")
     private Long distributorId;
 
+    @Schema(description = "分销商名称", example = "4297")
+    @ExcelProperty("分销商名称")
+    private String distributorName;
+
     @Schema(description = "余额")
     @ExcelProperty("余额")
     private BigDecimal balance;

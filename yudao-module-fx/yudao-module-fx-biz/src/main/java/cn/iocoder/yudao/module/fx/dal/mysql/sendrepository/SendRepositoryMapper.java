@@ -25,4 +25,5 @@ public interface SendRepositoryMapper extends BaseMapperX<SendRepositoryDO> {
                 .orderByDesc(SendRepositoryDO::getId));
     }
 
+    void updateOtherInfo();
 }

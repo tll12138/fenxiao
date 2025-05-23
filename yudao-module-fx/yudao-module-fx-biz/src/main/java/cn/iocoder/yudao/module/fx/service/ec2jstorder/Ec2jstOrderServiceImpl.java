@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.fx.service.ec2jstorder;
 
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.date.DatePattern;
+import cn.hutool.core.date.DateUtil;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.fx.controller.admin.ec2jstorder.vo.Ec2jstOrderPageReqVO;
@@ -8,7 +9,9 @@ import cn.iocoder.yudao.module.fx.controller.admin.ec2jstorder.vo.Ec2jstOrderSav
 import cn.iocoder.yudao.module.fx.dal.dataobject.ec2jstorder.Ec2jstOrderDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ec2jstorder.OrderItem;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ec2jstorder.OrderUploadReq;
+import cn.iocoder.yudao.module.fx.dal.dataobject.ec2jstorder.OrderUploadRes;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ec2jstorder.PaymentInfo;
+import cn.iocoder.yudao.module.fx.dal.dataobject.ec2jstorder.ResultData;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ec2jstorderitem.Ec2jstOrderitemDO;
 import cn.iocoder.yudao.module.fx.dal.mysql.ec2jstorder.Ec2jstOrderMapper;
 import cn.iocoder.yudao.module.fx.service.ec2jstorderitem.Ec2jstOrderitemService;
@@ -18,6 +21,7 @@ import cn.iocoder.yudao.module.fx.utils.ObjectUtils;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.collect.Lists;
+import com.jushuitan.api.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -62,6 +66,17 @@ public class Ec2jstOrderServiceImpl implements Ec2jstOrderService {
         return ec2jstOrder.getId();
     }
 
+    /**
+     * 创建分销订单上传中间表
+     *
+     * @return 编号
+     */
+    @Override
+    public Integer createEc2jstOrderByDO(Ec2jstOrderDO insertDO) {
+        ec2jstOrderMapper.insert(insertDO);
+        return insertDO.getId();
+    }
+
     @Override
     public void updateEc2jstOrder(Ec2jstOrderSaveReqVO updateReqVO) {
         // 校验存在
@@ -98,7 +113,8 @@ public class Ec2jstOrderServiceImpl implements Ec2jstOrderService {
     @Override
     public void uploadOrders() {
         // 获取未上传的订单
-        List<Ec2jstOrderDO> ec2jstOrderDOS = ec2jstOrderMapper.selectList(new LambdaQueryWrapper<Ec2jstOrderDO>().eq(Ec2jstOrderDO::getErpStatus, "N"));
+        List<Ec2jstOrderDO> ec2jstOrderDOS = ec2jstOrderMapper.selectList(new LambdaQueryWrapper<Ec2jstOrderDO>()
+                .eq(Ec2jstOrderDO::getErpStatus, "N"));
         if (ec2jstOrderDOS.isEmpty()) {
             return;
         }
@@ -124,7 +140,8 @@ public class Ec2jstOrderServiceImpl implements Ec2jstOrderService {
                         OrderItem orderItem = ObjectUtils.copyProperties(item, OrderItem.class);
                         orderItem.setAmount(item.getAmount().doubleValue())
                                 .setBasePrice(item.getBasePrice().doubleValue())
-                                .setQty(item.getQty().intValue());
+                                .setQty(item.getQty().intValue())
+                                .setSkuId(item.getSkuiId());
                         return orderItem;
                     }).collect(Collectors.toList());
 
@@ -133,12 +150,14 @@ public class Ec2jstOrderServiceImpl implements Ec2jstOrderService {
                             .setOuterPayId(orderDO.getOrderNo())
                             .setPayDate(orderDO.getOrderDate())
                             .setPayment("线下支付")
-                            .setSellerAccount(StrUtil.EMPTY)
-                            .setBuyerAccount(StrUtil.EMPTY);
+                            .setSellerAccount("上海霞宝")
+                            .setBuyerAccount("蒲岐实业");
 
                     OrderUploadReq req = ObjectUtils.copyProperties(orderDO, OrderUploadReq.class);
                     req.setItems(items);
                     req.setPay(paymentInfo);
+                    req.setFreight(orderDO.getFreight().doubleValue());
+                    req.setPayAmount(orderDO.getPayAmount().doubleValue());
 
                     reqList.add(req);
                     ec2jstOrderByOrderNo.put(orderDO.getOrderNo(), orderDO);
@@ -147,37 +166,37 @@ public class Ec2jstOrderServiceImpl implements Ec2jstOrderService {
                 // 批量调用接口
                 String biz = JSONObject.toJSONString(reqList);
                 log.info(biz);
-//                ApiResponse response = juShuiTanApiService.execute("ordersUploadUrl", biz);
-//                String body = response.getBody();
-//                OrderUploadRes bodyMO = JSONObject.parseObject(body, OrderUploadRes.class);
+                ApiResponse response = juShuiTanApiService.execute("ordersUploadUrl", biz);
+                String body = response.getBody();
+                OrderUploadRes bodyMO = JSONObject.parseObject(body, OrderUploadRes.class);
 
-//                if (bodyMO.getCode() == 0) {
-//                    List<ResultData> datas = bodyMO.getData().getDatas();
-//                    List<Ec2jstOrderDO> toUpdate = new ArrayList<>();
-//
-//                    // 处理批量响应
-//                    for (ResultData data : datas) {
-//                        String soId = data.getSoId();
-//                        Ec2jstOrderDO orderDO = ec2jstOrderByOrderNo.get(soId);
-//
-//                        if (data.getIsSuccess()) {
-//                            orderDO.setErpStatus("Y");
-//                            orderDO.setToErpTime(DateUtil.format(DateUtil.date(), DatePattern.NORM_DATETIME_PATTERN));
-//                            orderDO.setOId(data.getOId());
-//                            toUpdate.add(orderDO);
-//                        } else {
-//                            log.error("订单上传失败，订单号：{}，原因：{}", orderDO.getOrderNo(), data.getMsg());
-//                        }
-//                    }
-//
-//                    // 批量更新状态
-//                    if (!toUpdate.isEmpty()) {
-//                        ec2jstOrderMapper.updateBatchById(toUpdate);
-//                    }
-//                } else {
-//                    log.error("批量订单上传失败：{}", bodyMO.getMsg());
-//                    throw new RuntimeException("批量上传失败：" + bodyMO.getMsg());
-//                }
+                if (bodyMO.getCode() == 0) {
+                    List<ResultData> datas = bodyMO.getData().getDatas();
+                    List<Ec2jstOrderDO> toUpdate = new ArrayList<>();
+
+                    // 处理批量响应
+                    for (ResultData data : datas) {
+                        String soId = data.getSoId();
+                        Ec2jstOrderDO orderDO = ec2jstOrderByOrderNo.get(soId);
+
+                        if (data.getIsSuccess()) {
+                            orderDO.setErpStatus("Y");
+                            orderDO.setToErpTime(DateUtil.format(DateUtil.date(), DatePattern.NORM_DATETIME_PATTERN));
+                            orderDO.setOId(data.getOId());
+                            toUpdate.add(orderDO);
+                        } else {
+                            log.error("订单上传失败，订单号：{}，原因：{}", orderDO.getOrderNo(), data.getMsg());
+                        }
+                    }
+
+                    // 批量更新状态
+                    if (!toUpdate.isEmpty()) {
+                        ec2jstOrderMapper.updateBatchById(toUpdate);
+                    }
+                } else {
+                    log.error("批量订单上传失败：{}", bodyMO.getMsg());
+                    throw new RuntimeException("批量上传失败：" + bodyMO.getMsg());
+                }
 
                 TimeUnit.MILLISECONDS.sleep(1000);
             }

@@ -62,5 +62,13 @@ public class Ec2jstOrderitemServiceImpl implements Ec2jstOrderitemService {
         return ec2jstOrderitemMapper.selectList(new LambdaQueryWrapper<Ec2jstOrderitemDO>().in(Ec2jstOrderitemDO::getMainid, mainIds));
     }
 
+    @Override
+    public void saveEc2jstOrderItemList(List<Ec2jstOrderitemDO> ec2jstOrderitemDOList) {
+        if (CollectionUtil.isEmpty(ec2jstOrderitemDOList)) {
+            return;
+        }
+        ec2jstOrderitemMapper.insertBatch(ec2jstOrderitemDOList);
+    }
+
 
 }

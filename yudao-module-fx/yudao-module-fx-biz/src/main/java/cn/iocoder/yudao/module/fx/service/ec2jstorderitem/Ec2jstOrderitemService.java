@@ -41,4 +41,7 @@ public interface Ec2jstOrderitemService {
 
     //根据主表id查询子表数据
     List<Ec2jstOrderitemDO> getEc2jstOrderItemListByMainIds(List<Integer> mainIds);
+
+    //批量插入子表数据
+    void saveEc2jstOrderItemList(List<Ec2jstOrderitemDO> ec2jstOrderitemDOList);
 }

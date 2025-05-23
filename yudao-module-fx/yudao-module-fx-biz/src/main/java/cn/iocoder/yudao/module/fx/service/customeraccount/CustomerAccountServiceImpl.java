@@ -114,11 +114,12 @@ public class CustomerAccountServiceImpl implements CustomerAccountService {
         }
         List<CustomerAccountDO> accounts = new ArrayList<>();
         for (CustomerInfoDO info : customerInfoS) {
-            final String displayName = info.getDistributorName();
+            final String displayName = info.getDisplayName();
             for (AccInfoConfigDO config : configs) {
                 CustomerAccountDO account = new CustomerAccountDO()
                         // 基本信息
                         .setDistributorId(info.getId())
+                        .setDistributorName(displayName)
                         // 动态生成字段
                         .setAccountId(info.getDistributorNum() + "-" + config.getId())
                         .setName(displayName)

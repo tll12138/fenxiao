@@ -50,6 +50,10 @@ public class AmountAdjDO extends BaseDO {
      */
     private String account;
     /**
+     * 调整账户名称
+     */
+    private String accountName;
+    /**
      * 调整说明
      */
     private String remark;

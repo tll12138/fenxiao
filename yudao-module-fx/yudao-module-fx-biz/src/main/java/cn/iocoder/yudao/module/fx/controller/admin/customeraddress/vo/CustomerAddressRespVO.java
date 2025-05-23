@@ -47,6 +47,10 @@ public class CustomerAddressRespVO {
     @ExcelProperty("发货地址")
     private String address;
 
+    @Schema(description = "使用次数")
+    @ExcelProperty("使用次数")
+    private Integer useCount;
+
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;

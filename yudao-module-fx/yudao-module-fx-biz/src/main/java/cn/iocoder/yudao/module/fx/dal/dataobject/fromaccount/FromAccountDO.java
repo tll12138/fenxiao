@@ -1,15 +1,20 @@
 package cn.iocoder.yudao.module.fx.dal.dataobject.fromaccount;
 
-import lombok.*;
-import java.util.*;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.*;
 import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
+import com.baomidou.mybatisplus.annotation.KeySequence;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+
+import java.math.BigDecimal;
 
 /**
- *  分销打款账户 DO
+ * 分销打款账户 DO
  *
  * @author 管理员
  */
@@ -37,6 +42,10 @@ public class FromAccountDO extends BaseDO {
      */
     private String customerId;
     /**
+     * 所属分销商名称
+     */
+    private String customerName;
+    /**
      * 账户类型
      */
     private Integer accountType;
@@ -46,7 +55,7 @@ public class FromAccountDO extends BaseDO {
     private String remark;
     /**
      * 是否有效
-     *
+     * <p>
      * 枚举 {@link TODO yes_no 对应的类}
      */
     private String isActive;

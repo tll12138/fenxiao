@@ -89,6 +89,17 @@ public class SendRepositoryServiceImpl implements SendRepositoryService {
         return sendRepositoryMapper.selectById(id);
     }
 
+    /**
+     * 获得FX 发货仓库
+     *
+     * @param repositoryName 仓库名称
+     * @return FX 发货仓库
+     */
+    @Override
+    public SendRepositoryDO getSendRepositoryByName(String repositoryName) {
+        return sendRepositoryMapper.selectOne(new LambdaQueryWrapper<SendRepositoryDO>().eq(SendRepositoryDO::getName, repositoryName).last("limit 1"));
+    }
+
     @Override
     public PageResult<SendRepositoryDO> getSendRepositoryPage(SendRepositoryPageReqVO pageReqVO) {
         return sendRepositoryMapper.selectPage(pageReqVO);
@@ -118,6 +129,14 @@ public class SendRepositoryServiceImpl implements SendRepositoryService {
     @Override
     public List<SendRepositoryDO> getSendRepositoryList() {
         return sendRepositoryMapper.selectList(SendRepositoryDO::getIsUsed, 1, SendRepositoryDO::getIsInside, 0);
+    }
+
+    /**
+     * 更新其他信息
+     */
+    @Override
+    public void updateOtherInfo() {
+        sendRepositoryMapper.updateOtherInfo();
     }
 
     private void executeSendRepository(int pageNum) {

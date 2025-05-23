@@ -15,6 +15,7 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface ImportOrderMapper extends BaseMapperX<ImportOrderDO> {
 
+    //    List<ImportOrderDO> selectPage(ImportOrderPageReqVO reqVO);
     default PageResult<ImportOrderDO> selectPage(ImportOrderPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<ImportOrderDO>()
                 .eqIfPresent(ImportOrderDO::getProductQuantity, reqVO.getProductQuantity())

@@ -1,15 +1,14 @@
 package cn.iocoder.yudao.module.fx.controller.admin.skucostprice.vo;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import java.util.*;
-import java.util.*;
-import java.math.BigDecimal;
-import org.springframework.format.annotation.DateTimeFormat;
-import java.time.LocalDateTime;
-import com.alibaba.excel.annotation.*;
 import cn.iocoder.yudao.framework.excel.core.annotations.DictFormat;
 import cn.iocoder.yudao.framework.excel.core.convert.DictConvert;
+import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
+import com.alibaba.excel.annotation.ExcelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Schema(description = "管理后台 - 商品成本 Response VO")
 @Data
@@ -39,11 +38,11 @@ public class SkuCostpriceRespVO {
 
     @Schema(description = "品类", example = "2")
     @ExcelProperty("品类")
-    private BigDecimal type;
+    private Integer type;
 
     @Schema(description = "属性", example = "8")
     @ExcelProperty("属性")
-    private BigDecimal paid;
+    private Integer paid;
 
     @Schema(description = "财务结算价", example = "25310")
     @ExcelProperty("财务结算价")

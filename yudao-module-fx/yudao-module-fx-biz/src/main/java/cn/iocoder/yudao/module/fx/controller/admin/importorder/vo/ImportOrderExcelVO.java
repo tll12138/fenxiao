@@ -50,22 +50,22 @@ public class ImportOrderExcelVO {
     private String mobile;
 
     @ExcelProperty("客商")
-    private String customerid;
+    private String customername;
 
     @ExcelProperty("发货仓")
-    private String warehouseid;
+    private String warehousename;
 
     @ExcelProperty("快递公司")
     private String expressCompany;
 
     @ExcelProperty("业务归属")
-    private Integer businessAffiliation;
+    private String businessAffiliation;
 
     @ExcelProperty("收款经销商")
-    private String payingDistributorId;
+    private String payingDistributor;
 
     @ExcelProperty("无痕发货")
-    private Integer isTraceless;
+    private String isTraceless = "否";
 
     @ExcelProperty("备注")
     private String remark;

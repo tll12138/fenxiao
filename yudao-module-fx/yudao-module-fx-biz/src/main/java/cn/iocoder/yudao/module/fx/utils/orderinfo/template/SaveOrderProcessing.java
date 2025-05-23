@@ -4,12 +4,14 @@ import cn.hutool.core.lang.Opt;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.security.core.util.SecurityFrameworkUtils;
 import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoSaveReqVO;
+import cn.iocoder.yudao.module.fx.controller.admin.utils.SpringUtil;
 import cn.iocoder.yudao.module.fx.convert.customeraddress.CustomerAddressConvert;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customeraddress.CustomerAddressDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ordersdetail.OrdersDetailDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ordersinfo.OrdersInfoDO;
 import cn.iocoder.yudao.module.fx.enums.OrderNumPrefixType;
 import cn.iocoder.yudao.module.fx.enums.OrderStatusType;
+import cn.iocoder.yudao.module.fx.service.customeraddress.CustomerAddressService;
 import cn.iocoder.yudao.module.fx.utils.orderinfo.OrderProcessingContext;
 import cn.iocoder.yudao.module.fx.utils.validate.BrandValidationHandler;
 import cn.iocoder.yudao.module.fx.utils.validate.HandleChainBuilder;
@@ -172,9 +174,12 @@ public class SaveOrderProcessing extends AbstractOrderProcessingTemplate {
     private boolean isNewAddress() {
         // 判断是否为新增地址
         OrdersInfoSaveReqVO ordersInfoSaveReqVO = context.getOrdersInfoSaveReqVO();
-
         if (ordersInfoSaveReqVO.getAddressId() != null) {
-            log.info("[SaveOrderProcessing] 地址已存在，无需新增...");
+            log.info("[SaveOrderProcessing] 地址已存在，更新次数...");
+            CustomerAddressService addressService = SpringUtil.getObject(CustomerAddressService.class);
+            CustomerAddressDO addressDO = addressService.getCustomerAddress(ordersInfoSaveReqVO.getAddressId());
+            addressDO.setUseCount(addressDO.getUseCount() + 1);
+            Db.saveOrUpdate(addressDO);
             return false;
         }
         log.info("[SaveOrderProcessing] 新增地址...");

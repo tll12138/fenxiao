@@ -4,7 +4,12 @@ import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
 import com.baomidou.mybatisplus.annotation.KeySequence;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -65,5 +70,13 @@ public class PricelistDO extends BaseDO {
      * 创建时间
      */
     private LocalDateTime createTime;
+    /**
+     * 客户id
+     */
+    private Integer customerId;
+    /**
+     * 品牌id
+     */
+    private String brandId;
 
 }

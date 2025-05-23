@@ -1,11 +1,14 @@
 package cn.iocoder.yudao.module.fx.service.skucostprice;
 
-import java.util.*;
-import javax.validation.*;
-import cn.iocoder.yudao.module.fx.controller.admin.skucostprice.vo.*;
-import cn.iocoder.yudao.module.fx.dal.dataobject.skucostprice.SkuCostpriceDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
+import cn.iocoder.yudao.module.fx.controller.admin.skucostprice.vo.ImportSkuCostPriceExcelRespVO;
+import cn.iocoder.yudao.module.fx.controller.admin.skucostprice.vo.SkuCostPriceExcelVO;
+import cn.iocoder.yudao.module.fx.controller.admin.skucostprice.vo.SkuCostpricePageReqVO;
+import cn.iocoder.yudao.module.fx.controller.admin.skucostprice.vo.SkuCostpriceSaveReqVO;
+import cn.iocoder.yudao.module.fx.dal.dataobject.skucostprice.SkuCostpriceDO;
+
+import javax.validation.Valid;
+import java.util.List;
 
 /**
  * 商品成本 Service 接口
@@ -52,4 +55,12 @@ public interface SkuCostpriceService {
      */
     PageResult<SkuCostpriceDO> getSkuCostpricePage(SkuCostpricePageReqVO pageReqVO);
 
+    /**
+     * 导入商品成本
+     *
+     * @param list
+     * @param updateSupport
+     * @return
+     */
+    ImportSkuCostPriceExcelRespVO importList(List<SkuCostPriceExcelVO> list, Boolean updateSupport);
 }

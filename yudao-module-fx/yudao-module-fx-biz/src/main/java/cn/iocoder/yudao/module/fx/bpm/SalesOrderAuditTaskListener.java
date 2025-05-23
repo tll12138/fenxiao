@@ -123,6 +123,7 @@ public class SalesOrderAuditTaskListener {
         amountAdjService.createAmountAdj(new AmountAdjSaveReqVO()
                 .setAmount(salesAmount)
                 .setAccount(account.getId().toString())
+                .setAccountName(account.getDistributorName())
                 .setRemark(remark)
                 .setSoId(orderId)
                 .setOrderDate(DateUtil.now())

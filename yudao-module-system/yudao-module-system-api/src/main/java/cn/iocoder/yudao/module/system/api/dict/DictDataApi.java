@@ -6,6 +6,7 @@ import cn.iocoder.yudao.module.system.api.dict.dto.DictDataRespDTO;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import static cn.iocoder.yudao.framework.common.util.collection.CollectionUtils.convertList;
 
@@ -58,6 +59,15 @@ public interface DictDataApi {
      * @return 字典数据
      */
     DictDataRespDTO parseDictData(String type, String label);
+
+    /**
+     * 解析获得指定的字典数据转为Optional流，从缓存中
+     *
+     * @param type  字典类型
+     * @param label 字典数据标签
+     * @return 字典数据
+     */
+    Optional<String> parseDictDataForOptional(String type, String label);
 
     /**
      * 获得指定字典类型的字典数据列表

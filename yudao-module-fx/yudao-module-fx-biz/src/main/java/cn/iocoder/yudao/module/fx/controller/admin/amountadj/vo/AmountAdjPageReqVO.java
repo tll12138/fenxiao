@@ -31,6 +31,9 @@ public class AmountAdjPageReqVO extends PageParam {
     @Schema(description = "调整账户", example = "3960")
     private String account;
 
+    @Schema(description = "调整账户名称", example = "3960")
+    private String accountName;
+
     @Schema(description = "调整说明", example = "随便")
     private String remark;
 

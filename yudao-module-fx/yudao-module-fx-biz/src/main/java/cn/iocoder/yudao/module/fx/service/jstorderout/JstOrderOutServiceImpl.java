@@ -35,6 +35,7 @@ import org.springframework.validation.annotation.Validated;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -281,7 +282,7 @@ public class JstOrderOutServiceImpl implements JstOrderOutService {
     }
 
     private void updateOrderInfo(OrdersInfoDO orderInfo, JstOrderOutDTO orderOut) {
-        orderInfo.setSendTime(LocalDate.now())
+        orderInfo.setSendTime(LocalDateTime.now())
                 .setSendDate(LocalDate.now())
                 .setOrderStatus(OrderStatusType.SHIPPED.getType())
                 .setLogisticsNumber(orderOut.getExpress())

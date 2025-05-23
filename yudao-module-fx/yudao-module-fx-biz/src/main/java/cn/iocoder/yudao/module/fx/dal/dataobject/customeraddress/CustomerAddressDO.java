@@ -4,7 +4,12 @@ import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
 import com.baomidou.mybatisplus.annotation.KeySequence;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 /**
  * 分销商地址 DO
@@ -55,5 +60,9 @@ public class CustomerAddressDO extends BaseDO {
      * 发货地址
      */
     private String address;
+    /**
+     * 使用次数
+     */
+    private Integer useCount;
 
 }

@@ -1,9 +1,8 @@
 package cn.iocoder.yudao.module.fx.controller.admin.bigcustomeraddress.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import java.util.*;
-import javax.validation.constraints.*;
+import lombok.Data;
+
 import java.math.BigDecimal;
 
 @Schema(description = "管理后台 - 分销大客户地址新增/修改 Request VO")
@@ -15,6 +14,9 @@ public class BigCustomerAddressSaveReqVO {
 
     @Schema(description = "分销商", example = "13235")
     private Integer customerId;
+
+    @Schema(description = "分销商名称", example = "13235")
+    private String customerName;
 
     @Schema(description = "省")
     private String province;

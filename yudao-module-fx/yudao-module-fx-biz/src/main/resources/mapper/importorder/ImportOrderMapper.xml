@@ -8,5 +8,92 @@
         代码生成器暂时只生成 Mapper XML 文件本身，更多推荐 MybatisX 快速开发插件来生成查询。
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
+    <!--    <sql id="Base_Column_List">-->
+    <!--        id, product_quantity, province, city, so_id, sku_id, district,-->
+    <!--        address, contact, mobile, is_shipped, is_sales_order_generated,-->
+    <!--        customerid, warehouseid, saleno, express_company, tracking_number,-->
+    <!--        remark, business_affiliation, price, is_traceless, paying_distributor_id,-->
+    <!--        express_company_id, create_time-->
+    <!--    </sql>-->
+
+    <select id="selectPage" resultType="cn.iocoder.yudao.module.fx.dal.dataobject.importorder.ImportOrderDO">
+        SELECT *,c.distributor_name as customerName,w.name as warehouseName
+        FROM fx_import_order o
+        left join fx_customer_info c on o.customerid = c.id
+        left join fx_send_repository w on o.warehouseid = w.id
+        <where>
+            <if test="productQuantity != null">
+                AND product_quantity = #{productQuantity}
+            </if>
+            <if test="province != null">
+                AND province = #{province}
+            </if>
+            <if test="city != null">
+                AND city = #{city}
+            </if>
+            <if test="soId != null">
+                AND so_id = #{soId}
+            </if>
+            <if test="skuId != null">
+                AND sku_id = #{skuId}
+            </if>
+            <if test="district != null">
+                AND district = #{district}
+            </if>
+            <if test="address != null">
+                AND address = #{address}
+            </if>
+            <if test="contact != null">
+                AND contact = #{contact}
+            </if>
+            <if test="mobile != null">
+                AND mobile = #{mobile}
+            </if>
+            <if test="isShipped != null">
+                AND is_shipped = #{isShipped}
+            </if>
+            <if test="isSalesOrderGenerated != null">
+                AND is_sales_order_generated = #{isSalesOrderGenerated}
+            </if>
+            <if test="customerid != null">
+                AND customerid = #{customerid}
+            </if>
+            <if test="warehouseid != null">
+                AND warehouseid = #{warehouseid}
+            </if>
+            <if test="saleno != null">
+                AND saleno = #{saleno}
+            </if>
+            <if test="expressCompany != null">
+                AND express_company = #{expressCompany}
+            </if>
+            <if test="trackingNumber != null">
+                AND tracking_number = #{trackingNumber}
+            </if>
+            <if test="remark != null">
+                AND remark = #{remark}
+            </if>
+            <if test="businessAffiliation != null">
+                AND business_affiliation = #{businessAffiliation}
+            </if>
+            <if test="price != null">
+                AND price = #{price}
+            </if>
+            <if test="isTraceless != null">
+                AND is_traceless = #{isTraceless}
+            </if>
+            <if test="payingDistributorId != null">
+                AND paying_distributor_id = #{payingDistributorId}
+            </if>
+            <if test="expressCompanyId != null">
+                AND express_company_id = #{expressCompanyId}
+            </if>
+            <if test="createTime != null">
+                AND create_time BETWEEN #{createTime[0]} AND #{createTime[1]}
+            </if>
+        </where>
+        ORDER BY o.id DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
 
 </mapper>

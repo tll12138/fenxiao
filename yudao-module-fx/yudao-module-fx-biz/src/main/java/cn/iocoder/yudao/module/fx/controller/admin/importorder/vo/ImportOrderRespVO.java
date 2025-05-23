@@ -69,9 +69,17 @@ public class ImportOrderRespVO {
     @ExcelProperty("客商")
     private String customerid;
 
+    @Schema(description = "客商名称", example = "xxx")
+    @ExcelProperty("客商名称")
+    private String customername;
+
     @Schema(description = "发货仓", example = "5540")
     @ExcelProperty("发货仓")
     private String warehouseid;
+
+    @Schema(description = "发货仓名称", example = "xxx")
+    @ExcelProperty("发货仓名称")
+    private String warehousename;
 
     @Schema(description = "销售单号")
     @ExcelProperty("销售单号")
@@ -103,7 +111,7 @@ public class ImportOrderRespVO {
 
     @Schema(description = "收款经销商", example = "8443")
     @ExcelProperty("收款经销商")
-    private String payingDistributorId;
+    private Integer payingDistributorId;
 
     @Schema(description = "快递公司ID", example = "4418")
     @ExcelProperty("快递公司ID")

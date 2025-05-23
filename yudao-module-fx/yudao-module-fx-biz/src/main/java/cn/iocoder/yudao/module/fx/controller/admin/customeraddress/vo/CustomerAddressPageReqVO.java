@@ -1,9 +1,12 @@
 package cn.iocoder.yudao.module.fx.controller.admin.customeraddress.vo;
 
-import lombok.*;
-import io.swagger.v3.oas.annotations.media.Schema;
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.springframework.format.annotation.DateTimeFormat;
+
 import java.time.LocalDateTime;
 
 import static cn.iocoder.yudao.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND;
@@ -37,6 +40,9 @@ public class CustomerAddressPageReqVO extends PageParam {
 
     @Schema(description = "发货地址")
     private String address;
+
+    @Schema(description = "使用次数")
+    private Integer useCount;
 
     @Schema(description = "创建时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)

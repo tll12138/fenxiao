@@ -178,7 +178,9 @@ public class DictDataServiceImpl implements DictDataService {
             dictDataDO = JSONUtil.parseObj(json).toBean(DictDataDO.class);
         } else {
             dictDataDO = dictDataMapper.selectByDictTypeAndValue(dictType, value);
-            stringRedisTemplate.opsForValue().set("dictType" + dictType + "value" + value, JSONUtil.toJsonStr(dictDataDO));
+            if (dictDataDO != null) {
+                stringRedisTemplate.opsForValue().set("dictType" + dictType + "value" + value, JSONUtil.toJsonStr(dictDataDO));
+            }
         }
         return dictDataDO;
     }
@@ -191,7 +193,9 @@ public class DictDataServiceImpl implements DictDataService {
             dictDataDO = JSONUtil.parseObj(json).toBean(DictDataDO.class);
         } else {
             dictDataDO = dictDataMapper.selectByDictTypeAndLabel(dictType, label);
-            stringRedisTemplate.opsForValue().set("dictType" + dictType + "label" + label, JSONUtil.toJsonStr(dictDataDO));
+            if (dictDataDO != null) {
+                stringRedisTemplate.opsForValue().set("dictType" + dictType + "label" + label, JSONUtil.toJsonStr(dictDataDO));
+            }
         }
         return dictDataDO;
     }
@@ -204,7 +208,9 @@ public class DictDataServiceImpl implements DictDataService {
             list = JSONUtil.parseObj(json).toBean(List.class);
         } else {
             list = dictDataMapper.selectList(DictDataDO::getDictType, dictType);
-            stringRedisTemplate.opsForValue().set("dictType" + dictType, JSONUtil.toJsonStr(list));
+            if (CollUtil.isNotEmpty(list)) {
+                stringRedisTemplate.opsForValue().set("dictType" + dictType, JSONUtil.toJsonStr(list));
+            }
         }
         list.sort(Comparator.comparing(DictDataDO::getSort));
         return list;
