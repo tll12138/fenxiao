@@ -80,6 +80,14 @@ public interface OrdersInfoService {
     /**
      * 获得销售单
      *
+     * @param orderId 编号
+     * @return 销售单
+     */
+    OrdersInfoDetailRespVO getOrdersRespByOrderId(String orderId);
+
+    /**
+     * 获得销售单
+     *
      * @return 销售单
      */
     OrdersInfoDO getOrdersInfoByOrderId(String orderId);

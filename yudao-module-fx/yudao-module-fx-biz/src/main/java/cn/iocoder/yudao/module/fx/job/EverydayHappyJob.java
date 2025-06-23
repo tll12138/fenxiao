@@ -116,6 +116,19 @@ public class EverydayHappyJob implements JobHandler {
         Thread.sleep(1000);
         dingTalkUtils.sendNotifyMarkdown("15967343191", "摩羯座每日运势", fortuneMsg.toString());
 
+        // 调用第五个接口
+        String url5 = "https://api.kuleu.com/api/MP4_xiaojiejie?type=json";
+        String response5 = HttpUtil.get(url5);
+        JSONObject json5 = JSONUtil.parseObj(response5);
+        if (json5.getInt("code") != 200) {
+            log.error("接口调用失败：{}", json5.getStr("msg"));
+            return "失败";
+        }
+        String mp4Video = json5.getStr("mp4_video");
+
+        Thread.sleep(1000);
+        dingTalkUtils.sendNotifyMarkdown("15967343191", "每日视频", mp4Video);
+
         log.info("[execute][EverydayHappyJob]");
         return "EverydayHappyJob";
     }

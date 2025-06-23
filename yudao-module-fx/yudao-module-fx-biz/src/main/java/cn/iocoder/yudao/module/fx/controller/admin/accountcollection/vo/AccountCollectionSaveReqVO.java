@@ -1,11 +1,9 @@
 package cn.iocoder.yudao.module.fx.controller.admin.accountcollection.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import java.util.*;
-import javax.validation.constraints.*;
+import lombok.Data;
+
 import java.math.BigDecimal;
-import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDateTime;
 
 @Schema(description = "管理后台 - 分销账户收款记录新增/修改 Request VO")
@@ -30,6 +28,9 @@ public class AccountCollectionSaveReqVO {
     @Schema(description = "实际账户", example = "21695")
     private String account;
 
+    @Schema(description = "实际账户名称")
+    private String accountName;
+
     @Schema(description = "收款金额")
     private BigDecimal receive;
 
@@ -38,6 +39,9 @@ public class AccountCollectionSaveReqVO {
 
     @Schema(description = "分销商")
     private String customer;
+
+    @Schema(description = "分销商名称")
+    private String customerName;
 
     @Schema(description = "业务单据", example = "7313")
     private String soId;

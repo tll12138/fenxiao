@@ -1,11 +1,15 @@
 package cn.iocoder.yudao.module.fx.dal.dataobject.payaccount;
 
-import lombok.*;
-import java.util.*;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.*;
 import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
+import com.baomidou.mybatisplus.annotation.KeySequence;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 /**
  * 分销支付账户 DO
@@ -29,7 +33,7 @@ public class PayAccountDO extends BaseDO {
     private Integer id;
     /**
      * 类型
-     *
+     * <p>
      * 枚举 {@link TODO account_type 对应的类}
      */
     private Integer payType;
@@ -37,6 +41,10 @@ public class PayAccountDO extends BaseDO {
      * 分销商账户
      */
     private String customerId;
+    /**
+     * 分销商账户名称
+     */
+    private String customerName;
     /**
      * 付款账户
      */
@@ -47,7 +55,7 @@ public class PayAccountDO extends BaseDO {
     private String description;
     /**
      * 是否可用
-     *
+     * <p>
      * 枚举 {@link TODO yes_no 对应的类}
      */
     private String isActive;

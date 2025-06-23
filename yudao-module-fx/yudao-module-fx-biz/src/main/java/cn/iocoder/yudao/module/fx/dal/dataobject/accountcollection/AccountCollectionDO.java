@@ -1,13 +1,18 @@
 package cn.iocoder.yudao.module.fx.dal.dataobject.accountcollection;
 
-import lombok.*;
-import java.util.*;
+import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
+import com.baomidou.mybatisplus.annotation.KeySequence;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.*;
-import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
 
 /**
  * 分销账户收款记录 DO
@@ -50,6 +55,10 @@ public class AccountCollectionDO extends BaseDO {
      */
     private String account;
     /**
+     * 实际账户名称
+     */
+    private String accountName;
+    /**
      * 收款金额
      */
     private BigDecimal receive;
@@ -61,6 +70,10 @@ public class AccountCollectionDO extends BaseDO {
      * 分销商
      */
     private String customer;
+    /**
+     * 分销商名称
+     */
+    private String customerName;
     /**
      * 业务单据
      */
@@ -83,8 +96,6 @@ public class AccountCollectionDO extends BaseDO {
     private String payoutAccountName;
     /**
      * 是否重复
-     *
-     * 枚举 {@link TODO yes_no 对应的类}
      */
     private String isRepeat;
     /**
@@ -97,8 +108,6 @@ public class AccountCollectionDO extends BaseDO {
     private LocalDateTime orderDate;
     /**
      * 是否周末
-     *
-     * 枚举 {@link TODO yes_no 对应的类}
      */
     private String isWeek;
 

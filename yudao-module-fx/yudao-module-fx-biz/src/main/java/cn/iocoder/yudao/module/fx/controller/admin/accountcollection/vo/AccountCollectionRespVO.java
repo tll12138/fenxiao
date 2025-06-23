@@ -1,15 +1,14 @@
 package cn.iocoder.yudao.module.fx.controller.admin.accountcollection.vo;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import java.util.*;
-import java.util.*;
-import java.math.BigDecimal;
-import org.springframework.format.annotation.DateTimeFormat;
-import java.time.LocalDateTime;
-import com.alibaba.excel.annotation.*;
 import cn.iocoder.yudao.framework.excel.core.annotations.DictFormat;
 import cn.iocoder.yudao.framework.excel.core.convert.DictConvert;
+import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
+import com.alibaba.excel.annotation.ExcelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Schema(description = "管理后台 - 分销账户收款记录 Response VO")
 @Data
@@ -40,6 +39,10 @@ public class AccountCollectionRespVO {
     @ExcelProperty("实际账户")
     private String account;
 
+    @Schema(description = "实际账户名称")
+    @ExcelProperty("实际账户名称")
+    private String accountName;
+
     @Schema(description = "收款金额")
     @ExcelProperty("收款金额")
     private BigDecimal receive;
@@ -51,6 +54,10 @@ public class AccountCollectionRespVO {
     @Schema(description = "分销商")
     @ExcelProperty("分销商")
     private String customer;
+
+    @Schema(description = "分销商名称")
+    @ExcelProperty("分销商名称")
+    private String customerName;
 
     @Schema(description = "业务单据", example = "7313")
     @ExcelProperty("业务单据")

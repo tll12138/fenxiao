@@ -1,10 +1,12 @@
 package cn.iocoder.yudao.module.fx.controller.admin.payaccount.vo;
 
-import lombok.*;
-import java.util.*;
-import io.swagger.v3.oas.annotations.media.Schema;
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.springframework.format.annotation.DateTimeFormat;
+
 import java.time.LocalDateTime;
 
 import static cn.iocoder.yudao.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND;
@@ -20,6 +22,9 @@ public class PayAccountPageReqVO extends PageParam {
 
     @Schema(description = "分销商账户", example = "2803")
     private String customerId;
+
+    @Schema(description = "分销商账户名称", example = "2803")
+    private String customerName;
 
     @Schema(description = "付款账户")
     private String accountNo;

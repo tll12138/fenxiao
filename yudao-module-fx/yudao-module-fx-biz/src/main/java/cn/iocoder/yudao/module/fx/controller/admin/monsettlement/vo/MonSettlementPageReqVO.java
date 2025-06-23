@@ -1,11 +1,13 @@
 package cn.iocoder.yudao.module.fx.controller.admin.monsettlement.vo;
 
-import lombok.*;
-import java.util.*;
-import io.swagger.v3.oas.annotations.media.Schema;
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
-import java.math.BigDecimal;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.springframework.format.annotation.DateTimeFormat;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import static cn.iocoder.yudao.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND;
@@ -34,6 +36,9 @@ public class MonSettlementPageReqVO extends PageParam {
 
     @Schema(description = "账户", example = "29726")
     private String account;
+
+    @Schema(description = "账户名称", example = "29726")
+    private String accountName;
 
     @Schema(description = "业务主体")
     private String company;

@@ -87,6 +87,15 @@ public class OrdersInfoController {
         return success(respVO);
     }
 
+    @GetMapping("/getByOrderId")
+    @Operation(summary = "获得销售单")
+    @Parameter(name = "id", description = "编号", required = true, example = "1024")
+    @PreAuthorize("@ss.hasPermission('fx:orders-info:query')")
+    public CommonResult<OrdersInfoDetailRespVO> getOrdersInfoByOrderId(@RequestParam("orderId") String orderId) {
+        OrdersInfoDetailRespVO respVO = ordersInfoService.getOrdersRespByOrderId(orderId);
+        return success(respVO);
+    }
+
     @GetMapping("/page")
     @Operation(summary = "获得销售单分页")
     @PreAuthorize("@ss.hasPermission('fx:orders-info:query')")

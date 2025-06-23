@@ -268,6 +268,18 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
     /**
      * 获得销售单
      *
+     * @param orderId 编号
+     */
+    @Override
+    public OrdersInfoDetailRespVO getOrdersRespByOrderId(String orderId) {
+        OrdersInfoDetailRespVO respVO = BeanUtils.toBean(validateOrdersInfoExists(orderId), OrdersInfoDetailRespVO.class);
+        respVO.setOrdersDetails(ordersDetailMapper.selectListByOrderId(respVO.getId()));
+        return respVO;
+    }
+
+    /**
+     * 获得销售单
+     *
      * @return 销售单
      */
     @Override
@@ -578,15 +590,20 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
      */
     @Override
     public Boolean processLogisticsSync(LogisticsRequest logisticsRequest) {
-        OrdersInfoDO ordersInfo = validateOrdersInfoExists(logisticsRequest.getOId());
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        ordersInfo.setLogisticsCompany(logisticsRequest.getLcId())
-                .setLogisticsNumber(logisticsRequest.getLId())
-                .setOrderStatus(OrderStatusType.SHIPPED.getType())
-                .setErpOrderNumber(String.valueOf(logisticsRequest.getOId()))
-                .setSendDate(LocalDate.parse(logisticsRequest.getSendDate(), formatter))
-                .setSendTime(LocalDateTime.parse(logisticsRequest.getSendDate(), formatter));
-        ordersInfoMapper.updateById(ordersInfo);
+        try {
+            OrdersInfoDO ordersInfo = validateOrdersInfoExists(logisticsRequest.getOId());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            ordersInfo.setLogisticsCompany(logisticsRequest.getLcId())
+                    .setLogisticsNumber(logisticsRequest.getLId())
+                    .setOrderStatus(OrderStatusType.SHIPPED.getType())
+                    .setErpOrderNumber(String.valueOf(logisticsRequest.getOId()))
+                    .setSendDate(LocalDate.parse(logisticsRequest.getSendDate(), formatter))
+                    .setSendTime(LocalDateTime.parse(logisticsRequest.getSendDate(), formatter));
+            ordersInfoMapper.updateById(ordersInfo);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return false;
+        }
         return true;
     }
 
@@ -595,7 +612,13 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
      */
     @Override
     public void processAfterSalesSync(AfterSalesRequest afterSalesRequest) {
-        OrdersInfoDO ordersInfo = validateOrdersInfoExists(afterSalesRequest.getOId());
+        try {
+            OrdersInfoDO ordersInfo = validateOrdersInfoExists(afterSalesRequest.getOId());
+            ordersInfo.setReturnStatus(2);
+            ordersInfoMapper.updateById(ordersInfo);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
     }
 
 }

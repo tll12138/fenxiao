@@ -1,9 +1,8 @@
 package cn.iocoder.yudao.module.fx.controller.admin.monsettlement.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import java.util.*;
-import javax.validation.constraints.*;
+import lombok.Data;
+
 import java.math.BigDecimal;
 
 @Schema(description = "管理后台 - 分销账户月结新增/修改 Request VO")
@@ -27,6 +26,9 @@ public class MonSettlementSaveReqVO {
 
     @Schema(description = "账户", example = "29726")
     private String account;
+
+    @Schema(description = "账户名称", example = "29726")
+    private String accountName;
 
     @Schema(description = "业务主体")
     private String company;
