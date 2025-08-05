@@ -10,7 +10,6 @@ import cn.iocoder.yudao.module.fx.controller.admin.billapply.vo.BillApplyPageReq
 import cn.iocoder.yudao.module.fx.controller.admin.billapply.vo.BillApplyRespVO;
 import cn.iocoder.yudao.module.fx.controller.admin.billapply.vo.BillApplySaveReqVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.billapply.BillApplyDO;
-import cn.iocoder.yudao.module.fx.dal.dataobject.billapply.BillApplyDetailDO;
 import cn.iocoder.yudao.module.fx.service.billapply.BillApplyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -49,13 +48,6 @@ public class BillApplyController {
     @PreAuthorize("@ss.hasPermission('fx:bill-apply:create')")
     public CommonResult<Integer> createBillApply(@Valid @RequestBody BillApplySaveReqVO createReqVO) {
         return success(billApplyService.createBillApply(createReqVO));
-    }
-
-    @PostMapping("/save")
-    @Operation(summary = "保存发票申请")
-    @PreAuthorize("@ss.hasPermission('fx:bill-apply:create')")
-    public CommonResult<Integer> saveBillApply(@Valid @RequestBody BillApplySaveReqVO createReqVO) {
-        return success(billApplyService.saveBillApply(createReqVO));
     }
 
     @PutMapping("/update")
@@ -103,16 +95,6 @@ public class BillApplyController {
         // 导出 Excel
         ExcelUtils.write(response, "发票申请.xls", "数据", BillApplyRespVO.class,
                 BeanUtils.toBean(list, BillApplyRespVO.class));
-    }
-
-    // ==================== 子表（发票申请详情） ====================
-
-    @GetMapping("/bill-apply-detail/list-by-main-id")
-    @Operation(summary = "获得发票申请详情列表")
-    @Parameter(name = "mainId", description = "主表id")
-    @PreAuthorize("@ss.hasPermission('fx:bill-apply:query')")
-    public CommonResult<List<BillApplyDetailDO>> getBillApplyDetailListByMainId(@RequestParam("mainId") Integer mainId) {
-        return success(billApplyService.getBillApplyDetailListByMainId(mainId));
     }
 
 }

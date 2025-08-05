@@ -32,6 +32,7 @@ import java.util.List;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.CUSTOMER_ACCOUNT_NOT_EXISTS;
+import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.CUSTOMER_ACCOUNT_PARAMS_EMPTY;
 
 /**
  * 分销商账号 Service 实现类
@@ -227,5 +228,20 @@ public class CustomerAccountServiceImpl implements CustomerAccountService {
                 .setAdjustBalance(account.getBalance())
                 .setAdjustWithholdBalance(account.getDetainAmount()));
         return account.getBalance();
+    }
+
+    /**
+     * 根据客商和实体获取打款账户
+     *
+     * @param customerId
+     * @param entityId
+     * @return
+     */
+    @Override
+    public CustomerAccountDO getCustomerAccountByCusAndEntity(Integer customerId, Integer entityId) {
+        if (customerId == null || customerId <= 0 || entityId == null || entityId <= 0) {
+            throw exception(CUSTOMER_ACCOUNT_PARAMS_EMPTY);
+        }
+        return customerAccountMapper.selectOne(CustomerAccountDO::getDistributorId, customerId, CustomerAccountDO::getCompany, entityId);
     }
 }

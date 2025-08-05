@@ -92,4 +92,12 @@ public interface CustomerAccountService {
     BigDecimal resaleReceivable(ReturnOrdersInfoDetailRespVO returnOrder);
 
 
+    /**
+     * 根据客商和实体获取打款账户
+     *
+     * @param customerId
+     * @param entityId
+     * @return
+     */
+    CustomerAccountDO getCustomerAccountByCusAndEntity(Integer customerId, Integer entityId);
 }

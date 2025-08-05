@@ -1,24 +1,21 @@
 package cn.iocoder.yudao.module.fx.service.fromaccount;
 
-import org.springframework.stereotype.Service;
-import javax.annotation.Resource;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.*;
-import cn.iocoder.yudao.module.fx.controller.admin.fromaccount.vo.*;
-import cn.iocoder.yudao.module.fx.dal.dataobject.fromaccount.FromAccountDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
-
+import cn.iocoder.yudao.module.fx.controller.admin.fromaccount.vo.FromAccountPageReqVO;
+import cn.iocoder.yudao.module.fx.controller.admin.fromaccount.vo.FromAccountSaveReqVO;
+import cn.iocoder.yudao.module.fx.dal.dataobject.fromaccount.FromAccountDO;
 import cn.iocoder.yudao.module.fx.dal.mysql.fromaccount.FromAccountMapper;
+import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
+
+import javax.annotation.Resource;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.*;
+import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.FROM_ACCOUNT_NOT_EXISTS;
 
 /**
- *  分销打款账户 Service 实现类
+ * 分销打款账户 Service 实现类
  *
  * @author 管理员
  */
@@ -69,6 +66,14 @@ public class FromAccountServiceImpl implements FromAccountService {
     @Override
     public PageResult<FromAccountDO> getFromAccountPage(FromAccountPageReqVO pageReqVO) {
         return fromAccountMapper.selectPage(pageReqVO);
+    }
+
+    /**
+     * 根据客商和打款账户名称查询打款账户信息
+     */
+    @Override
+    public FromAccountDO getFromAccountByCusAndPayAccName(String customer, String paymentAccountName) {
+        return fromAccountMapper.selectOne(FromAccountDO::getCustomerId, customer, FromAccountDO::getAccountName, paymentAccountName);
     }
 
 }

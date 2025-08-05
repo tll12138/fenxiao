@@ -84,6 +84,15 @@ public class CustomerAccountController {
         return success(BeanUtils.toBean(pageResult, CustomerAccountRespVO.class));
     }
 
+    @GetMapping("/getByCusAndEntity")
+    @Operation(summary = "根据用户和业务主体获得分销商账号")
+    @PreAuthorize("@ss.hasPermission('fx:customer-account:query')")
+    public CommonResult<CustomerAccountRespVO> getCustomerAccountByCusAndEntity(@RequestParam("customerId") Integer customerId,
+                                                                                @RequestParam("entityId") Integer entityId) {
+        CustomerAccountDO customerAccountDO = customerAccountService.getCustomerAccountByCusAndEntity(customerId, entityId);
+        return success(BeanUtils.toBean(customerAccountDO, CustomerAccountRespVO.class));
+    }
+
     @GetMapping("/export-excel")
     @Operation(summary = "导出分销商账号 Excel")
     @PreAuthorize("@ss.hasPermission('fx:customer-account:export')")

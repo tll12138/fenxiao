@@ -1,14 +1,14 @@
 package cn.iocoder.yudao.module.fx.service.fromaccount;
 
-import java.util.*;
-import javax.validation.*;
-import cn.iocoder.yudao.module.fx.controller.admin.fromaccount.vo.*;
-import cn.iocoder.yudao.module.fx.dal.dataobject.fromaccount.FromAccountDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
+import cn.iocoder.yudao.module.fx.controller.admin.fromaccount.vo.FromAccountPageReqVO;
+import cn.iocoder.yudao.module.fx.controller.admin.fromaccount.vo.FromAccountSaveReqVO;
+import cn.iocoder.yudao.module.fx.dal.dataobject.fromaccount.FromAccountDO;
+
+import javax.validation.Valid;
 
 /**
- *  分销打款账户 Service 接口
+ * 分销打款账户 Service 接口
  *
  * @author 管理员
  */
@@ -40,7 +40,7 @@ public interface FromAccountService {
      * 获得 分销打款账户
      *
      * @param id 编号
-     * @return  分销打款账户
+     * @return 分销打款账户
      */
     FromAccountDO getFromAccount(Integer id);
 
@@ -48,8 +48,15 @@ public interface FromAccountService {
      * 获得 分销打款账户分页
      *
      * @param pageReqVO 分页查询
-     * @return  分销打款账户分页
+     * @return 分销打款账户分页
      */
     PageResult<FromAccountDO> getFromAccountPage(FromAccountPageReqVO pageReqVO);
 
+    /**
+     * 根据客商和打款账户名称查询打款账户信息
+     *
+     * @param customer
+     * @param paymentAccountName
+     */
+    FromAccountDO getFromAccountByCusAndPayAccName(String customer, String paymentAccountName);
 }

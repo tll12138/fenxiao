@@ -21,6 +21,7 @@ public interface ErrorCodeConstants {
     ErrorCode CUSTOMER_ACCOUNT_NOT_EXISTS = new ErrorCode(1_010_000_300, "分销商账号不存在");
     ErrorCode CUSTOMER_ACCOUNT_CREATE_FAIL = new ErrorCode(1_010_000_301, "分销商账号创建失败");
     ErrorCode CUSTOMER_ADDRESS_UPDATE_FAIL = new ErrorCode(1_010_000_302, "分销商地址更新失败");
+    ErrorCode CUSTOMER_ACCOUNT_PARAMS_EMPTY = new ErrorCode(1_010_000_303, "获取分销商账号参数为空");
 
 
     // ========== 子公司信息
@@ -115,4 +116,7 @@ public interface ErrorCodeConstants {
     ErrorCode JST_ORDER_OUT_ERROR_SALE_FORM_EMPTY = new ErrorCode(1_301_000_102, "聚水潭发货回传执行失败，订单{}未找到匹配的单据来源，请确认！");
     // ========== 销售退货详情  ==========
     ErrorCode RETURN_ORDER_DETAIL_NOT_EXISTS = new ErrorCode(1_302_000_100, "销售退货详情不存在");
+    // ========== 客商账户收款审核 ==========
+    ErrorCode CA_RCPT_AUD_NOT_EXISTS = new ErrorCode(1_303_000_100, "客商账户收款审核不存在");
+    ErrorCode CA_RCPT_AUD_ID_NOT_EXISTS = new ErrorCode(1_303_000_101, "客商账户收款审核id不存在");
 }
