@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -32,6 +33,8 @@ import java.io.IOException;
 import java.util.List;
 
 import static cn.iocoder.yudao.framework.apilog.core.enums.OperateTypeEnum.EXPORT;
+import static cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants.EMPTY_REQUEST;
+import static cn.iocoder.yudao.framework.common.pojo.CommonResult.error;
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 
 @Tag(name = "管理后台 - 发票申请")
@@ -67,6 +70,15 @@ public class BillApplyController {
         return success(true);
     }
 
+    @PostMapping("/push")
+    @Operation(summary = "推送发票申请")
+    @Parameter(name = "id", description = "编号", required = true)
+    @PreAuthorize("@ss.hasPermission('fx:bill-apply:push')")
+    public CommonResult<Boolean> pushBillApply(@RequestParam("id") Integer id) {
+        billApplyService.pushBillApply(id);
+        return success(true);
+    }
+
     @GetMapping("/get")
     @Operation(summary = "获得发票申请")
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
@@ -97,4 +109,15 @@ public class BillApplyController {
                 BeanUtils.toBean(list, BillApplyRespVO.class));
     }
 
+    @PostMapping("/callback")
+    @Operation(summary = "发票申请流程归档回调")
+    public CommonResult<String> getBillApplyCallback(@RequestParam("id") Integer id,
+                                                     @RequestParam("soId") String soId,
+                                                     @RequestParam("file") MultipartFile[] files) {
+        if (files.length < 1) {
+            return error(EMPTY_REQUEST);
+        }
+        billApplyService.handleBillApplyCallback(id, soId, files);
+        return success("回调成功");
+    }
 }

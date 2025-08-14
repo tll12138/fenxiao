@@ -94,7 +94,7 @@ public class BillApplyRespVO {
 
     @Schema(description = "开票流程", example = "10673")
     @ExcelProperty("开票流程")
-    private BigDecimal rid;
+    private String rid;
 
     @Schema(description = "是否完成", requiredMode = Schema.RequiredMode.REQUIRED)
     @ExcelProperty(value = "是否完成", converter = DictConvert.class)

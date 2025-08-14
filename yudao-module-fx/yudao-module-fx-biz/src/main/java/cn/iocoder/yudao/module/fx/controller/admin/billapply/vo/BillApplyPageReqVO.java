@@ -69,7 +69,7 @@ public class BillApplyPageReqVO extends PageParam {
     private String billInfo;
 
     @Schema(description = "开票流程", example = "10673")
-    private BigDecimal rid;
+    private String rid;
 
     @Schema(description = "是否完成")
     private BigDecimal isOver;

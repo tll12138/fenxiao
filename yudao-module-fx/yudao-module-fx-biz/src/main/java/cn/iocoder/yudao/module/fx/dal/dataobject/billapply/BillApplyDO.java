@@ -112,7 +112,7 @@ public class BillApplyDO extends BaseDO {
     /**
      * 开票流程
      */
-    private BigDecimal rid;
+    private String rid;
     /**
      * 是否完成
      * <p>

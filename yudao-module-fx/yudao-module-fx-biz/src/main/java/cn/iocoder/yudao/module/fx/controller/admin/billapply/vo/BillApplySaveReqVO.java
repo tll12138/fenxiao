@@ -1,10 +1,10 @@
 package cn.iocoder.yudao.module.fx.controller.admin.billapply.vo;
 
 import cn.iocoder.yudao.module.fx.dal.dataobject.billapply.BillApplyDetailDO;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -19,9 +19,11 @@ public class BillApplySaveReqVO {
     private BigDecimal applyMan;
 
     @Schema(description = "申请日期")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private String applyDate;
 
     @Schema(description = "开票日期")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private String billDate;
 
     @Schema(description = "地址及电话")
@@ -70,10 +72,9 @@ public class BillApplySaveReqVO {
     private String billInfo;
 
     @Schema(description = "开票流程", example = "10673")
-    private BigDecimal rid;
+    private String rid;
 
     @Schema(description = "是否完成", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotNull(message = "是否完成不能为空")
     private BigDecimal isOver;
 
     @Schema(description = "是否芽肌")

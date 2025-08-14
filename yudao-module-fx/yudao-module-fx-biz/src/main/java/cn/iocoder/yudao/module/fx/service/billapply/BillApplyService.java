@@ -4,6 +4,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.fx.controller.admin.billapply.vo.BillApplyPageReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.billapply.vo.BillApplySaveReqVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.billapply.BillApplyDO;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 
@@ -51,4 +52,16 @@ public interface BillApplyService {
      * @return 发票申请分页
      */
     PageResult<BillApplyDO> getBillApplyPage(BillApplyPageReqVO pageReqVO);
+
+    /**
+     * 推送发票申请
+     *
+     * @param id 编号
+     */
+    void pushBillApply(Integer id);
+
+    /**
+     * 处理发票申请回调
+     */
+    void handleBillApplyCallback(Integer id, String soId, MultipartFile[] files);
 }
