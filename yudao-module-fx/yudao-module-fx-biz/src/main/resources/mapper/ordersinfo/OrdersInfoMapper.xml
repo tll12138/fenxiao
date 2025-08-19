@@ -91,6 +91,14 @@
         OR (a.warehouse_code = '66666666' AND a.distributor_id != 108)
         ) <!-- 仓库过滤条件 -->
     </select>
+    <select id="selectExistsOrderIds" resultType="java.lang.String">
+        SELECT order_id
+        FROM fx_orders_info
+        WHERE order_id IN
+        <foreach collection="orderIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
 
     <update id="updateSaleMain">
         UPDATE fx_orders_info t

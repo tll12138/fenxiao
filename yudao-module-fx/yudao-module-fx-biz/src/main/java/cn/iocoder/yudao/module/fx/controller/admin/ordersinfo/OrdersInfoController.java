@@ -12,6 +12,7 @@ import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoRespV
 import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoSaveReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.ProcessInstanceCancelReqVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ordersdetail.OrdersDetailDO;
+import cn.iocoder.yudao.module.fx.dal.dataobject.ordersinfo.OrderInfoRequest;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ordersinfo.OrdersInfoDO;
 import cn.iocoder.yudao.module.fx.service.ordersinfo.OrdersInfoService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -123,6 +124,13 @@ public class OrdersInfoController {
         // 导出 Excel
         ExcelUtils.write(response, "销售单.xls", "数据", OrdersInfoRespVO.class,
                 BeanUtils.toBean(list, OrdersInfoRespVO.class));
+    }
+
+    @PostMapping("/getSync")
+    @Operation(summary = "同步获取OA销售单列表")
+    public CommonResult<Boolean> getSyncOrdersInfo(@RequestBody OrderInfoRequest orderInfoRequest) {
+        ordersInfoService.orderSyncProcess(orderInfoRequest);
+        return success(true);
     }
 
     // ==================== 子表（分销-销售订单明细） ====================

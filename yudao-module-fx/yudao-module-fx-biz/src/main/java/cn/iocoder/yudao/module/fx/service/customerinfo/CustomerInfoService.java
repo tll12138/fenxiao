@@ -5,6 +5,7 @@ import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoD
 import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoDetailRespVO;
 import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoPageReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoSaveReqVO;
+import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoSyncVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customeraccount.CustomerAccountDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customeraddress.CustomerAddressDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customerinfo.CustomerInfoDO;
@@ -117,4 +118,9 @@ public interface CustomerInfoService {
      * 获得无账号分销商地址列表
      */
     List<CustomerInfoDO> getCustomerInfoByNoAccount();
+
+    /**
+     * 同步OA客商信息
+     */
+    void syncOaCustomers(List<CustomerInfoSyncVO> syncVO);
 }

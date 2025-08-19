@@ -8,6 +8,7 @@ import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.ProcessInstance
 import cn.iocoder.yudao.module.fx.dal.dataobject.jushuitanapi.AfterSalesRequest;
 import cn.iocoder.yudao.module.fx.dal.dataobject.jushuitanapi.LogisticsRequest;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ordersdetail.OrdersDetailDO;
+import cn.iocoder.yudao.module.fx.dal.dataobject.ordersinfo.OrderInfoRequest;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ordersinfo.OrdersInfoDO;
 
 import javax.validation.Valid;
@@ -177,4 +178,9 @@ public interface OrdersInfoService {
      * @return
      */
     void processAfterSalesSync(AfterSalesRequest afterSalesRequest);
+
+    /**
+     * 订单同步处理
+     */
+    void orderSyncProcess(OrderInfoRequest orderInfoRequest);
 }

@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.fx.service.customerinfo;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
@@ -10,6 +11,7 @@ import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoD
 import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoDetailRespVO;
 import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoPageReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoSaveReqVO;
+import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoSyncVO;
 import cn.iocoder.yudao.module.fx.convert.CustomerCovert;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customeraccount.CustomerAccountDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customeraddress.CustomerAddressDO;
@@ -48,7 +50,11 @@ import java.util.stream.Collectors;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.CUSTOMER_ACCOUNT_CREATE_FAIL;
 import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.CUSTOMER_ADDRESS_UPDATE_FAIL;
+import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.CUSTOMER_INFO_DATE_PARSE_ERROR;
+import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.CUSTOMER_INFO_ID_NULL;
 import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.CUSTOMER_INFO_NOT_EXISTS;
+import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.CUSTOMER_INFO_SYNC_EMPTY;
+import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.CUSTOMER_INFO_SYNC_ERROR;
 
 /**
  * 分销商基础信息 Service 实现类
@@ -260,6 +266,87 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     @Override
     public List<CustomerInfoDO> getCustomerInfoByNoAccount() {
         return customerInfoMapper.getCustomerInfoByNoAccount();
+    }
+
+    /**
+     * 同步OA客商信息
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class) // 事务注解，确保同步操作原子性
+    public void syncOaCustomers(List<CustomerInfoSyncVO> syncVOList) {
+        // 入参校验
+        if (CollectionUtils.isEmpty(syncVOList)) {
+            log.warn("同步OA客商信息：入参列表为空");
+            throw exception(CUSTOMER_INFO_SYNC_EMPTY);
+        }
+
+        log.info("开始同步OA客商信息，待处理数量：{}", syncVOList.size());
+
+        try {
+            List<Long> allIds = syncVOList.stream()
+                    .map(CustomerInfoSyncVO::getId)
+                    .peek(id -> {
+                        if (id == null) { // 校验ID不能为空
+                            throw exception(CUSTOMER_INFO_ID_NULL);
+                        }
+                    })
+                    .collect(Collectors.toList());
+
+            // 批量查询已存在的客户信息
+            Map<Long, CustomerInfoDO> existCustomerMap = customerInfoMapper.selectBatchIds(allIds).stream()
+                    .collect(Collectors.toMap(CustomerInfoDO::getId, customer -> customer));
+
+            // 2. 区分新增和更新列表
+            List<CustomerInfoDO> insertList = new ArrayList<>();
+            List<CustomerInfoDO> updateList = new ArrayList<>();
+
+            for (CustomerInfoSyncVO syncVO : syncVOList) {
+                CustomerInfoDO existDO = existCustomerMap.get(syncVO.getId());
+
+                // 转换VO到DO（统一处理日期解析）
+                CustomerInfoDO customerDO = convertToDO(syncVO, existDO);
+
+                if (existDO == null) {
+                    insertList.add(customerDO);
+                } else {
+                    updateList.add(customerDO);
+                }
+            }
+
+            // 3. 批量执行数据库操作
+            if (!insertList.isEmpty()) {
+                customerInfoMapper.insertBatch(insertList);
+                log.info("OA客商信息同步：新增成功{}条", insertList.size());
+            }
+            if (!updateList.isEmpty()) {
+                customerInfoMapper.updateBatch(updateList);
+                log.info("OA客商信息同步：更新成功{}条", updateList.size());
+            }
+            log.info("OA客商信息同步完成，总处理{}条", syncVOList.size());
+
+        } catch (Exception e) {
+            log.error("OA客商信息同步失败，原因：{}", e.getMessage(), e);
+            throw exception(CUSTOMER_INFO_SYNC_ERROR, e.getMessage());
+        }
+    }
+
+    /**
+     * 转换VO到DO，处理日期解析
+     */
+    private CustomerInfoDO convertToDO(CustomerInfoSyncVO syncVO, CustomerInfoDO existDO) {
+        CustomerInfoDO customerDO = existDO != null ? existDO : new CustomerInfoDO();
+
+        BeanUtil.copyProperties(syncVO, customerDO, "latestOrderDate");
+
+        try {
+            customerDO.setLatestOrderDate(StrUtil.isNotBlank(syncVO.getLatestOrderDate()) ? DateUtil.parseDate(syncVO.getLatestOrderDate()) : null);
+        } catch (Exception e) {
+            log.error("解析最新订单日期失败，ID:{}，日期字符串:{}",
+                    syncVO.getId(), syncVO.getLatestOrderDate(), e);
+            throw exception(CUSTOMER_INFO_DATE_PARSE_ERROR, syncVO.getLatestOrderDate());
+        }
+
+        return customerDO;
     }
 
     private void createCustomerAddressList(Long id, List<CustomerAddressDO> list) {

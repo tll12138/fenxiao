@@ -11,6 +11,7 @@ import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoD
 import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoPageReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoRespVO;
 import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoSaveReqVO;
+import cn.iocoder.yudao.module.fx.controller.admin.customerinfo.vo.CustomerInfoSyncVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customeraccount.CustomerAccountDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customeraddress.CustomerAddressDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customerinfo.CustomerInfoDO;
@@ -126,6 +127,13 @@ public class CustomerInfoController {
     @PreAuthorize("@ss.hasPermission('fx:customer:update')")
     public CommonResult<Boolean> syncCustomerAccount() {
         customerInfoService.syncCustomers();
+        return success(Boolean.TRUE);
+    }
+
+    @PostMapping("/syncOA")
+    @Operation(summary = "同步OA客商信息")
+    public CommonResult<Boolean> syncOaCustomerAccount(@RequestBody List<CustomerInfoSyncVO> syncVO) {
+        customerInfoService.syncOaCustomers(syncVO);
         return success(Boolean.TRUE);
     }
 

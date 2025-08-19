@@ -6,7 +6,9 @@ import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoPageReqVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ordersinfo.OrdersInfoDO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -80,4 +82,8 @@ public interface OrdersInfoMapper extends BaseMapperX<OrdersInfoDO> {
      */
     List<OrdersInfoDO> getNormalSendOrders();
 
+    /**
+     * 批量查询已存在的订单ID
+     */
+    List<String> selectExistsOrderIds(@Param("orderIds") ArrayList<String> orderIds);
 }

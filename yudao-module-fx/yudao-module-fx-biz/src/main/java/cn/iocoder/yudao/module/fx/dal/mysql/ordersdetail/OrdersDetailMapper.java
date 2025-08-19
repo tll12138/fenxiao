@@ -41,4 +41,12 @@ public interface OrdersDetailMapper extends BaseMapperX<OrdersDetailDO> {
         return delete(OrdersDetailDO::getOrderId, orderId);
     }
 
+    default void deleteAndInsertOrdersDetailByMainId(List<OrdersDetailDO> details) {
+        Long orderId = details.get(0).getOrderId();
+        deleteByOrderIdTruly(orderId);
+        insertBatch(details);
+    }
+
+    void deleteByOrderIdTruly(Long orderId);
+
 }

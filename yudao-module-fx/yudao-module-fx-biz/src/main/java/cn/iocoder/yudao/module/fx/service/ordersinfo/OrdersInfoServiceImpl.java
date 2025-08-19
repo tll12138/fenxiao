@@ -20,6 +20,7 @@ import cn.iocoder.yudao.module.fx.dal.dataobject.ec2jstorderitem.Ec2jstOrderitem
 import cn.iocoder.yudao.module.fx.dal.dataobject.jushuitanapi.AfterSalesRequest;
 import cn.iocoder.yudao.module.fx.dal.dataobject.jushuitanapi.LogisticsRequest;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ordersdetail.OrdersDetailDO;
+import cn.iocoder.yudao.module.fx.dal.dataobject.ordersinfo.OrderInfoRequest;
 import cn.iocoder.yudao.module.fx.dal.dataobject.ordersinfo.OrdersInfoDO;
 import cn.iocoder.yudao.module.fx.dal.mysql.ordersdetail.OrdersDetailMapper;
 import cn.iocoder.yudao.module.fx.dal.mysql.ordersinfo.OrdersInfoMapper;
@@ -40,6 +41,7 @@ import cn.iocoder.yudao.module.system.dal.dataobject.dict.DictDataDO;
 import cn.iocoder.yudao.module.system.service.dict.DictDataService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.diboot.core.exception.BusinessException;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -52,6 +54,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -619,6 +622,70 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
+    }
+
+    /**
+     * 订单同步处理
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void orderSyncProcess(OrderInfoRequest orderInfoRequest) {
+        List<OrdersInfoDO> ordersList = orderInfoRequest.getOrdersList();
+        if (CollectionUtil.isEmpty(ordersList)) {
+            throw exception(ErrorCodeConstants.ORDERS_SYNC_ORDER_EMPTY);
+        }
+        List<OrdersDetailDO> ordersDetailList = orderInfoRequest.getOrdersDetailList();
+        if (CollectionUtil.isEmpty(ordersDetailList)) {
+            throw exception(ErrorCodeConstants.ORDERS_SYNC_ORDER_DETAIL_EMPTY);
+        }
+        try {
+            Map<Long, List<OrdersDetailDO>> orderIdToDetailsMap = ordersDetailList.stream()
+                    // 以orderId为key，将相同orderId的OrdersDetailDO聚合成List
+                    .collect(Collectors.groupingBy(OrdersDetailDO::getOrderId));
+            // 批量查询已存在的订单ID
+            Set<String> allOrderIds = ordersList.stream()
+                    .map(OrdersInfoDO::getOrderId)
+                    .collect(Collectors.toSet());
+            Set<String> existingOrderIds = queryExistingOrderIds(allOrderIds);
+            List<OrdersInfoDO> insetList = Lists.newArrayList();
+            for (OrdersInfoDO info : ordersList) {
+                String orderId = info.getOrderId();
+                List<OrdersDetailDO> details = orderIdToDetailsMap.getOrDefault(info.getId(), new ArrayList<>());
+                if (CollectionUtil.isEmpty(details)) {
+                    throw exception(ErrorCodeConstants.ORDERS_SYNC_ORDER_DETAIL_CORRESPOND_EMPTY, orderId);
+                }
+                if (existingOrderIds.contains(orderId)) {
+                    log.info("订单已存在，执行更新操作，orderId: {}", orderId);
+                    updateOrdersInfoByOrderId(info);
+                } else {
+                    log.info("订单不存在，执行创建操作，orderId: {}", orderId);
+                    insetList.add(info);
+                }
+                ordersDetailMapper.deleteAndInsertOrdersDetailByMainId(details);
+                log.info("订单详情处理完成，orderId: {}", orderId);
+            }
+            if (!insetList.isEmpty()) {
+                ordersInfoMapper.insertBatch(insetList);
+            }
+        } catch (Exception e) {
+            log.error("订单同步处理失败，失败原因：{}", e.getMessage(), e);
+            throw exception(ErrorCodeConstants.ORDERS_SYNC_ERROR, e.getMessage());
+        }
+    }
+
+    /**
+     * 批量查询已存在的订单ID
+     */
+    private Set<String> queryExistingOrderIds(Set<String> orderIds) {
+        if (orderIds.isEmpty()) {
+            return Collections.emptySet();
+        }
+        List<String> existingIds = ordersInfoMapper.selectExistsOrderIds(new ArrayList<>(orderIds));
+        return new HashSet<>(existingIds);
+    }
+
+    private void updateOrdersInfoByOrderId(OrdersInfoDO info) {
+        ordersInfoMapper.update(info, new LambdaQueryWrapper<OrdersInfoDO>().eq(OrdersInfoDO::getOrderId, info.getOrderId()));
     }
 
 }

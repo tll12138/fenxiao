@@ -22,6 +22,10 @@ public interface ErrorCodeConstants {
     ErrorCode CUSTOMER_ACCOUNT_CREATE_FAIL = new ErrorCode(1_010_000_301, "分销商账号创建失败");
     ErrorCode CUSTOMER_ADDRESS_UPDATE_FAIL = new ErrorCode(1_010_000_302, "分销商地址更新失败");
     ErrorCode CUSTOMER_ACCOUNT_PARAMS_EMPTY = new ErrorCode(1_010_000_303, "获取分销商账号参数为空");
+    ErrorCode CUSTOMER_INFO_SYNC_EMPTY = new ErrorCode(1_010_000_304, "oa同步分销商信息参数为空");
+    ErrorCode CUSTOMER_INFO_ID_NULL = new ErrorCode(1_010_000_305, "分销商id不能为空");
+    ErrorCode CUSTOMER_INFO_SYNC_ERROR = new ErrorCode(1_010_000_306, "oa同步分销商信息失败");
+    ErrorCode CUSTOMER_INFO_DATE_PARSE_ERROR = new ErrorCode(1_010_000_307, "日期格式解析失败");
 
 
     // ========== 子公司信息
@@ -43,6 +47,14 @@ public interface ErrorCodeConstants {
     ErrorCode ORDER_INFO_BRAND_NOT_SAME = new ErrorCode(1_020_000_006, "销售单商品包含不同品牌");
     ErrorCode ORDERS_ACCOUNT_DETAIN_BALANCES_NOT_ENOUGH = new ErrorCode(1_020_000_007,
             "收货方账户暂扣金额小于销售单金额");
+    ErrorCode ORDERS_SYNC_ERROR = new ErrorCode(1_020_000_008,
+            "订单同步失败");
+    ErrorCode ORDERS_SYNC_ORDER_EMPTY = new ErrorCode(1_020_000_009,
+            "订单同步失败，订单列表为空");
+    ErrorCode ORDERS_SYNC_ORDER_DETAIL_EMPTY = new ErrorCode(1_020_000_010,
+            "订单同步失败，订单明细列表为空");
+    ErrorCode ORDERS_SYNC_ORDER_DETAIL_CORRESPOND_EMPTY = new ErrorCode(1_020_000_011,
+            "订单同步失败，订单明细列表为空，销售单单据号：%s");
 
 
     //=====================================  发货仓库  =================================
