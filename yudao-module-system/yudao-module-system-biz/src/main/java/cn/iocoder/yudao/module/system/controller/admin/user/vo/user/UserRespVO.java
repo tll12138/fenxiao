@@ -14,7 +14,7 @@ import java.util.Set;
 @Schema(description = "管理后台 - 用户信息 Response VO")
 @Data
 @ExcelIgnoreUnannotated
-public class UserRespVO{
+public class UserRespVO {
 
     @Schema(description = "用户编号", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
     @ExcelProperty("用户编号")
@@ -71,5 +71,8 @@ public class UserRespVO{
 
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED, example = "时间戳格式")
     private LocalDateTime createTime;
+
+    @Schema(description = "关联分销商")
+    private Long customerId;
 
 }

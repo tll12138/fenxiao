@@ -25,10 +25,14 @@ import cn.iocoder.yudao.module.fx.dal.mysql.customerinfo.CustomerInfoMapper;
 import cn.iocoder.yudao.module.fx.dal.mysql.subcompanyinfo.SubCompanyInfoMapper;
 import cn.iocoder.yudao.module.fx.service.jushuitanapi.JuShuiTanApiService;
 import cn.iocoder.yudao.module.fx.utils.CollectionUtil;
+import cn.iocoder.yudao.module.system.controller.admin.user.vo.user.UserSaveReqVO;
+import cn.iocoder.yudao.module.system.service.permission.PermissionService;
+import cn.iocoder.yudao.module.system.service.user.AdminUserService;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
+import com.google.common.collect.Sets;
 import com.jushuitan.api.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -48,6 +52,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static cn.iocoder.yudao.module.fx.constant.FieldConstant.FX_CUSTOMER_PASSWORD;
+import static cn.iocoder.yudao.module.fx.constant.FieldConstant.FX_CUSTOMER_ROLE_ID;
 import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.CUSTOMER_ACCOUNT_CREATE_FAIL;
 import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.CUSTOMER_ADDRESS_UPDATE_FAIL;
 import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.CUSTOMER_INFO_DATE_PARSE_ERROR;
@@ -72,13 +78,16 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
     private CustomerAccountMapper customerAccountMapper;
     @Resource
     private CustomerAddressMapper customerAddressMapper;
-
     @Resource
     private SubCompanyInfoMapper companyInfoMapper;
     @Resource
     private JuShuiTanApiService juShuiTanApiService;
     @Resource
+    private AdminUserService adminUserService;
+    @Resource
     private StringRedisTemplate stringRedisTemplate;
+    @Resource
+    private PermissionService permissionService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -316,6 +325,17 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 3. 批量执行数据库操作
             if (!insertList.isEmpty()) {
                 customerInfoMapper.insertBatch(insertList);
+                //新增分销商账号
+                for (CustomerInfoDO customerInfoDO : insertList) {
+                    UserSaveReqVO userSaveReqVO = new UserSaveReqVO();
+                    userSaveReqVO.setUsername(customerInfoDO.getDistributorNum());
+                    userSaveReqVO.setNickname(customerInfoDO.getDistributorName());
+                    userSaveReqVO.setPassword(FX_CUSTOMER_PASSWORD);
+                    userSaveReqVO.setCustomerId(customerInfoDO.getId());
+                    Long userId = adminUserService.createUser(userSaveReqVO);
+                    //赋予账号角色
+                    permissionService.assignUserRole(userId, Sets.newHashSet(FX_CUSTOMER_ROLE_ID));
+                }
                 log.info("OA客商信息同步：新增成功{}条", insertList.size());
             }
             if (!updateList.isEmpty()) {

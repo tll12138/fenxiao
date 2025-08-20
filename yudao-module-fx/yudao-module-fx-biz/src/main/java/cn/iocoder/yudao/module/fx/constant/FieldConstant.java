@@ -14,4 +14,8 @@ public class FieldConstant {
     public static final String PRODUCT_POSITION = "product";
     //财务职位
     public static final String FINANCE_POSITION = "finance";
+    //分销商角色id
+    public static final Long FX_CUSTOMER_ROLE_ID = 114L;
+    //初始密码
+    public static final String FX_CUSTOMER_PASSWORD = "pq1234567890";
 }

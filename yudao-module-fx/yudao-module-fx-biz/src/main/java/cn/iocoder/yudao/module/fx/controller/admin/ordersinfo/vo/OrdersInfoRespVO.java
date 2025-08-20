@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Schema(description = "管理后台 - 销售单 Response VO")
@@ -47,7 +46,7 @@ public class OrdersInfoRespVO implements VO {
 
     @Schema(description = "单据日期", requiredMode = Schema.RequiredMode.REQUIRED)
     @ExcelProperty("单据日期")
-    private LocalDate orderDate;
+    private String orderDate;
 
     @Schema(description = "订单状态", example = "2")
     @ExcelProperty("订单状态")

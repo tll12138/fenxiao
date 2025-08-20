@@ -8,7 +8,11 @@ import com.baomidou.mybatisplus.annotation.KeySequence;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDateTime;
@@ -39,7 +43,7 @@ public class AdminUserDO extends TenantBaseDO {
     private String username;
     /**
      * 加密后的密码
-     *
+     * <p>
      * 因为目前使用 {@link BCryptPasswordEncoder} 加密器，所以无需自己处理 salt 盐
      */
     private String password;
@@ -70,7 +74,7 @@ public class AdminUserDO extends TenantBaseDO {
     private String mobile;
     /**
      * 用户性别
-     *
+     * <p>
      * 枚举类 {@link SexEnum}
      */
     private Integer sex;
@@ -80,7 +84,7 @@ public class AdminUserDO extends TenantBaseDO {
     private String avatar;
     /**
      * 帐号状态
-     *
+     * <p>
      * 枚举 {@link CommonStatusEnum}
      */
     private Integer status;
@@ -92,5 +96,10 @@ public class AdminUserDO extends TenantBaseDO {
      * 最后登录时间
      */
     private LocalDateTime loginDate;
+
+    /**
+     * 关联分销商
+     */
+    private Long customerId;
 
 }

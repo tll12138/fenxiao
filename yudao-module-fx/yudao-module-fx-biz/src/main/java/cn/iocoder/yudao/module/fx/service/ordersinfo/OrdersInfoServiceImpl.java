@@ -12,6 +12,7 @@ import cn.iocoder.yudao.module.bpm.api.task.dto.BpmProcessInstanceCreateReqDTO;
 import cn.iocoder.yudao.module.fx.constant.FieldConstant;
 import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoDetailRespVO;
 import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoPageReqVO;
+import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoRespVO;
 import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoSaveReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.ProcessInstanceCancelReqVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.customerinfo.CustomerInfoDO;
@@ -671,6 +672,18 @@ public class OrdersInfoServiceImpl implements OrdersInfoService {
             log.error("订单同步处理失败，失败原因：{}", e.getMessage(), e);
             throw exception(ErrorCodeConstants.ORDERS_SYNC_ERROR, e.getMessage());
         }
+    }
+
+    /**
+     * 获得销售单列表
+     *
+     * @param ids 编号
+     * @return 销售单列表
+     */
+    @Override
+    public List<OrdersInfoRespVO> getOrdersRespByIds(List<Long> ids) {
+        List<OrdersInfoDO> ordersInfoDOS = ordersInfoMapper.selectBatchIds(ids);
+        return BeanUtil.copyToList(ordersInfoDOS, OrdersInfoRespVO.class);
     }
 
     /**

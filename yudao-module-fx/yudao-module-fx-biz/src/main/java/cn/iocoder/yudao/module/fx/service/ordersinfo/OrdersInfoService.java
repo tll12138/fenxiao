@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.fx.service.ordersinfo;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoDetailRespVO;
 import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoPageReqVO;
+import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoRespVO;
 import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.OrdersInfoSaveReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.ordersinfo.vo.ProcessInstanceCancelReqVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.jushuitanapi.AfterSalesRequest;
@@ -183,4 +184,12 @@ public interface OrdersInfoService {
      * 订单同步处理
      */
     void orderSyncProcess(OrderInfoRequest orderInfoRequest);
+
+    /**
+     * 获得销售单列表
+     *
+     * @param ids 编号
+     * @return 销售单列表
+     */
+    List<OrdersInfoRespVO> getOrdersRespByIds(List<Long> ids);
 }

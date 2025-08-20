@@ -2,14 +2,21 @@ package cn.iocoder.yudao.module.fx.service.billapply;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.http.HttpRequest;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.fx.controller.admin.billapply.vo.BillApplyPageReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.billapply.vo.BillApplySaveReqVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.billapply.BillApplyDO;
+import cn.iocoder.yudao.module.fx.dal.dataobject.billapply.BillApplyDetailDO;
+import cn.iocoder.yudao.module.fx.dal.mysql.billapply.BillApplyDetailMapper;
 import cn.iocoder.yudao.module.fx.dal.mysql.billapply.BillApplyMapper;
+import cn.iocoder.yudao.module.fx.utils.RSAUtil;
 import cn.iocoder.yudao.module.fx.utils.ZipUtils;
 import cn.iocoder.yudao.module.infra.api.file.FileApi;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.diboot.core.exception.BusinessException;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
@@ -36,10 +43,15 @@ import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.BILL_APPLY_NOT
 @Validated
 public class BillApplyServiceImpl implements BillApplyService {
 
+    private static final String appid = "e0ab4a73-e9c6-4ae5-9dac-f21a7807991a";
+    private static final String head = "https://www.puqiportal.com/";
+
     @Resource
     private BillApplyMapper billApplyMapper;
     @Resource
     private FileApi fileApi;
+    @Resource
+    private BillApplyDetailMapper billApplyDetailMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -47,6 +59,8 @@ public class BillApplyServiceImpl implements BillApplyService {
         // 插入
         BillApplyDO billApply = BeanUtils.toBean(createReqVO, BillApplyDO.class);
         billApplyMapper.insert(billApply);
+        // 插入子表
+        createBillApplyDetailList(billApply.getId(), createReqVO.getBillApplyDetails());
         // 返回
         return billApply.getId();
     }
@@ -59,6 +73,8 @@ public class BillApplyServiceImpl implements BillApplyService {
         // 更新
         BillApplyDO updateObj = BeanUtils.toBean(updateReqVO, BillApplyDO.class);
         billApplyMapper.updateById(updateObj);
+        // 更新子表
+        updateBillApplyDetailList(updateReqVO.getId(), updateReqVO.getBillApplyDetails());
     }
 
     @Override
@@ -68,6 +84,8 @@ public class BillApplyServiceImpl implements BillApplyService {
         validateBillApplyExists(id);
         // 删除
         billApplyMapper.deleteById(id);
+        // 删除子表
+        billApplyDetailMapper.deleteByMainId(id);
     }
 
     private BillApplyDO validateBillApplyExists(Integer id) {
@@ -95,11 +113,183 @@ public class BillApplyServiceImpl implements BillApplyService {
      */
     @Override
     public void pushBillApply(Integer id) {
-        // 校验存在
+        // 1. 校验发票申请存在性
         BillApplyDO billApply = validateBillApplyExists(id);
-        // 推送
+
+        // 2. 更新申请日期
+        updateBillApplyDate(billApply);
+        log.info("准备推送发票申请，id：{}，申请信息：{}", id, billApply);
+
+        try {
+            // 3. 获取spk和secret
+            JSONObject registResult = callRegistApi();
+            String spk = registResult.getString("spk");
+            String secret = registResult.getString("secret");
+
+            // 4. 加密secret
+            String rsaSecret = encryptSecret(secret, spk);
+
+            // 5. 获取token
+            String token = getToken(rsaSecret);
+
+            // 6. 构建请求数据
+            JSONObject mainData = buildMainData(billApply, spk);
+
+            // 7. 调用创建请求接口
+            callCreateRequestApi(mainData, token, spk);
+
+        } catch (Exception e) {
+            log.error("推送发票申请失败，id：{}", id, e);
+            throw new BusinessException("推送发票申请失败：" + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 更新发票申请日期
+     */
+    private void updateBillApplyDate(BillApplyDO billApply) {
         billApply.setApplyDate(DateUtil.today());
         billApplyMapper.updateById(billApply);
+    }
+
+    /**
+     * 调用注册接口获取spk和secret
+     */
+    private JSONObject callRegistApi() {
+        String url = head + "api/ec/dev/auth/regist";
+        log.info("调用注册接口，url：{}", url);
+
+        String response = HttpRequest.post(url)
+                .header("Content-Type", "application/json")
+                .header("appid", appid)
+                .timeout(20000)
+                .execute()
+                .body();
+
+        log.info("注册接口响应：{}", response);
+        return parseApiResponse(response, "获取spk和secret");
+    }
+
+    /**
+     * 加密secret
+     */
+    private String encryptSecret(String secret, String spk) {
+        try {
+            String rsaSecret = RSAUtil.getRSA(secret, spk);
+            log.info("RSA加密后的secret：{}", rsaSecret);
+            return rsaSecret;
+        } catch (Exception e) {
+            throw new BusinessException("RSA加密secret失败", e);
+        }
+    }
+
+    /**
+     * 获取token
+     */
+    private String getToken(String rsaSecret) {
+        String url = head + "api/ec/dev/auth/applytoken";
+        log.info("调用获取token接口，url：{}", url);
+
+        String response = HttpRequest.post(url)
+                .header("Content-Type", "application/json")
+                .header("appid", appid)
+                .header("secret", rsaSecret)
+                .timeout(20000)
+                .execute()
+                .body();
+
+        log.info("token接口响应：{}", response);
+        JSONObject result = parseApiResponse(response, "获取token");
+        return result.getString("token");
+    }
+
+    /**
+     * 构建请求数据
+     */
+    private JSONObject buildMainData(BillApplyDO billApply, String spk) {
+        JSONArray fieldList = new JSONArray();
+
+        // 添加字段到列表
+        addField(fieldList, "re_name", billApply.getApplyMan());
+        addField(fieldList, "fplx", billApply.getBillType());
+        addField(fieldList, "saleorder", billApply.getSaleOrder());
+        addField(fieldList, "ahead", billApply.getBillHead());
+        addField(fieldList, "maker", "1101");
+        addField(fieldList, "email", billApply.getEmail());
+        addField(fieldList, "gfmc", billApply.getPurchaserName());
+        addField(fieldList, "taxno", billApply.getTaxNo());
+        addField(fieldList, "bankno", billApply.getBankNo());
+        addField(fieldList, "address", billApply.getAddress());
+        addField(fieldList, "amount", billApply.getTotalAmount());
+        addField(fieldList, "jehjdx", billApply.getTotalAmount());
+        addField(fieldList, "if_remote", "1");
+
+        JSONObject mainData = new JSONObject();
+        mainData.put("mainData", fieldList);
+        mainData.put("requestName", buildRequestName(billApply));
+        mainData.put("workflowId", 47038);
+
+        return mainData;
+    }
+
+    /**
+     * 构建请求名称
+     */
+    private String buildRequestName(BillApplyDO billApply) {
+        return String.format("XS07-开票申请-系统管理员-%s-(%s)-%s",
+                DateUtil.now(),
+                billApply.getApplyMan(),
+                billApply.getTotalAmount());
+    }
+
+    /**
+     * 向JSONArray添加字段
+     */
+    private void addField(JSONArray array, String fieldName, Object fieldValue) {
+        JSONObject fieldObj = new JSONObject();
+        fieldObj.put("fieldName", fieldName);
+        fieldObj.put("fieldValue", fieldValue);
+        array.add(fieldObj);
+    }
+
+    /**
+     * 调用创建请求接口
+     */
+    private void callCreateRequestApi(JSONObject mainData, String token, String spk) throws Exception {
+        String url = head + "/api/workflow/paService/doCreateRequest";
+        log.info("调用创建请求接口，url：{}，请求数据：{}", url, mainData);
+
+        String encryptedUserId = RSAUtil.getRSA("1", spk);
+        String response = HttpRequest.post(url)
+                .header("Content-Type", "application/json")
+                .header("appid", appid)
+                .header("token", token)
+                .header("userid", encryptedUserId)
+                .body(mainData.toJSONString())
+                .timeout(20000)
+                .execute()
+                .body();
+
+        log.info("创建请求接口响应：{}", response);
+    }
+
+    /**
+     * 解析API响应通用方法
+     */
+    private JSONObject parseApiResponse(String response, String operation) {
+        if (response == null || response.isEmpty()) {
+            throw new BusinessException(operation + "响应为空");
+        }
+
+        try {
+            JSONObject json = JSONObject.parseObject(response);
+            if (json == null) {
+                throw new BusinessException(operation + "响应解析失败");
+            }
+            return json;
+        } catch (Exception e) {
+            throw new BusinessException(operation + "响应解析异常: " + response, e);
+        }
     }
 
     /**
@@ -202,6 +392,32 @@ public class BillApplyServiceImpl implements BillApplyService {
             log.error("{}处理失败", info, e);
             throw new RuntimeException(info + "处理失败: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * 获得发票申请详情列表
+     *
+     * @param mainId 主表id
+     * @return 发票申请详情列表
+     */
+    @Override
+    public List<BillApplyDetailDO> getBillApplyDetailListByMainId(Integer mainId) {
+        return billApplyDetailMapper.selectListByMainId(mainId);
+    }
+
+    private void createBillApplyDetailList(Integer mainId, List<BillApplyDetailDO> list) {
+        list.forEach(o -> o.setMainId(mainId));
+        billApplyDetailMapper.insertBatch(list);
+    }
+
+    private void updateBillApplyDetailList(Integer mainId, List<BillApplyDetailDO> list) {
+        deleteBillApplyDetailByMainId(mainId);
+        list.forEach(o -> o.setId(null).setUpdater(null).setUpdateTime(null));
+        createBillApplyDetailList(mainId, list);
+    }
+
+    private void deleteBillApplyDetailByMainId(Integer mainId) {
+        billApplyDetailMapper.deleteByMainId(mainId);
     }
 
     /**

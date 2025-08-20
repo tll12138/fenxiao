@@ -73,5 +73,9 @@ public class BillApplyDetailDO extends BaseDO {
      * 货补数量
      */
     private Integer hbNum;
+    /**
+     * 货补数量
+     */
+    private Integer saleOrderId;
 
 }

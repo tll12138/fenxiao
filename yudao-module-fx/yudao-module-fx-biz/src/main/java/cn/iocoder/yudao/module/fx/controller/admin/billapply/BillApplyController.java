@@ -10,6 +10,7 @@ import cn.iocoder.yudao.module.fx.controller.admin.billapply.vo.BillApplyPageReq
 import cn.iocoder.yudao.module.fx.controller.admin.billapply.vo.BillApplyRespVO;
 import cn.iocoder.yudao.module.fx.controller.admin.billapply.vo.BillApplySaveReqVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.billapply.BillApplyDO;
+import cn.iocoder.yudao.module.fx.dal.dataobject.billapply.BillApplyDetailDO;
 import cn.iocoder.yudao.module.fx.service.billapply.BillApplyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -111,13 +112,23 @@ public class BillApplyController {
 
     @PostMapping("/callback")
     @Operation(summary = "发票申请流程归档回调")
-    public CommonResult<String> getBillApplyCallback(@RequestParam("id") Integer id,
-                                                     @RequestParam("soId") String soId,
-                                                     @RequestParam("file") MultipartFile[] files) {
+    public CommonResult<Boolean> getBillApplyCallback(@RequestParam("id") Integer id,
+                                                      @RequestParam("soId") String soId,
+                                                      @RequestParam("file") MultipartFile[] files) {
         if (files.length < 1) {
             return error(EMPTY_REQUEST);
         }
         billApplyService.handleBillApplyCallback(id, soId, files);
-        return success("回调成功");
+        return success(true);
+    }
+
+    // ==================== 子表（发票申请详情） ====================
+
+    @GetMapping("/bill-apply-detail/list-by-main-id")
+    @Operation(summary = "获得发票申请详情列表")
+    @Parameter(name = "mainId", description = "主表id")
+    @PreAuthorize("@ss.hasPermission('fx:bill-apply:query')")
+    public CommonResult<List<BillApplyDetailDO>> getBillApplyDetailListByMainId(@RequestParam("mainId") Integer mainId) {
+        return success(billApplyService.getBillApplyDetailListByMainId(mainId));
     }
 }
