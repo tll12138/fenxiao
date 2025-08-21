@@ -29,9 +29,9 @@ public interface OrdersInfoMapper extends BaseMapperX<OrdersInfoDO> {
                 .eqIfPresent(OrdersInfoDO::getLogisticsNumber, reqVO.getLogisticsNumber())
                 .eqIfPresent(OrdersInfoDO::getExternalOrderNumber, reqVO.getExternalOrderNumber())
                 .eqIfPresent(OrdersInfoDO::getOrderType, reqVO.getOrderType())
-                .eqIfPresent(OrdersInfoDO::getDistributorId, reqVO.getDistributorId())
                 .eqIfPresent(OrdersInfoDO::getBusinessBelong, reqVO.getBusinessBelong())
                 .eqIfPresent(OrdersInfoDO::getOrderStatus, reqVO.getOrderStatus())
+                .eqIfPresent(OrdersInfoDO::getDistributorId, reqVO.getCustomerId())
                 .orderByDesc(OrdersInfoDO::getId));
     }
 

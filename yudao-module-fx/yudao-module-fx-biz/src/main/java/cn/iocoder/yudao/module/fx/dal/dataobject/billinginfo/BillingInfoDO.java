@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.module.fx.dal.dataobject.emailaddress;
+package cn.iocoder.yudao.module.fx.dal.dataobject.billinginfo;
 
 import lombok.*;
 import java.util.*;
@@ -8,19 +8,19 @@ import com.baomidou.mybatisplus.annotation.*;
 import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
 
 /**
- * 发票邮箱库 DO
+ * 开票信息 DO
  *
  * @author 管理员
  */
-@TableName("fx_email_address")
-@KeySequence("fx_email_address_seq") // 用于 Oracle、PostgreSQL、Kingbase、DB2、H2 数据库的主键自增。如果是 MySQL 等数据库，可不写。
+@TableName("fx_billing_info")
+@KeySequence("fx_billing_info_seq") // 用于 Oracle、PostgreSQL、Kingbase、DB2、H2 数据库的主键自增。如果是 MySQL 等数据库，可不写。
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class EmailAddressDO extends BaseDO {
+public class BillingInfoDO extends BaseDO {
 
     /**
      * id
@@ -28,23 +28,15 @@ public class EmailAddressDO extends BaseDO {
     @TableId
     private Integer id;
     /**
-     * 用户编号
+     * 客商
      */
-    private String customerId;
+    private Integer customerId;
     /**
-     * 邮箱地址
-     */
-    private String email;
-    /**
-     * 备注
-     */
-    private String remark;
-    /**
-     * 开票抬头
+     * 购方名称
      */
     private String company;
     /**
-     * 税号
+     * 纳税人识别号
      */
     private String tax;
     /**
@@ -56,10 +48,18 @@ public class EmailAddressDO extends BaseDO {
      */
     private String address;
     /**
-     * 是否可用
+     * 是否生效
      *
      * 枚举 {@link TODO yes_no 对应的类}
      */
     private String isActive;
+    /**
+     * 备注
+     */
+    private String remark;
+    /**
+     * 发送邮箱
+     */
+    private String email;
 
 }

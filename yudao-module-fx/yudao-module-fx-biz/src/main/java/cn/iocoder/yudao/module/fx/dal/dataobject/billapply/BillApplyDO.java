@@ -68,7 +68,6 @@ public class BillApplyDO extends BaseDO {
     /**
      * 发票类型
      * <p>
-     * 枚举 {@link TODO fx_bill_type 对应的类}
      */
     private BigDecimal billType;
     /**
@@ -82,7 +81,6 @@ public class BillApplyDO extends BaseDO {
     /**
      * 发票抬头
      * <p>
-     * 枚举 {@link TODO fx_business_entity 对应的类}
      */
     private String billHead;
     /**
@@ -116,13 +114,11 @@ public class BillApplyDO extends BaseDO {
     /**
      * 是否完成
      * <p>
-     * 枚举 {@link TODO yes_no 对应的类}
      */
     private BigDecimal isOver;
     /**
      * 是否芽肌
      * <p>
-     * 枚举 {@link TODO yes_no 对应的类}
      */
     private BigDecimal isYj;
     /**

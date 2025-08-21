@@ -7,10 +7,12 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.fx.controller.admin.billapply.vo.BillApplyPageReqVO;
 import cn.iocoder.yudao.module.fx.controller.admin.billapply.vo.BillApplySaveReqVO;
+import cn.iocoder.yudao.module.fx.controller.admin.billinginfo.vo.BillingInfoSaveReqVO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.billapply.BillApplyDO;
 import cn.iocoder.yudao.module.fx.dal.dataobject.billapply.BillApplyDetailDO;
 import cn.iocoder.yudao.module.fx.dal.mysql.billapply.BillApplyDetailMapper;
 import cn.iocoder.yudao.module.fx.dal.mysql.billapply.BillApplyMapper;
+import cn.iocoder.yudao.module.fx.service.billinginfo.BillingInfoService;
 import cn.iocoder.yudao.module.fx.utils.RSAUtil;
 import cn.iocoder.yudao.module.fx.utils.ZipUtils;
 import cn.iocoder.yudao.module.infra.api.file.FileApi;
@@ -52,10 +54,18 @@ public class BillApplyServiceImpl implements BillApplyService {
     private FileApi fileApi;
     @Resource
     private BillApplyDetailMapper billApplyDetailMapper;
+    @Resource
+    private BillingInfoService billingInfoService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer createBillApply(BillApplySaveReqVO createReqVO) {
+        // 校验客户是否存在开票信息
+        Boolean exist = billingInfoService.existsBillingInfo(createReqVO.getCustomerId(), createReqVO.getPurchaserName(), createReqVO.getTaxNo(), createReqVO.getBankNo(), createReqVO.getAddress(), createReqVO.getEmail());
+        if (!exist) {
+            // 新增开票信息
+            billingInfoService.createBillingInfo(new BillingInfoSaveReqVO(createReqVO.getCustomerId(), createReqVO.getPurchaserName(), createReqVO.getTaxNo(), createReqVO.getBankNo(), createReqVO.getAddress(), createReqVO.getEmail(), "1"));
+        }
         // 插入
         BillApplyDO billApply = BeanUtils.toBean(createReqVO, BillApplyDO.class);
         billApplyMapper.insert(billApply);
@@ -260,17 +270,17 @@ public class BillApplyServiceImpl implements BillApplyService {
         log.info("调用创建请求接口，url：{}，请求数据：{}", url, mainData);
 
         String encryptedUserId = RSAUtil.getRSA("1", spk);
-        String response = HttpRequest.post(url)
-                .header("Content-Type", "application/json")
-                .header("appid", appid)
-                .header("token", token)
-                .header("userid", encryptedUserId)
-                .body(mainData.toJSONString())
-                .timeout(20000)
-                .execute()
-                .body();
+//        String response = HttpRequest.post(url)
+//                .header("Content-Type", "application/json")
+//                .header("appid", appid)
+//                .header("token", token)
+//                .header("userid", encryptedUserId)
+//                .body(mainData.toJSONString())
+//                .timeout(20000)
+//                .execute()
+//                .body();
 
-        log.info("创建请求接口响应：{}", response);
+//        log.info("创建请求接口响应：{}", response);
     }
 
     /**

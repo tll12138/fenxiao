@@ -52,5 +52,8 @@ public class OrdersInfoPageReqVO extends PageParam {
     @Schema(description = "销售单状态", example = "1")
     private Integer orderStatus;
 
+    @Schema(description = "对应分销商", example = "1")
+    private Long customerId;
+
 
 }

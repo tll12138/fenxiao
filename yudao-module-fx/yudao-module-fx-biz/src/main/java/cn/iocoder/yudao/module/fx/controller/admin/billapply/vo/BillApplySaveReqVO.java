@@ -92,4 +92,7 @@ public class BillApplySaveReqVO {
     @Schema(description = "发票申请详情列表")
     private List<BillApplyDetailDO> billApplyDetails;
 
+    @Schema(description = "客户id")
+    private Integer customerId;
+
 }
