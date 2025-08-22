@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.fx.dal.mysql.billapply;
 import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
 import cn.iocoder.yudao.module.fx.dal.dataobject.billapply.BillApplyDetailDO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -22,4 +23,12 @@ public interface BillApplyDetailMapper extends BaseMapperX<BillApplyDetailDO> {
         return delete(BillApplyDetailDO::getMainId, mainId);
     }
 
+    /**
+     * 根据主表id查询子表数据
+     *
+     * @param id 主表id
+     * @return 子表数据
+     */
+    @Select("select * from fx_bill_apply_detail where main_id = #{id}")
+    List<BillApplyDetailDO> selectByMainId(Integer id);
 }

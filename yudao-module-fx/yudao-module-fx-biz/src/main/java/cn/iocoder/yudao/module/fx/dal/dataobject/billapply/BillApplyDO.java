@@ -133,5 +133,9 @@ public class BillApplyDO extends BaseDO {
      * 发票发送状态
      */
     private BigDecimal isSend;
+    /**
+     * 业务员id
+     */
+    private Integer salespersonId;
 
 }

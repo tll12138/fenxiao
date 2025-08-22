@@ -86,4 +86,7 @@ public class BillApplyPageReqVO extends PageParam {
     @Schema(description = "发票发送状态")
     private BigDecimal isSend;
 
+    @Schema(description = "业务员id")
+    private Integer salespersonId;
+
 }

@@ -74,7 +74,7 @@ public class BillApplyController {
     @PostMapping("/push")
     @Operation(summary = "推送发票申请")
     @Parameter(name = "id", description = "编号", required = true)
-    @PreAuthorize("@ss.hasPermission('fx:bill-apply:push')")
+    @PreAuthorize("@ss.hasPermission('fx:bill-apply:update')")
     public CommonResult<Boolean> pushBillApply(@RequestParam("id") Integer id) {
         billApplyService.pushBillApply(id);
         return success(true);

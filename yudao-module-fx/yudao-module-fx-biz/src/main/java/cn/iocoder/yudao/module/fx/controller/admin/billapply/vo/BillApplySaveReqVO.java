@@ -95,4 +95,7 @@ public class BillApplySaveReqVO {
     @Schema(description = "客户id")
     private Integer customerId;
 
+    @Schema(description = "业务员id")
+    private Integer salespersonId;
+
 }

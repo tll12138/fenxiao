@@ -16,6 +16,7 @@ import cn.iocoder.yudao.module.fx.service.billinginfo.BillingInfoService;
 import cn.iocoder.yudao.module.fx.utils.RSAUtil;
 import cn.iocoder.yudao.module.fx.utils.ZipUtils;
 import cn.iocoder.yudao.module.infra.api.file.FileApi;
+import cn.iocoder.yudao.module.system.service.user.AdminUserService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.diboot.core.exception.BusinessException;
@@ -30,6 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
@@ -56,6 +58,8 @@ public class BillApplyServiceImpl implements BillApplyService {
     private BillApplyDetailMapper billApplyDetailMapper;
     @Resource
     private BillingInfoService billingInfoService;
+    @Resource
+    private AdminUserService adminUserService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -126,8 +130,6 @@ public class BillApplyServiceImpl implements BillApplyService {
         // 1. 校验发票申请存在性
         BillApplyDO billApply = validateBillApplyExists(id);
 
-        // 2. 更新申请日期
-        updateBillApplyDate(billApply);
         log.info("准备推送发票申请，id：{}，申请信息：{}", id, billApply);
 
         try {
@@ -144,9 +146,27 @@ public class BillApplyServiceImpl implements BillApplyService {
 
             // 6. 构建请求数据
             JSONObject mainData = buildMainData(billApply, spk);
+            // 6.1 构建明细数据
+            JSONArray detailList = buildDetailData(billApply.getId());
+            mainData.put("detailData", detailList);
+            HashMap<String, Integer> map = new HashMap<>();
+            map.put("isnextflow", 0);
+            map.put("delReqFlowFaild", 0);
+            mainData.put("otherParams", JSONObject.toJSON(map));
+            mainData.put("requestName", String.format("XS07-开票申请-客户申请-%s", DateUtil.today()));
+            mainData.put("workflowId", 47038);
 
             // 7. 调用创建请求接口
-            callCreateRequestApi(mainData, token, spk);
+            String response = callCreateRequestApi(mainData, token, spk);
+            if (!"SUCCESS".contains(response)) {
+                // 8. 处理响应
+                JSONObject jsonObject = JSONObject.parseObject(response);
+                String errorMsg = jsonObject.getString("errorMsg");
+                log.error("推送发票申请失败，id：{}，响应：{}", id, response);
+                throw new BusinessException("推送发票申请失败：" + errorMsg);
+            }
+            // 更新申请日期
+            updateBillApplyDate(billApply);
 
         } catch (Exception e) {
             log.error("推送发票申请失败，id：{}", id, e);
@@ -218,9 +238,13 @@ public class BillApplyServiceImpl implements BillApplyService {
      */
     private JSONObject buildMainData(BillApplyDO billApply, String spk) {
         JSONArray fieldList = new JSONArray();
+        String app = billApply.getApplyMan().toString();
+        Long customerId = adminUserService.getUser(Long.valueOf(app)).getCustomerId();
 
         // 添加字段到列表
-        addField(fieldList, "re_name", billApply.getApplyMan());
+        addField(fieldList, "sqr", billApply.getSalespersonId());
+        addField(fieldList, "re_name", customerId);
+        addField(fieldList, "sqdate", DateUtil.today());
         addField(fieldList, "fplx", billApply.getBillType());
         addField(fieldList, "saleorder", billApply.getSaleOrder());
         addField(fieldList, "ahead", billApply.getBillHead());
@@ -230,26 +254,61 @@ public class BillApplyServiceImpl implements BillApplyService {
         addField(fieldList, "taxno", billApply.getTaxNo());
         addField(fieldList, "bankno", billApply.getBankNo());
         addField(fieldList, "address", billApply.getAddress());
-        addField(fieldList, "amount", billApply.getTotalAmount());
-        addField(fieldList, "jehjdx", billApply.getTotalAmount());
+        addField(fieldList, "amount", billApply.getAmount());
+        addField(fieldList, "jehjdx", billApply.getAmount());
         addField(fieldList, "if_remote", "1");
 
         JSONObject mainData = new JSONObject();
         mainData.put("mainData", fieldList);
-        mainData.put("requestName", buildRequestName(billApply));
-        mainData.put("workflowId", 47038);
 
         return mainData;
     }
 
     /**
-     * 构建请求名称
+     * 构建明细数据
      */
-    private String buildRequestName(BillApplyDO billApply) {
-        return String.format("XS07-开票申请-系统管理员-%s-(%s)-%s",
-                DateUtil.now(),
-                billApply.getApplyMan(),
-                billApply.getTotalAmount());
+    private JSONArray buildDetailData(Integer id) {
+        JSONArray outerArray = new JSONArray();
+        // 创建明细主对象
+        JSONObject detailMainObj = new JSONObject();
+        detailMainObj.put("tableDBName", "FORMTABLE_MAIN_80_DT1");
+
+        // 构建明细记录列表
+        JSONArray recordsArray = new JSONArray();
+        List<BillApplyDetailDO> detailList = billApplyDetailMapper.selectByMainId(id);
+
+        for (int i = 0; i < detailList.size(); i++) {
+            BillApplyDetailDO detail = detailList.get(i);
+            // 每条明细记录
+            JSONObject recordObj = new JSONObject();
+            recordObj.put("recordOrder", 0);
+
+            JSONArray fieldsArray = new JSONArray();
+            // 商品名称
+            addField(fieldsArray, "varename", detail.getVareName());
+            // 规格型号
+            addField(fieldsArray, "warespec", detail.getWareSpec());
+            // 计量单位
+            addField(fieldsArray, "wareunit", detail.getWareUnit());
+            // 数量
+            addField(fieldsArray, "num", detail.getNum());
+            // 单价
+            addField(fieldsArray, "price", detail.getPrice());
+            // 金额
+            addField(fieldsArray, "amount", detail.getAmount());
+            // 税率
+            addField(fieldsArray, "payment", detail.getPayment());
+            // 税额
+            addField(fieldsArray, "saltax", detail.getSalTax());
+
+            recordObj.put("workflowRequestTableFields", fieldsArray);
+            recordsArray.add(recordObj);
+        }
+
+        detailMainObj.put("workflowRequestTableRecords", recordsArray);
+        outerArray.add(detailMainObj);
+
+        return outerArray;
     }
 
     /**
@@ -265,22 +324,23 @@ public class BillApplyServiceImpl implements BillApplyService {
     /**
      * 调用创建请求接口
      */
-    private void callCreateRequestApi(JSONObject mainData, String token, String spk) throws Exception {
-        String url = head + "/api/workflow/paService/doCreateRequest";
-        log.info("调用创建请求接口，url：{}，请求数据：{}", url, mainData);
+    private String callCreateRequestApi(JSONObject mainData, String token, String spk) throws Exception {
+        String url = head + "api/workflow/paService/doCreateRequest";
+        String encryptedUserId = RSAUtil.getRSA("1153", spk);
+        log.info("调用创建请求接口，url：{}，请求数据：{},token:{},appid:{},userid:{}", url, mainData, token, appid, encryptedUserId);
 
-        String encryptedUserId = RSAUtil.getRSA("1", spk);
-//        String response = HttpRequest.post(url)
-//                .header("Content-Type", "application/json")
-//                .header("appid", appid)
-//                .header("token", token)
-//                .header("userid", encryptedUserId)
-//                .body(mainData.toJSONString())
-//                .timeout(20000)
-//                .execute()
-//                .body();
+        String response = HttpRequest.post(url)
+                .header("Content-Type", "application/json")
+                .header("appid", appid)
+                .header("token", token)
+                .header("userid", encryptedUserId)
+                .body(mainData.toJSONString())
+                .timeout(20000)
+                .execute()
+                .body();
 
-//        log.info("创建请求接口响应：{}", response);
+        log.info("创建请求接口响应：{}", response);
+        return response;
     }
 
     /**
