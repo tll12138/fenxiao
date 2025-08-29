@@ -9,6 +9,8 @@ import org.apache.ibatis.annotations.Mapper;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Mapper
 public interface AdminUserMapper extends BaseMapperX<AdminUserDO> {
@@ -47,4 +49,12 @@ public interface AdminUserMapper extends BaseMapperX<AdminUserDO> {
         return selectList(AdminUserDO::getDeptId, deptIds);
     }
 
+    default Set<String> selectCustomerIdsExists(List<String> newCustomerIds) {
+        return selectList(new LambdaQueryWrapperX<AdminUserDO>()
+                .in(AdminUserDO::getUsername, newCustomerIds)
+                .select(AdminUserDO::getUsername))
+                .stream()
+                .map(AdminUserDO::getUsername)
+                .collect(Collectors.toSet());
+    }
 }

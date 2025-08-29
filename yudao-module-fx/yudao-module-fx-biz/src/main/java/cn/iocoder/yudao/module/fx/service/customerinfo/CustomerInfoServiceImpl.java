@@ -325,16 +325,27 @@ public class CustomerInfoServiceImpl implements CustomerInfoService {
             // 3. 批量执行数据库操作
             if (!insertList.isEmpty()) {
                 customerInfoMapper.insertBatch(insertList);
+                //获取要新增的分销商ID
+                List<String> newCustomerIds = insertList.stream()
+                        .map(CustomerInfoDO::getDistributorNum)
+                        .collect(Collectors.toList());
+                //获取已存在的分销商账号
+                Set<String> existingCustomerIdsWithAccount = adminUserService.getCustomerIdsWithExistingAccount(newCustomerIds);
                 //新增分销商账号
                 for (CustomerInfoDO customerInfoDO : insertList) {
-                    UserSaveReqVO userSaveReqVO = new UserSaveReqVO();
-                    userSaveReqVO.setUsername(customerInfoDO.getDistributorNum());
-                    userSaveReqVO.setNickname(customerInfoDO.getDistributorName());
-                    userSaveReqVO.setPassword(FX_CUSTOMER_PASSWORD);
-                    userSaveReqVO.setCustomerId(customerInfoDO.getId());
-                    Long userId = adminUserService.createUser(userSaveReqVO);
-                    //赋予账号角色
-                    permissionService.assignUserRole(userId, Sets.newHashSet(FX_CUSTOMER_ROLE_ID));
+                    String account = customerInfoDO.getDistributorNum();
+                    if (!existingCustomerIdsWithAccount.contains(account)) { // 不存在账号才创建
+                        UserSaveReqVO userSaveReqVO = new UserSaveReqVO();
+                        userSaveReqVO.setUsername(customerInfoDO.getDistributorNum());
+                        userSaveReqVO.setNickname(customerInfoDO.getDistributorName());
+                        userSaveReqVO.setPassword(FX_CUSTOMER_PASSWORD);
+                        userSaveReqVO.setCustomerId(customerInfoDO.getId());
+                        Long userId = adminUserService.createUser(userSaveReqVO);
+                        permissionService.assignUserRole(userId, Sets.newHashSet(FX_CUSTOMER_ROLE_ID));
+                        log.info("为分销商[ID:{}]创建账号成功", account);
+                    } else {
+                        log.info("分销商[ID:{}]已存在账号，无需重复创建", account);
+                    }
                 }
                 log.info("OA客商信息同步：新增成功{}条", insertList.size());
             }

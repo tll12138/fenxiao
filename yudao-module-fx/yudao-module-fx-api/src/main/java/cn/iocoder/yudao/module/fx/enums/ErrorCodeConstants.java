@@ -133,4 +133,6 @@ public interface ErrorCodeConstants {
     ErrorCode CA_RCPT_AUD_ID_NOT_EXISTS = new ErrorCode(1_303_000_101, "客商账户收款审核id不存在");
     // ========== 开票信息 ==========
     ErrorCode BILLING_INFO_NOT_EXISTS = new ErrorCode(1_304_000_100, "开票信息不存在");
+    // ========== 品牌授权  ==========
+    ErrorCode BRAND_AUTH_NOT_EXISTS = new ErrorCode(1_305_000_100, "品牌授权不存在");
 }

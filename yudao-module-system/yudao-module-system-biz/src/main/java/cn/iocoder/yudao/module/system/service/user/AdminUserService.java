@@ -1,16 +1,23 @@
 package cn.iocoder.yudao.module.system.service.user;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.collection.CollectionUtils;
 import cn.iocoder.yudao.module.system.controller.admin.user.vo.profile.UserProfileUpdatePasswordReqVO;
 import cn.iocoder.yudao.module.system.controller.admin.user.vo.profile.UserProfileUpdateReqVO;
-import cn.iocoder.yudao.module.system.controller.admin.user.vo.user.*;
-import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.module.system.controller.admin.user.vo.user.UserImportExcelVO;
+import cn.iocoder.yudao.module.system.controller.admin.user.vo.user.UserImportRespVO;
+import cn.iocoder.yudao.module.system.controller.admin.user.vo.user.UserPageReqVO;
+import cn.iocoder.yudao.module.system.controller.admin.user.vo.user.UserSaveReqVO;
 import cn.iocoder.yudao.module.system.dal.dataobject.user.AdminUserDO;
 
 import javax.validation.Valid;
 import java.io.InputStream;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * 后台用户 Service 接口
@@ -37,7 +44,7 @@ public interface AdminUserService {
     /**
      * 更新用户的最后登陆信息
      *
-     * @param id 用户编号
+     * @param id      用户编号
      * @param loginIp 登陆 IP
      */
     void updateUserLogin(Long id, String loginIp);
@@ -45,7 +52,7 @@ public interface AdminUserService {
     /**
      * 修改用户个人信息
      *
-     * @param id 用户编号
+     * @param id    用户编号
      * @param reqVO 用户个人信息
      */
     void updateUserProfile(Long id, @Valid UserProfileUpdateReqVO reqVO);
@@ -53,7 +60,7 @@ public interface AdminUserService {
     /**
      * 修改用户个人密码
      *
-     * @param id 用户编号
+     * @param id    用户编号
      * @param reqVO 更新用户个人密码
      */
     void updateUserPassword(Long id, @Valid UserProfileUpdatePasswordReqVO reqVO);
@@ -195,10 +202,17 @@ public interface AdminUserService {
     /**
      * 判断密码是否匹配
      *
-     * @param rawPassword 未加密的密码
+     * @param rawPassword     未加密的密码
      * @param encodedPassword 加密后的密码
      * @return 是否匹配
      */
     boolean isPasswordMatch(String rawPassword, String encodedPassword);
 
+    /**
+     * 获取已存在的分销商账号
+     *
+     * @param newCustomerIds 新增的分销商ID列表
+     * @return 已存在的分销商账号ID列表
+     */
+    Set<String> getCustomerIdsWithExistingAccount(List<String> newCustomerIds);
 }

@@ -269,3 +269,9 @@ jeecg:
   jmreport:
     saas-mode: tenant
 
+# Linux环境
+file:
+  upload:
+    base-path: /app/filerealpath
+# 或Windows环境
+# file.upload.base-path=D:/filerealpath

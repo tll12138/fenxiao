@@ -40,7 +40,14 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.io.InputStream;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.framework.common.util.collection.CollectionUtils.convertList;
@@ -311,6 +318,7 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     /**
      * 获得部门条件：查询指定部门的子部门编号们，包括自身
+     *
      * @param deptId 部门编号
      * @return 部门编号集合
      */
@@ -324,7 +332,7 @@ public class AdminUserServiceImpl implements AdminUserService {
     }
 
     private AdminUserDO validateUserForCreateOrUpdate(Long id, String username, String mobile, String email,
-                                               Long deptId, Set<Long> postIds) {
+                                                      Long deptId, Set<Long> postIds) {
         // 关闭数据权限，避免因为没有数据权限，查询不到数据，进而导致唯一校验不正确
         return DataPermissionUtils.executeIgnore(() -> {
             // 校验用户存在
@@ -411,6 +419,7 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     /**
      * 校验旧密码
+     *
      * @param id          用户 id
      * @param oldPassword 旧密码
      */
@@ -471,6 +480,21 @@ public class AdminUserServiceImpl implements AdminUserService {
     @Override
     public boolean isPasswordMatch(String rawPassword, String encodedPassword) {
         return passwordEncoder.matches(rawPassword, encodedPassword);
+    }
+
+    /**
+     * 获取已存在的分销商账号
+     *
+     * @param newCustomerIds 新增的分销商ID列表
+     * @return 已存在的分销商账号ID列表
+     */
+    @Override
+    public Set<String> getCustomerIdsWithExistingAccount(List<String> newCustomerIds) {
+        if (CollectionUtil.isEmpty(newCustomerIds)) {
+            return Collections.emptySet();
+        }
+        // 批量查询用户表中已存在的账号
+        return userMapper.selectCustomerIdsExists(newCustomerIds);
     }
 
     /**

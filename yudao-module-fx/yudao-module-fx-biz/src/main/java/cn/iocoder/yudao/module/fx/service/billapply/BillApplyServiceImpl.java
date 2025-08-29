@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.fx.service.billapply;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpRequest;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
@@ -23,16 +24,22 @@ import com.diboot.core.exception.BusinessException;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.BILL_APPLY_NOT_EXISTS;
@@ -47,8 +54,13 @@ import static cn.iocoder.yudao.module.fx.enums.ErrorCodeConstants.BILL_APPLY_NOT
 @Validated
 public class BillApplyServiceImpl implements BillApplyService {
 
+
+    @Value("${file.upload.base-path}")
+    private String fileUploadBasePath;
+
     private static final String appid = "e0ab4a73-e9c6-4ae5-9dac-f21a7807991a";
-    private static final String head = "https://www.puqiportal.com/";
+    //    private static final String head = "https://www.puqiportal.com/";
+    private static final String head = "http://10.10.4.29:8096/";
 
     @Resource
     private BillApplyMapper billApplyMapper;
@@ -158,7 +170,7 @@ public class BillApplyServiceImpl implements BillApplyService {
 
             // 7. 调用创建请求接口
             String response = callCreateRequestApi(mainData, token, spk);
-            if (!"SUCCESS".contains(response)) {
+            if (!response.contains("SUCCESS")) {
                 // 8. 处理响应
                 JSONObject jsonObject = JSONObject.parseObject(response);
                 String errorMsg = jsonObject.getString("errorMsg");
@@ -257,6 +269,7 @@ public class BillApplyServiceImpl implements BillApplyService {
         addField(fieldList, "amount", billApply.getAmount());
         addField(fieldList, "jehjdx", billApply.getAmount());
         addField(fieldList, "if_remote", "1");
+        addField(fieldList, "fx_sys_id", billApply.getId());
 
         JSONObject mainData = new JSONObject();
         mainData.put("mainData", fieldList);
@@ -326,7 +339,7 @@ public class BillApplyServiceImpl implements BillApplyService {
      */
     private String callCreateRequestApi(JSONObject mainData, String token, String spk) throws Exception {
         String url = head + "api/workflow/paService/doCreateRequest";
-        String encryptedUserId = RSAUtil.getRSA("1153", spk);
+        String encryptedUserId = RSAUtil.getRSA("1103", spk);
         log.info("调用创建请求接口，url：{}，请求数据：{},token:{},appid:{},userid:{}", url, mainData, token, appid, encryptedUserId);
 
         String response = HttpRequest.post(url)
@@ -384,27 +397,42 @@ public class BillApplyServiceImpl implements BillApplyService {
                 }
 
                 // 获取文件名和创建临时目录
-                String originalFileName = file.getOriginalFilename();
-                String baseTempPath = "D:/filerealpath/" + billApply.getId() + "/" + System.currentTimeMillis() + "/";
-                String originalFileDir = baseTempPath + "original/";
-                String extractDir = baseTempPath + "extracted/";
+                String originalFileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
+                if (originalFileName.contains("..")) {
+                    log.error("文件名包含非法路径字符: {}", originalFileName);
+                    continue;
+                }
+                Path baseTempPath = Paths.get(fileUploadBasePath,
+                        billApply.getId().toString(),
+                        String.valueOf(System.currentTimeMillis()));
+                // 2. 构建目录路径（自动适配系统分隔符）
+                Path originalFileDir = baseTempPath.resolve("original");
+                Path extractDir = baseTempPath.resolve("extracted");
 
-                File originalDir = new File(originalFileDir);
-                File extractDirectory = new File(extractDir);
-                if (!originalDir.exists()) originalDir.mkdirs();
-                if (!extractDirectory.exists()) extractDirectory.mkdirs();
+                File originalDir = originalFileDir.toFile();
+                File extractDirectory = extractDir.toFile();
+
+                // 3. 确保目录存在（递归创建）
+                if (!originalDir.exists() && !originalDir.mkdirs()) {
+                    log.error("无法创建原文件目录: {}", originalDir.getAbsolutePath());
+                    continue;
+                }
+                if (!extractDirectory.exists() && !extractDirectory.mkdirs()) {
+                    log.error("无法创建解压目录: {}", extractDirectory.getAbsolutePath());
+                    continue;
+                }
 
                 try {
-                    // 保存原文件
-                    File originalFile = new File(originalFileDir + originalFileName);
-                    file.transferTo(originalFile);
+                    // 保存原文件（使用Path避免路径拼接错误）
+                    Path originalFilePath = originalFileDir.resolve(originalFileName);
+                    File originalFile = originalFilePath.toFile();
+                    file.transferTo(originalFile); // 推荐使用Path参数的重载方法（Java 7+）
                     log.info("原文件保存成功: {}, 大小: {} bytes", originalFile.getAbsolutePath(), originalFile.length());
 
-                    // 执行解压操作
-                    String sourcePath = originalFile.getAbsolutePath().replace("/", "//");
-                    String targetDir = extractDir.replace("/", "//");
-                    // 注意：第三个参数应该是解压后的文件路径，而非原文件名
-                    String targetFilePath = targetDir + FilenameUtils.getBaseName(originalFileName);
+                    // 执行解压操作（路径处理优化）
+                    String sourcePath = originalFilePath.toString();
+                    String targetDir = extractDir.toString();
+                    String targetFilePath = extractDir.resolve(FilenameUtils.getBaseName(originalFileName)).toString();
 
                     log.info("开始解压: 源文件={}, 目标目录={}", sourcePath, targetDir);
                     boolean unzipResult = ZipUtils.unzip1(sourcePath, targetDir, targetFilePath);
@@ -418,11 +446,9 @@ public class BillApplyServiceImpl implements BillApplyService {
                     // 收集待上传文件
                     List<File> filesToUpload = new ArrayList<>();
                     if (unzipResult && hasExtractedFiles) {
-                        // 解压成功且有文件，收集解压目录中的文件
                         collectFiles(extractDirectory, filesToUpload);
                         log.info("成功收集到 {} 个解压后的文件", filesToUpload.size());
                     } else {
-                        // 解压失败或无文件，使用原文件
                         log.warn("解压失败或无文件，将上传原文件: {}", originalFileName);
                         filesToUpload.add(originalFile);
                     }
@@ -446,15 +472,19 @@ public class BillApplyServiceImpl implements BillApplyService {
                         log.info("文件上传成功: {} ({} bytes)", fileToUpload.getName(), fileToUpload.length());
                     }
 
+                } catch (IOException e) {
+                    log.error("文件处理失败（保存/解压/上传）: {}", e.getMessage(), e);
+                    // 单个文件处理失败不中断整体流程，继续处理下一个文件
+                    continue;
                 } finally {
-                    // 清理临时文件
-                    log.info("清理临时目录: {}", baseTempPath);
-                    deleteFolders(baseTempPath);
+                    // 清理临时目录：将File对象转为绝对路径字符串
+                    deleteFolders(baseTempPath.toAbsolutePath().toString());
+                    log.info("临时目录已清理: {}", baseTempPath);
                 }
             }
 
             // 更新记录
-            billApply.setDocument(fileUrls.toString());
+            billApply.setDocument(StringUtils.collectionToCommaDelimitedString(fileUrls));
             log.info("处理完成，共上传 {} 个文件", fileUrls.size());
             billApplyMapper.updateById(billApply);
 
@@ -529,23 +559,38 @@ public class BillApplyServiceImpl implements BillApplyService {
      * 递归删除文件夹及内容
      */
     private void deleteFolders(String folderPath) {
-        File folder = new File(folderPath);
-        if (!folder.exists()) {
+        if (StrUtil.isEmpty(folderPath)) {
+            log.warn("目录路径为空，跳过删除");
             return;
         }
 
+        File folder = new File(folderPath);
+        if (!folder.exists()) {
+            log.warn("目录不存在，无需删除: {}", folderPath);
+            return;
+        }
+
+        // 递归删除子文件和子目录
         File[] files = folder.listFiles();
         if (files != null) {
             for (File file : files) {
                 if (file.isDirectory()) {
+                    // 递归删除子目录
                     deleteFolders(file.getAbsolutePath());
                 } else {
-                    file.delete();
+                    // 删除文件
+                    boolean deleted = file.delete();
+                    if (!deleted) {
+                        log.warn("无法删除文件: {}", file.getAbsolutePath());
+                    }
                 }
             }
         }
-        folder.delete();
+
+        // 删除当前目录
+        boolean folderDeleted = folder.delete();
+        if (!folderDeleted) {
+            log.warn("无法删除目录: {}", folderPath);
+        }
     }
-
-
 }
